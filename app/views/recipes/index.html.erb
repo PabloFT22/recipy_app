@@ -1,0 +1,58 @@
+<div class="flex justify-between items-center mb-4">
+  <h1>My Recipes</h1>
+  <div class="flex gap-2">
+    <%= link_to "Import Recipe", import_recipes_path, class: "btn btn-secondary" %>
+    <%= link_to "New Recipe", new_recipe_path, class: "btn" %>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <%= form_with url: recipes_path, method: :get, local: true do |f| %>
+    <div class="flex gap-2">
+      <%= f.text_field :search, value: params[:search], placeholder: "Search recipes...", class: "form-control" %>
+      <%= f.select :difficulty, options_for_select([['All Difficulties', ''], ['Easy', 'easy'], ['Medium', 'medium'], ['Hard', 'hard']], params[:difficulty]), {}, class: "form-control" %>
+      <%= f.submit "Search", class: "btn" %>
+    </div>
+  <% end %>
+</div>
+
+<% if @recipes.any? %>
+  <div class="grid grid-3">
+    <% @recipes.each do |recipe| %>
+      <div class="recipe-card">
+        <% if recipe.image.attached? %>
+          <%= image_tag recipe.image, class: "recipe-card-image" %>
+        <% else %>
+          <div class="recipe-card-image"></div>
+        <% end %>
+        <div class="recipe-card-body">
+          <h3 class="recipe-card-title"><%= link_to recipe.title, recipe %></h3>
+          <p class="recipe-card-description"><%= truncate(recipe.description, length: 100) %></p>
+          <div class="flex gap-2 mb-2">
+            <% if recipe.prep_time %>
+              <span>⏱️ <%= recipe.prep_time %>min</span>
+            <% end %>
+            <% if recipe.servings %>
+              <span>🍽️ <%= recipe.servings %></span>
+            <% end %>
+            <% if recipe.difficulty %>
+              <span>📊 <%= recipe.difficulty.capitalize %></span>
+            <% end %>
+          </div>
+          <div class="flex gap-2">
+            <%= link_to "View", recipe, class: "btn" %>
+            <%= link_to "Edit", edit_recipe_path(recipe), class: "btn btn-secondary" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  
+  <div class="mt-4 text-center">
+    <%= paginate @recipes %>
+  </div>
+<% else %>
+  <div class="card text-center">
+    <p>No recipes found. <%= link_to "Create your first recipe", new_recipe_path %>!</p>
+  </div>
+<% end %>

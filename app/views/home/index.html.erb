@@ -1,0 +1,95 @@
+<% if user_signed_in? %>
+  <div class="text-center mb-4">
+    <h1>Welcome back to Recipy!</h1>
+    <p class="mt-2">Manage your recipes, plan meals, and generate grocery lists.</p>
+  </div>
+
+  <div class="grid grid-2 mb-4">
+    <div class="card">
+      <h2 class="card-title">Quick Actions</h2>
+      <%= link_to "Add New Recipe", new_recipe_path, class: "btn mb-2" %>
+      <%= link_to "Create Meal Plan", new_meal_plan_path, class: "btn btn-success mb-2" %>
+      <%= link_to "New Grocery List", new_grocery_list_path, class: "btn btn-secondary" %>
+    </div>
+
+    <% if @active_meal_plan %>
+      <div class="card">
+        <h2 class="card-title">Active Meal Plan</h2>
+        <h3><%= @active_meal_plan.name %></h3>
+        <p><%= @active_meal_plan.start_date.strftime('%B %d') %> - <%= @active_meal_plan.end_date.strftime('%B %d, %Y') %></p>
+        <p><%= @active_meal_plan.total_recipes %> recipes planned</p>
+        <%= link_to "View Meal Plan", @active_meal_plan, class: "btn mt-2" %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @active_grocery_lists.any? %>
+    <div class="card mb-4">
+      <h2 class="card-title">Active Grocery Lists</h2>
+      <% @active_grocery_lists.each do |list| %>
+        <div class="mb-3">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3><%= link_to list.name, list %></h3>
+              <p><%= list.progress_percentage %>% complete (<%= list.checked_items %>/<%= list.total_items %> items)</p>
+            </div>
+            <%= link_to "View List", list, class: "btn" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @recent_recipes.any? %>
+    <h2 class="mb-3">Recent Recipes</h2>
+    <div class="grid grid-3">
+      <% @recent_recipes.each do |recipe| %>
+        <div class="recipe-card">
+          <% if recipe.image.attached? %>
+            <%= image_tag recipe.image, class: "recipe-card-image" %>
+          <% else %>
+            <div class="recipe-card-image"></div>
+          <% end %>
+          <div class="recipe-card-body">
+            <h3 class="recipe-card-title"><%= link_to recipe.title, recipe %></h3>
+            <p class="recipe-card-description"><%= truncate(recipe.description, length: 100) %></p>
+            <div class="flex gap-2">
+              <% if recipe.prep_time %>
+                <span>⏱️ <%= recipe.prep_time %> min</span>
+              <% end %>
+              <% if recipe.servings %>
+                <span>🍽️ <%= recipe.servings %> servings</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+<% else %>
+  <div class="text-center">
+    <h1 class="mb-3">Welcome to Recipy</h1>
+    <p class="mb-4" style="font-size: 1.25rem;">Your personal recipe manager with meal planning and grocery list generation.</p>
+    
+    <div class="grid grid-3 mb-4">
+      <div class="card">
+        <h3>📖 Manage Recipes</h3>
+        <p>Store all your favorite recipes in one place. Import from URLs or paste ingredients.</p>
+      </div>
+      <div class="card">
+        <h3>📅 Plan Meals</h3>
+        <p>Create weekly meal plans and automatically generate grocery lists.</p>
+      </div>
+      <div class="card">
+        <h3>🛒 Smart Shopping</h3>
+        <p>Intelligent grocery lists that combine ingredients and organize by category.</p>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <%= link_to "Get Started - Sign Up", new_user_registration_path, class: "btn" %>
+      <%= link_to "Sign In", new_user_session_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+<% end %>

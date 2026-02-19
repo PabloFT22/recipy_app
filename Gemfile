@@ -35,18 +35,47 @@ gem "jbuilder"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 
+# Authentication
+gem "devise"
+
+# Image processing for recipe photos
+gem "image_processing", "~> 1.2"
+
+# Pagination
+gem "kaminari"
+
+# Friendly URLs
+gem "friendly_id"
+
+# HTTP client for recipe scraping
+gem "httparty"
+
+# HTML/XML parsing for recipe scraping
+gem "nokogiri"
+
+# For ingredient parsing and normalization
+gem "ruby-measurement"
+
+# Background jobs
+gem "sidekiq"
+
+# Environment variables
+gem "dotenv-rails", groups: [:development, :test]
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ mswin mswin64 mingw x64_mingw jruby ]
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
-# Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-# gem "image_processing", "~> 1.2"
-
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri mswin mswin64 mingw x64_mingw ]
+  
+  # Testing
+  gem "rspec-rails"
+  gem "factory_bot_rails"
+  gem "faker"
 end
 
 group :development do
