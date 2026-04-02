@@ -1,2 +1,201 @@
-<h1>Recipes#show</h1>
-<p>Find me in app/views/recipes/show.html.erb</p>
+<div class="recipe-show-container">
+  <!-- Recipe Header -->
+  <div class="recipe-header">
+    <div class="recipe-header-content">
+      <div class="recipe-title-section">
+        <h1 class="recipe-title"><%= @recipe.title %></h1>
+        
+        <% if @recipe.description.present? %>
+          <p class="recipe-description"><%= @recipe.description %></p>
+        <% end %>
+
+        <div class="recipe-meta">
+          <% if @recipe.difficulty.present? %>
+            <span class="meta-badge difficulty-<%= @recipe.difficulty %>">
+              <%= @recipe.difficulty.titleize %>
+            </span>
+          <% end %>
+
+          <% if @recipe.servings.present? %>
+            <span class="meta-item">
+              👥 <%= @recipe.servings %> servings
+            </span>
+          <% end %>
+
+          <% if @recipe.prep_time.present? %>
+            <span class="meta-item">
+              ⏱️ Prep: <%= @recipe.prep_time %> min
+            </span>
+          <% end %>
+
+          <% if @recipe.cook_time.present? %>
+            <span class="meta-item">
+              🔥 Cook: <%= @recipe.cook_time %> min
+            </span>
+          <% end %>
+
+          <% if @recipe.total_time %>
+            <span class="meta-item total-time">
+              ⏰ Total: <%= @recipe.total_time %> min
+            </span>
+          <% end %>
+        </div>
+
+        <div class="recipe-author">
+          <span>By <%= @recipe.user.email.split('@').first.titleize %></span>
+          <span class="separator">•</span>
+          <span><%= time_ago_in_words(@recipe.created_at) %> ago</span>
+          <% unless @recipe.is_public %>
+            <span class="separator">•</span>
+            <span class="private-badge">🔒 Private</span>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <% if user_signed_in? && @recipe.user == current_user %>
+        <div class="recipe-actions">
+          <%= link_to "✏️ Edit", edit_recipe_path(@recipe), class: "btn btn-secondary" %>
+          <%= link_to "🗑️ Delete", recipe_path(@recipe), 
+              method: :delete, 
+              data: { confirm: "Are you sure you want to delete this recipe?" },
+              class: "btn btn-danger" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="recipe-content">
+    <!-- Recipe Image -->
+    <% if @recipe.image.attached? %>
+      <div class="recipe-image-container">
+        <%= image_tag @recipe.image, alt: @recipe.title, class: "recipe-image" %>
+      </div>
+    <% end %>
+
+    <div class="recipe-details">
+      <!-- Ingredients Section -->
+      <div class="recipe-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="section-icon">🥘</span>
+            Ingredients
+          </h2>
+          <% if user_signed_in? %>
+            <button class="btn btn-small btn-ghost" onclick="alert('Add to grocery list feature coming soon!')">
+              🛒 Add to List
+            </button>
+          <% end %>
+        </div>
+
+        <% if @recipe.recipe_ingredients.any? %>
+          <div class="ingredients-list">
+            <% @recipe.recipe_ingredients.includes(:ingredient).each do |recipe_ingredient| %>
+              <div class="ingredient-item">
+                <label class="ingredient-checkbox">
+                  <input type="checkbox">
+                  <span class="ingredient-text">
+                    <span class="ingredient-quantity">
+                      <%= recipe_ingredient.quantity.present? ? number_with_precision(recipe_ingredient.quantity, strip_insignificant_zeros: true) : '' %>
+                      <%= recipe_ingredient.unit %>
+                    </span>
+                    <span class="ingredient-name"><%= recipe_ingredient.ingredient.name %></span>
+                    <% if recipe_ingredient.notes.present? %>
+                      <span class="ingredient-notes">, <%= recipe_ingredient.notes %></span>
+                    <% end %>
+                  </span>
+                </label>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="empty-state">No ingredients added yet.</p>
+        <% end %>
+      </div>
+
+      <!-- Instructions Section -->
+      <div class="recipe-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="section-icon">👨‍🍳</span>
+            Instructions
+          </h2>
+        </div>
+
+        <% if @recipe.instructions.present? %>
+          <div class="instructions-list">
+            <% @recipe.instructions.split(/\n\n+/).reject(&:blank?).each_with_index do |step, index| %>
+              <div class="instruction-step">
+                <div class="step-number"><%= index + 1 %></div>
+                <div class="step-text"><%= simple_format(step) %></div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="empty-state">No instructions added yet.</p>
+        <% end %>
+      </div>
+
+      <!-- Source Section -->
+      <% if @recipe.source_url.present? %>
+        <div class="recipe-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span class="section-icon">🔗</span>
+              Source
+            </h2>
+          </div>
+          <div class="source-link">
+            <%= link_to @recipe.source_url, @recipe.source_url, target: "_blank", rel: "noopener" %>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Additional Actions -->
+      <% if user_signed_in? %>
+        <div class="recipe-section">
+          <div class="quick-actions">
+            <%= link_to "📋 Duplicate Recipe", duplicate_recipe_path(@recipe), 
+                method: :post, 
+                class: "btn btn-secondary" %>
+            
+            <button class="btn btn-secondary" onclick="window.print()">
+              🖨️ Print Recipe
+            </button>
+            
+            <button class="btn btn-secondary" onclick="navigator.share ? navigator.share({title: '<%= @recipe.title %>', url: window.location.href}) : alert('Share via: ' + window.location.href)">
+              📤 Share
+            </button>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Back Link -->
+  <div class="back-link">
+    <%= link_to "← Back to Recipes", recipes_path, class: "link-secondary" %>
+  </div>
+</div>
+
+<style>
+/* Print styles */
+@media print {
+  .recipe-actions,
+  .quick-actions,
+  .back-link,
+  nav,
+  footer {
+    display: none !important;
+  }
+  
+  .recipe-show-container {
+    max-width: 100%;
+    padding: 0;
+  }
+  
+  .ingredient-checkbox input {
+    display: none;
+  }
+}
+</style>
