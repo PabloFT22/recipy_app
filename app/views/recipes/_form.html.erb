@@ -1,0 +1,281 @@
+<div class="recipe-form-container">
+  <div class="recipe-form-header">
+    <h1><%= recipe.new_record? ? 'Create New Recipe' : 'Edit Recipe' %></h1>
+    <p class="subtitle"><%= recipe.new_record? ? 'Build your recipe step by step' : 'Update your recipe details' %></p>
+  </div>
+
+  <%= form_with(model: recipe, class: "recipe-form", data: { controller: "recipe-form" }) do |form| %>
+    <% if recipe.errors.any? %>
+      <div class="alert alert-error">
+        <h3><%= pluralize(recipe.errors.count, "error") %> prevented this recipe from being saved:</h3>
+        <ul>
+          <% recipe.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <!-- Basic Info Card -->
+    <div class="form-card" data-recipe-form-target="card" data-card="basic">
+      <div class="card-header" data-action="click->recipe-form#toggleCard">
+        <div class="card-title">
+          <span class="card-icon">📝</span>
+          <h3>Basic Information</h3>
+          <span class="card-status" data-recipe-form-target="basicStatus">Required</span>
+        </div>
+        <button type="button" class="expand-btn" data-recipe-form-target="basicToggle">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="card-body" data-recipe-form-target="basicBody">
+        <div class="form-group">
+          <%= form.label :title, "Recipe Name *" %>
+          <%= form.text_field :title, 
+              placeholder: "e.g., Grandma's Chocolate Chip Cookies",
+              class: "form-input",
+              data: { action: "input->recipe-form#updatePreview" },
+              autofocus: true %>
+        </div>
+
+        <div class="form-group">
+          <%= form.label :description, "Description" %>
+          <%= form.text_area :description, 
+              rows: 3,
+              placeholder: "Brief description of your recipe...",
+              class: "form-input",
+              data: { action: "input->recipe-form#updatePreview" } %>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <%= form.label :difficulty, "Difficulty" %>
+            <%= form.select :difficulty, 
+                [['Easy', 'easy'], ['Medium', 'medium'], ['Hard', 'hard']], 
+                { prompt: 'Select difficulty' },
+                class: "form-select" %>
+          </div>
+
+          <div class="form-group">
+            <%= form.label :servings, "Servings" %>
+            <%= form.number_field :servings, 
+                placeholder: "4",
+                min: 1,
+                class: "form-input" %>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <%= form.label :is_public, class: "checkbox-label" do %>
+            <%= form.check_box :is_public %>
+            <span>Make this recipe public</span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timing Card -->
+    <div class="form-card" data-recipe-form-target="card" data-card="timing">
+      <div class="card-header" data-action="click->recipe-form#toggleCard">
+        <div class="card-title">
+          <span class="card-icon">⏱️</span>
+          <h3>Cooking Time</h3>
+          <span class="card-status">Optional</span>
+        </div>
+        <button type="button" class="expand-btn" data-recipe-form-target="timingToggle">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="card-body collapsed" data-recipe-form-target="timingBody">
+        <div class="form-row">
+          <div class="form-group">
+            <%= form.label :prep_time, "Prep Time (minutes)" %>
+            <%= form.number_field :prep_time, 
+                placeholder: "15",
+                min: 0,
+                class: "form-input" %>
+          </div>
+
+          <div class="form-group">
+            <%= form.label :cook_time, "Cook Time (minutes)" %>
+            <%= form.number_field :cook_time, 
+                placeholder: "30",
+                min: 0,
+                class: "form-input" %>
+          </div>
+        </div>
+        
+        <div class="time-display" data-recipe-form-target="timeDisplay">
+          <p class="helper-text">Total time will be calculated automatically</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ingredients Card -->
+    <div class="form-card" data-recipe-form-target="card" data-card="ingredients">
+      <div class="card-header" data-action="click->recipe-form#toggleCard">
+        <div class="card-title">
+          <span class="card-icon">🥘</span>
+          <h3>Ingredients</h3>
+          <span class="card-status" data-recipe-form-target="ingredientsStatus">Required</span>
+        </div>
+        <button type="button" class="expand-btn" data-recipe-form-target="ingredientsToggle">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="card-body collapsed" data-recipe-form-target="ingredientsBody">
+        <div class="form-group">
+          <%= form.label :ingredients_text, "Add your ingredients" %>
+          <p class="helper-text">
+            💡 Type one ingredient per line. We'll automatically parse quantities and units!<br>
+            Example: "2 cups flour" or "1 tablespoon olive oil"
+          </p>
+          <%= form.text_area :ingredients_text,
+              rows: 10,
+              placeholder: "2 cups all-purpose flour\n1 cup butter, softened\n3/4 cup sugar\n2 large eggs\n1 teaspoon vanilla extract\n2 cups chocolate chips",
+              class: "form-input ingredients-textarea",
+              value: recipe.recipe_ingredients.map { |ri| "#{ri.quantity} #{ri.unit} #{ri.ingredient.name}#{ri.notes.present? ? ", #{ri.notes}" : ''}" }.join("\n"),
+              data: { action: "input->recipe-form#updateIngredientPreview" } %>
+        </div>
+
+        <div class="ingredient-preview" data-recipe-form-target="ingredientPreview">
+          <p class="preview-label">Preview (auto-parsed):</p>
+          <div class="preview-list" data-recipe-form-target="ingredientList">
+            <p class="text-muted">Start typing to see parsed ingredients...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions Card -->
+    <div class="form-card" data-recipe-form-target="card" data-card="instructions">
+      <div class="card-header" data-action="click->recipe-form#toggleCard">
+        <div class="card-title">
+          <span class="card-icon">👨‍🍳</span>
+          <h3>Instructions</h3>
+          <span class="card-status" data-recipe-form-target="instructionsStatus">Required</span>
+        </div>
+        <button type="button" class="expand-btn" data-recipe-form-target="instructionsToggle">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="card-body collapsed" data-recipe-form-target="instructionsBody">
+        <div class="form-group">
+          <%= form.label :instructions, "Cooking Steps" %>
+          <p class="helper-text">
+            Write clear, step-by-step instructions for your recipe
+          </p>
+          <%= form.text_area :instructions,
+              rows: 12,
+              placeholder: "1. Preheat oven to 375°F (190°C).\n\n2. In a large bowl, cream together butter and sugar until light and fluffy.\n\n3. Beat in eggs one at a time, then add vanilla extract.\n\n4. In a separate bowl, whisk together flour, baking soda, and salt.\n\n5. Gradually blend the dry ingredients into the creamed mixture.\n\n6. Fold in chocolate chips.\n\n7. Drop rounded tablespoons of dough onto ungreased cookie sheets.\n\n8. Bake for 10-12 minutes or until golden brown.\n\n9. Cool on baking sheet for 2 minutes before removing to a wire rack.",
+              class: "form-input instructions-textarea",
+              data: { action: "input->recipe-form#updateInstructionCount" } %>
+        </div>
+        
+        <div class="instruction-count" data-recipe-form-target="instructionCount">
+          <p class="helper-text">0 steps</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Photo Card -->
+    <div class="form-card" data-recipe-form-target="card" data-card="photo">
+      <div class="card-header" data-action="click->recipe-form#toggleCard">
+        <div class="card-title">
+          <span class="card-icon">📸</span>
+          <h3>Photo</h3>
+          <span class="card-status">Optional</span>
+        </div>
+        <button type="button" class="expand-btn" data-recipe-form-target="photoToggle">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="card-body collapsed" data-recipe-form-target="photoBody">
+        <div class="form-group">
+          <%= form.label :image, "Upload a photo of your dish" %>
+          <% if recipe.image.attached? %>
+            <div style="margin-bottom: 16px;">
+              <%= image_tag recipe.image, style: "max-width: 300px; border-radius: 8px;" %>
+              <p class="helper-text">Upload a new image to replace this one</p>
+            </div>
+          <% end %>
+          <div class="file-upload-wrapper">
+            <%= form.file_field :image, 
+                accept: "image/*",
+                class: "file-input",
+                data: { action: "change->recipe-form#previewImage" } %>
+            <div class="file-upload-display" data-recipe-form-target="imagePreview">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              <p>Click to upload or drag and drop</p>
+              <p class="text-muted">PNG, JPG, GIF up to 10MB</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Source URL (Optional) -->
+    <div class="form-card" data-recipe-form-target="card" data-card="source">
+      <div class="card-header" data-action="click->recipe-form#toggleCard">
+        <div class="card-title">
+          <span class="card-icon">🔗</span>
+          <h3>Source</h3>
+          <span class="card-status">Optional</span>
+        </div>
+        <button type="button" class="expand-btn" data-recipe-form-target="sourceToggle">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="card-body collapsed" data-recipe-form-target="sourceBody">
+        <div class="form-group">
+          <%= form.label :source_url, "Original Recipe URL" %>
+          <%= form.text_field :source_url,
+              placeholder: "https://example.com/recipe",
+              class: "form-input" %>
+          <p class="helper-text">If this recipe is adapted from another source, add the URL here</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="form-actions">
+      <%= form.submit button_text, class: "btn btn-primary btn-large" %>
+      <%= link_to "Cancel", recipe.new_record? ? recipes_path : recipe_path(recipe), class: "btn btn-secondary" %>
+      <% if recipe.new_record? %>
+        <button type="button" class="btn btn-ghost" data-action="click->recipe-form#saveDraft">
+          Save Draft
+        </button>
+      <% end %>
+    </div>
+
+    <!-- Auto-save indicator (only for new recipes) -->
+    <% if recipe.new_record? %>
+      <div class="auto-save-indicator" data-recipe-form-target="saveIndicator">
+        <span class="save-status">Draft saved</span>
+      </div>
+    <% end %>
+  <% end %>
+</div>
+
