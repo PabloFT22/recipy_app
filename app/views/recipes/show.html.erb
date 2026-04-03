@@ -95,7 +95,7 @@
                   <input type="checkbox">
                   <span class="ingredient-text">
                     <span class="ingredient-quantity">
-                      <%= recipe_ingredient.quantity.present? ? number_with_precision(recipe_ingredient.quantity, strip_insignificant_zeros: true) : '' %>
+                      <%= display_quantity(recipe_ingredient.quantity) %>
                       <%= recipe_ingredient.unit %>
                     </span>
                     <span class="ingredient-name"><%= recipe_ingredient.ingredient.name %></span>

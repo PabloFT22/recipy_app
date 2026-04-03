@@ -30,14 +30,11 @@ class RecipesController < ApplicationController
   end
   
   def create
-    ingredients_text = params[:recipe].delete(:ingredients_text)
+    ingredients_rows = params[:recipe].delete(:ingredients_rows)
     @recipe = current_user.recipes.build(recipe_params)
     
     if @recipe.save
-      if ingredients_text.present?
-        parse_and_add_ingredients(ingredients_text)
-      end
-      
+      save_structured_ingredients(ingredients_rows) if ingredients_rows.present?
       redirect_to @recipe, notice: 'Recipe was successfully created.'
     else
       render :new, status: :unprocessable_entity
@@ -48,21 +45,12 @@ class RecipesController < ApplicationController
   end
   
   def update
-    ingredients_text = params[:recipe].delete(:ingredients_text)
+    ingredients_rows = params[:recipe].delete(:ingredients_rows)
     
     if @recipe.update(recipe_params)
-      # Only re-parse ingredients if the text actually changed
-      if ingredients_text.present?
-        new_ingredients = ingredients_text.gsub(/\r\n/, "\n").strip
-        old_ingredients = @recipe.recipe_ingredients.includes(:ingredient).map { |ri|
-          qty = ri.quantity.to_i == ri.quantity ? ri.quantity.to_i : ri.quantity
-          "#{qty} #{ri.unit} #{ri.ingredient.name}#{ri.notes.present? ? ", #{ri.notes}" : ""}"
-        }.join("\n").strip
-
-        unless new_ingredients == old_ingredients
-          @recipe.recipe_ingredients.destroy_all
-          parse_and_add_ingredients(ingredients_text)
-        end
+      if ingredients_rows.present?
+        @recipe.recipe_ingredients.destroy_all
+        save_structured_ingredients(ingredients_rows)
       end
       
       redirect_to @recipe, notice: 'Recipe was successfully updated.'
@@ -164,6 +152,32 @@ class RecipesController < ApplicationController
       :is_public,
       :image
     )
+  end
+  
+  def save_structured_ingredients(rows)
+    rows.each do |row|
+      next if row[:name].blank?
+      
+      finder = IngredientFinderService.new(row[:name].strip)
+      ingredient = finder.find_or_create
+      
+      unit = row[:unit].presence
+      notes = row[:notes].presence
+      quantity = row[:quantity].present? ? row[:quantity].to_f : nil
+      
+      # Validate unit — if not recognized, move to notes
+      if unit.present? && !RecipeIngredient::UNITS.include?(unit)
+        notes = [unit, notes].compact.join(', ')
+        unit = nil
+      end
+      
+      @recipe.recipe_ingredients.create(
+        ingredient: ingredient,
+        quantity: quantity,
+        unit: unit,
+        notes: notes
+      )
+    end
   end
   
   def parse_and_add_ingredients(ingredients_text)

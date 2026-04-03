@@ -133,25 +133,109 @@
       </div>
       
       <div class="card-body collapsed" data-recipe-form-target="ingredientsBody">
-        <div class="form-group">
-          <%= form.label :ingredients_text, "Add your ingredients" %>
-          <p class="helper-text">
-            💡 Type one ingredient per line. We'll automatically parse quantities and units!<br>
-            Example: "2 cups flour" or "1 tablespoon olive oil"
-          </p>
-          <%= form.text_area :ingredients_text,
-              rows: 10,
-              placeholder: "2 cups all-purpose flour\n1 cup butter, softened\n3/4 cup sugar\n2 large eggs\n1 teaspoon vanilla extract\n2 cups chocolate chips",
-              class: "form-input ingredients-textarea",
-              value: recipe.recipe_ingredients.map { |ri| "#{ri.quantity} #{ri.unit} #{ri.ingredient.name}#{ri.notes.present? ? ", #{ri.notes}" : ''}" }.join("\n"),
-              data: { action: "input->recipe-form#updateIngredientPreview" } %>
+        <!-- Quick Add: Free-text area -->
+        <div class="quick-add-section" data-recipe-form-target="quickAddSection">
+          <div class="form-group">
+            <label class="quick-add-label">
+              ⚡ Quick Add
+              <span class="helper-text-inline">Paste or type ingredients, one per line</span>
+            </label>
+            <textarea 
+              rows="5"
+              placeholder="2 cups all-purpose flour&#10;1 cup butter, softened&#10;3 large eggs&#10;1 teaspoon vanilla extract"
+              class="form-input ingredients-textarea"
+              data-recipe-form-target="quickAddTextarea"
+            ></textarea>
+          </div>
+          <button type="button" 
+                  class="btn btn-primary btn-parse"
+                  data-action="click->recipe-form#parseIngredients">
+            🔍 Parse Ingredients
+          </button>
         </div>
 
-        <div class="ingredient-preview" data-recipe-form-target="ingredientPreview">
-          <p class="preview-label">Preview (auto-parsed):</p>
-          <div class="preview-list" data-recipe-form-target="ingredientList">
-            <p class="text-muted">Start typing to see parsed ingredients...</p>
+        <div class="ingredients-divider">
+          <span>or add manually</span>
+        </div>
+
+        <!-- Structured Ingredient Rows -->
+        <div class="structured-ingredients" data-recipe-form-target="ingredientRows">
+          <div class="ingredient-row-header">
+            <span class="col-qty">Qty</span>
+            <span class="col-unit">Unit</span>
+            <span class="col-name">Ingredient</span>
+            <span class="col-notes">Notes</span>
+            <span class="col-action"></span>
           </div>
+
+          <% if recipe.recipe_ingredients.any? %>
+            <% recipe.recipe_ingredients.includes(:ingredient).each_with_index do |ri, i| %>
+              <div class="ingredient-row" data-recipe-form-target="ingredientRow">
+                <input type="number" step="any" min="0"
+                       name="recipe[ingredients_rows][][quantity]"
+                       value="<%= ri.quantity %>"
+                       placeholder="2"
+                       class="form-input col-qty">
+                <select name="recipe[ingredients_rows][][unit]" class="form-select col-unit">
+                  <option value="">—</option>
+                  <optgroup label="Volume">
+                    <option value="cups" <%= 'selected' if ri.unit == 'cups' %>>cups</option>
+                    <option value="tablespoons" <%= 'selected' if ri.unit == 'tablespoons' %>>tbsp</option>
+                    <option value="teaspoons" <%= 'selected' if ri.unit == 'teaspoons' %>>tsp</option>
+                    <option value="milliliters" <%= 'selected' if ri.unit == 'milliliters' %>>ml</option>
+                    <option value="liters" <%= 'selected' if ri.unit == 'liters' %>>liters</option>
+                  </optgroup>
+                  <optgroup label="Weight">
+                    <option value="ounces" <%= 'selected' if ri.unit == 'ounces' %>>oz</option>
+                    <option value="pounds" <%= 'selected' if ri.unit == 'pounds' %>>lbs</option>
+                    <option value="grams" <%= 'selected' if ri.unit == 'grams' %>>grams</option>
+                    <option value="kilograms" <%= 'selected' if ri.unit == 'kilograms' %>>kg</option>
+                  </optgroup>
+                  <optgroup label="Count">
+                    <option value="whole" <%= 'selected' if ri.unit == 'whole' %>>whole</option>
+                    <option value="pieces" <%= 'selected' if ri.unit == 'pieces' %>>pieces</option>
+                    <option value="large" <%= 'selected' if ri.unit == 'large' %>>large</option>
+                    <option value="medium" <%= 'selected' if ri.unit == 'medium' %>>medium</option>
+                    <option value="small" <%= 'selected' if ri.unit == 'small' %>>small</option>
+                    <option value="slices" <%= 'selected' if ri.unit == 'slices' %>>slices</option>
+                    <option value="cloves" <%= 'selected' if ri.unit == 'cloves' %>>cloves</option>
+                  </optgroup>
+                  <optgroup label="Other">
+                    <option value="pinch" <%= 'selected' if ri.unit == 'pinch' %>>pinch</option>
+                    <option value="dash" <%= 'selected' if ri.unit == 'dash' %>>dash</option>
+                    <option value="to_taste" <%= 'selected' if ri.unit == 'to_taste' %>>to taste</option>
+                    <option value="cans" <%= 'selected' if ri.unit == 'cans' %>>cans</option>
+                    <option value="bunches" <%= 'selected' if ri.unit == 'bunches' %>>bunches</option>
+                    <option value="handfuls" <%= 'selected' if ri.unit == 'handfuls' %>>handfuls</option>
+                    <option value="packages" <%= 'selected' if ri.unit == 'packages' %>>packages</option>
+                    <option value="sticks" <%= 'selected' if ri.unit == 'sticks' %>>sticks</option>
+                    <option value="spoons" <%= 'selected' if ri.unit == 'spoons' %>>spoons</option>
+                  </optgroup>
+                </select>
+                <input type="text"
+                       name="recipe[ingredients_rows][][name]"
+                       value="<%= ri.ingredient.name %>"
+                       placeholder="e.g., flour"
+                       class="form-input col-name">
+                <input type="text"
+                       name="recipe[ingredients_rows][][notes]"
+                       value="<%= ri.notes %>"
+                       placeholder="optional"
+                       class="form-input col-notes">
+                <button type="button" class="btn-remove-row" data-action="click->recipe-form#removeIngredientRow" title="Remove">✕</button>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+
+        <button type="button" 
+                class="btn btn-ghost btn-add-row"
+                data-action="click->recipe-form#addIngredientRow">
+          + Add Ingredient
+        </button>
+
+        <div class="ingredient-count" data-recipe-form-target="ingredientCount">
+          <p class="helper-text"><%= recipe.recipe_ingredients.size %> ingredients</p>
         </div>
       </div>
     </div>
