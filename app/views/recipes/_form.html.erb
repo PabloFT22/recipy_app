@@ -356,7 +356,7 @@
       <%= form.submit button_text, class: "btn btn-primary btn-large" %>
       <%= link_to "Cancel", recipe.new_record? ? recipes_path : recipe_path(recipe), class: "btn btn-secondary" %>
       <% if recipe.new_record? %>
-        <button type="button" class="btn btn-ghost" data-action="click->recipe-form#saveDraft">
+        <button type="button" class="btn btn-ghost" data-action="click->recipe-form#manualSaveDraft">
           Save Draft
         </button>
       <% end %>

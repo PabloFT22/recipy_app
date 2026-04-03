@@ -388,10 +388,51 @@ export default class extends Controller {
     }))
 
     localStorage.setItem('recipe_draft', JSON.stringify(draft))
-    this.showSaveIndicator()
+    // Only show indicator when manually triggered, not on auto-save
+    if (this._manualSave) {
+      this.showSaveIndicator('Draft saved ✓')
+      this._manualSave = false
+    }
   }
 
   loadDraft() {
+    const draft = localStorage.getItem('recipe_draft')
+    if (!draft) return
+
+    try {
+      const data = JSON.parse(draft)
+      
+      // Only restore if there's actual content in the draft
+      const hasContent = data.title || data.description || 
+        (data.ingredients && data.ingredients.some(i => i.name))
+      if (!hasContent) return
+
+      // Show a banner asking the user what to do
+      const ago = data.saved_at ? this.timeAgo(new Date(data.saved_at)) : ''
+      const banner = document.createElement('div')
+      banner.className = 'draft-restore-banner'
+      banner.innerHTML = `
+        <div class="draft-restore-content">
+          <span class="draft-restore-icon">📝</span>
+          <div class="draft-restore-text">
+            <strong>You have an unsaved draft</strong>
+            ${ago ? `<span class="draft-restore-time">Last saved ${ago}</span>` : ''}
+            ${data.title ? `<span class="draft-restore-title">"${data.title}"</span>` : ''}
+          </div>
+        </div>
+        <div class="draft-restore-actions">
+          <button type="button" class="btn-restore" data-action="click->recipe-form#restoreDraft">Continue Draft</button>
+          <button type="button" class="btn-discard" data-action="click->recipe-form#clearDraft">Start Fresh</button>
+        </div>
+      `
+      this.element.insertBefore(banner, this.element.firstChild)
+
+    } catch (e) {
+      console.error('Error loading draft:', e)
+    }
+  }
+
+  restoreDraft() {
     const draft = localStorage.getItem('recipe_draft')
     if (!draft) return
 
@@ -415,7 +456,6 @@ export default class extends Controller {
       if (data.source_url) form.querySelector('[name="recipe[source_url]"]').value = data.source_url
 
       if (data.ingredients && data.ingredients.length > 0) {
-        // Only add draft ingredients if no rows already exist (avoid duplication)
         const existingRows = this.ingredientRowsTarget.querySelectorAll('.ingredient-row')
         if (existingRows.length === 0) {
           data.ingredients.forEach(ing => {
@@ -425,10 +465,25 @@ export default class extends Controller {
         }
       }
 
-      console.log('Draft loaded from', data.saved_at)
+      // Remove the banner
+      const banner = this.element.querySelector('.draft-restore-banner')
+      if (banner) banner.remove()
+
+      this.showSaveIndicator('📝 Draft restored')
     } catch (e) {
-      console.error('Error loading draft:', e)
+      console.error('Error restoring draft:', e)
     }
+  }
+
+  timeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000)
+    if (seconds < 60) return 'just now'
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes} min ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    return `${days}d ago`
   }
 
   setupAutoSave() {
@@ -444,12 +499,28 @@ export default class extends Controller {
     }, 2000)
   }
 
-  showSaveIndicator() {
+  manualSaveDraft() {
+    this._manualSave = true
+    this.saveDraft()
+    // Fallback: if saveDraft didn't show it (e.g. flag issue), force show
+    if (this.hasSaveIndicatorTarget && !this.saveIndicatorTarget.classList.contains('visible')) {
+      this.showSaveIndicator('Draft saved ✓')
+    }
+  }
+
+  clearDraft() {
+    localStorage.removeItem('recipe_draft')
+    // Reload the page to get a clean form
+    window.location.reload()
+  }
+
+  showSaveIndicator(message = 'Draft saved') {
     if (this.hasSaveIndicatorTarget) {
+      this.saveIndicatorTarget.querySelector('.save-status').textContent = message
       this.saveIndicatorTarget.classList.add('visible')
       setTimeout(() => {
         this.saveIndicatorTarget.classList.remove('visible')
-      }, 2000)
+      }, 2500)
     }
   }
 
