@@ -518,6 +518,56 @@ footer {
   text-align: right;
 }
 
+/* Instruction Preview */
+.instruction-preview {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.instruction-preview h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 12px;
+}
+
+.preview-steps-list {
+  display: grid;
+  gap: 12px;
+}
+
+.preview-step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.preview-step-number {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.preview-step-text {
+  flex: 1;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #2c3e50;
+  padding-top: 6px;
+}
+
 /* File Upload */
 .file-upload-wrapper {
   position: relative;

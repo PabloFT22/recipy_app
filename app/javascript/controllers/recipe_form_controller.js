@@ -5,7 +5,8 @@ export default class extends Controller {
     "card", "basicBody", "basicToggle", "basicStatus",
     "timingBody", "timingToggle",
     "ingredientsBody", "ingredientsToggle", "ingredientsStatus", "ingredientPreview", "ingredientList",
-    "instructionsBody", "instructionsToggle", "instructionsStatus", "instructionCount",
+    "instructionsBody", "instructionsToggle", "instructionsStatus", "instructionCount", 
+    "instructionsTextarea", "instructionPreview", "instructionPreviewContent",
     "photoBody", "photoToggle", "imagePreview",
     "sourceBody", "sourceToggle",
     "timeDisplay", "saveIndicator"
@@ -86,6 +87,45 @@ export default class extends Controller {
     const steps = text.split('\n\n').filter(step => step.trim()).length
     this.instructionCountTarget.innerHTML = `<p class="helper-text">${steps} ${steps === 1 ? 'step' : 'steps'}</p>`
     this.autoSave()
+  }
+
+  updateInstructionPreview(event) {
+    const text = event.target.value
+    
+    if (!text.trim()) {
+      this.instructionPreviewTarget.style.display = 'none'
+      return
+    }
+
+    // Split by double line breaks and remove any manual numbering
+    const steps = text.split(/\n\n+/).filter(step => step.trim())
+    
+    if (steps.length === 0) {
+      this.instructionPreviewTarget.style.display = 'none'
+      return
+    }
+
+    let html = '<div class="preview-steps-list">'
+    steps.forEach((step, index) => {
+      // Remove leading numbers like "1.", "2)", "Step 1:", etc.
+      const cleanedStep = step.replace(/^\d+[\.\)]\s*|^Step\s+\d+:?\s*/i, '').trim()
+      html += `
+        <div class="preview-step">
+          <div class="preview-step-number">${index + 1}</div>
+          <div class="preview-step-text">${this.escapeHtml(cleanedStep)}</div>
+        </div>
+      `
+    })
+    html += '</div>'
+
+    this.instructionPreviewContentTarget.innerHTML = html
+    this.instructionPreviewTarget.style.display = 'block'
+  }
+
+  escapeHtml(text) {
+    const div = document.createElement('div')
+    div.textContent = text
+    return div.innerHTML.replace(/\n/g, '<br>')
   }
 
   previewImage(event) {

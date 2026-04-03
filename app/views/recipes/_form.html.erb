@@ -175,17 +175,25 @@
         <div class="form-group">
           <%= form.label :instructions, "Cooking Steps" %>
           <p class="helper-text">
-            Write clear, step-by-step instructions for your recipe
+            <strong>Important:</strong> Separate each step with a blank line. Numbering is optional - we'll add numbers automatically!
           </p>
           <%= form.text_area :instructions,
               rows: 12,
-              placeholder: "1. Preheat oven to 375°F (190°C).\n\n2. In a large bowl, cream together butter and sugar until light and fluffy.\n\n3. Beat in eggs one at a time, then add vanilla extract.\n\n4. In a separate bowl, whisk together flour, baking soda, and salt.\n\n5. Gradually blend the dry ingredients into the creamed mixture.\n\n6. Fold in chocolate chips.\n\n7. Drop rounded tablespoons of dough onto ungreased cookie sheets.\n\n8. Bake for 10-12 minutes or until golden brown.\n\n9. Cool on baking sheet for 2 minutes before removing to a wire rack.",
+              placeholder: "Preheat oven to 375°F (190°C).\n\nIn a large bowl, cream together butter and sugar until light and fluffy.\n\nBeat in eggs one at a time, then add vanilla extract.\n\nIn a separate bowl, whisk together flour, baking soda, and salt.\n\nGradually blend the dry ingredients into the creamed mixture.\n\nFold in chocolate chips.\n\nDrop rounded tablespoons of dough onto ungreased cookie sheets.\n\nBake for 10-12 minutes or until golden brown.\n\nCool on baking sheet for 2 minutes before removing to a wire rack.",
               class: "form-input instructions-textarea",
-              data: { action: "input->recipe-form#updateInstructionCount" } %>
+              data: { 
+                recipe_form_target: "instructionsTextarea",
+                action: "input->recipe-form#updateInstructionCount input->recipe-form#updateInstructionPreview" 
+              } %>
         </div>
         
         <div class="instruction-count" data-recipe-form-target="instructionCount">
           <p class="helper-text">0 steps</p>
+        </div>
+        
+        <div class="instruction-preview" data-recipe-form-target="instructionPreview" style="display: none;">
+          <h4>Preview:</h4>
+          <div class="preview-steps" data-recipe-form-target="instructionPreviewContent"></div>
         </div>
       </div>
     </div>

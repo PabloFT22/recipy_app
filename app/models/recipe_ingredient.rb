@@ -20,6 +20,32 @@ class RecipeIngredient < ApplicationRecord
     piece pieces
     whole
     to_taste
+    spoon spoons
+    slice slices
+    clove cloves
+    bunch bunches
+    handful handfuls
+    can cans
+    bottle bottles
+    bag bags
+    box boxes
+    package packages
+    stick sticks
+    head heads
+    stalk stalks
+    sprig sprigs
+    leaf leaves
+    strip strips
+    fillet fillets
+    breast breasts
+    thigh thighs
+    leg legs
+    rack racks
+    ear ears
+    sheet sheets
+    large
+    medium
+    small
   ].freeze
   
   validates :unit, inclusion: { in: UNITS, allow_blank: true }

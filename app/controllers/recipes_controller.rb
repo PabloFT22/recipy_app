@@ -30,11 +30,12 @@ class RecipesController < ApplicationController
   end
   
   def create
+    ingredients_text = params[:recipe].delete(:ingredients_text)
     @recipe = current_user.recipes.build(recipe_params)
     
     if @recipe.save
-      if params[:recipe][:ingredients_text].present?
-        parse_and_add_ingredients(params[:recipe][:ingredients_text])
+      if ingredients_text.present?
+        parse_and_add_ingredients(ingredients_text)
       end
       
       redirect_to @recipe, notice: 'Recipe was successfully created.'
@@ -47,10 +48,21 @@ class RecipesController < ApplicationController
   end
   
   def update
+    ingredients_text = params[:recipe].delete(:ingredients_text)
+    
     if @recipe.update(recipe_params)
-      if params[:recipe][:ingredients_text].present?
-        @recipe.recipe_ingredients.destroy_all
-        parse_and_add_ingredients(params[:recipe][:ingredients_text])
+      # Only re-parse ingredients if the text actually changed
+      if ingredients_text.present?
+        new_ingredients = ingredients_text.gsub(/\r\n/, "\n").strip
+        old_ingredients = @recipe.recipe_ingredients.includes(:ingredient).map { |ri|
+          qty = ri.quantity.to_i == ri.quantity ? ri.quantity.to_i : ri.quantity
+          "#{qty} #{ri.unit} #{ri.ingredient.name}#{ri.notes.present? ? ", #{ri.notes}" : ""}"
+        }.join("\n").strip
+
+        unless new_ingredients == old_ingredients
+          @recipe.recipe_ingredients.destroy_all
+          parse_and_add_ingredients(ingredients_text)
+        end
       end
       
       redirect_to @recipe, notice: 'Recipe was successfully updated.'
@@ -159,16 +171,23 @@ class RecipesController < ApplicationController
     parsed_ingredients = parser.parse
     
     parsed_ingredients.each do |ingredient_data|
-      # Find or create ingredient
       finder = IngredientFinderService.new(ingredient_data[:ingredient_name])
       ingredient = finder.find_or_create
       
-      # Add to recipe
+      # If unit is not recognized, store it as nil and move the unit text to notes
+      unit = ingredient_data[:unit]
+      notes = ingredient_data[:notes]
+      
+      unless unit.blank? || RecipeIngredient::UNITS.include?(unit)
+        notes = [unit, notes].compact.join(', ')
+        unit = nil
+      end
+
       @recipe.recipe_ingredients.create(
         ingredient: ingredient,
         quantity: ingredient_data[:quantity],
-        unit: ingredient_data[:unit],
-        notes: ingredient_data[:notes]
+        unit: unit,
+        notes: notes
       )
     end
   end
