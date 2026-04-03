@@ -1,0 +1,79 @@
+<div class="recipe-form-container">
+  <div class="recipe-form-header">
+    <h1>Import Recipe from URL</h1>
+    <p class="subtitle">Paste a link from any recipe website and we'll import it for you</p>
+  </div>
+
+  <div class="form-card" data-controller="import-recipe">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="card-icon">🔗</span>
+        <h3>Recipe URL</h3>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <% if flash[:alert] %>
+        <div class="alert alert-error mb-4">
+          <p><%= flash[:alert] %></p>
+          <% if flash[:alert].include?("bot protection") %>
+            <p class="mt-2">
+              You can still add this recipe by
+              <%= link_to "creating it manually", new_recipe_path, class: "link-primary" %>.
+            </p>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%= form_with url: import_from_url_recipes_path,
+                    method: :post,
+                    data: {
+                      turbo_frame: "_top",
+                      action: "submit->import-recipe#submit"
+                    } do |form| %>
+
+        <div class="form-group">
+          <%= form.label :url, "Recipe URL *" %>
+          <%= form.url_field :url,
+              placeholder: "https://www.example.com/recipes/chocolate-cake",
+              class: "form-input",
+              required: true,
+              autofocus: true,
+              data: { import_recipe_target: "urlInput" } %>
+          <p class="form-hint">
+            Works best with sites that use schema.org Recipe markup (most major recipe sites).
+          </p>
+        </div>
+
+        <div class="form-actions">
+          <%= form.submit "Import Recipe",
+              class: "btn",
+              data: { import_recipe_target: "submitButton" } %>
+          <%= link_to "Cancel", recipes_path, class: "btn btn-secondary" %>
+        </div>
+
+        <div class="import-loading hidden" data-import-recipe-target="loading">
+          <div class="loading-spinner"></div>
+          <p>Fetching and parsing recipe… This may take a few seconds.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="form-card mt-4">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="card-icon">💡</span>
+        <h3>Tips</h3>
+      </div>
+    </div>
+    <div class="card-body">
+      <ul class="tips-list">
+        <li>Copy the full URL from your browser's address bar</li>
+        <li>Works best with popular recipe sites like AllRecipes, Food Network, BBC Good Food, etc.</li>
+        <li>The recipe must be publicly accessible (not behind a login wall)</li>
+        <li>If import fails, you can always <strong><%= link_to "create a recipe manually", new_recipe_path %></strong></li>
+      </ul>
+    </div>
+  </div>
+</div>

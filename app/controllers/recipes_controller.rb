@@ -66,35 +66,62 @@ class RecipesController < ApplicationController
   
   def import
   end
-  
+
   def import_from_url
-    url = params[:url]
+    url = params[:url].to_s.strip
+
+    if url.blank?
+      redirect_to import_recipes_path, alert: "Please enter a URL."
+      return
+    end
+
+    unless url.match?(/\Ahttps?:\/\/.+/i)
+      redirect_to import_recipes_path, alert: "Please enter a valid URL starting with http:// or https://."
+      return
+    end
+
+    # Check for duplicate import
+    existing = current_user.recipes.find_by(source_url: url)
+    if existing
+      redirect_to existing, notice: "You already imported this recipe."
+      return
+    end
+
     scraper = RecipeScraperService.new(url)
     recipe_data = scraper.scrape
-    
-    if recipe_data
-      @recipe = current_user.recipes.build(
-        title: recipe_data[:title],
-        description: recipe_data[:description],
-        prep_time: recipe_data[:prep_time],
-        cook_time: recipe_data[:cook_time],
-        servings: recipe_data[:servings],
-        instructions: recipe_data[:instructions],
-        source_url: url
-      )
-      
+
+    unless recipe_data
+      redirect_to import_recipes_path, alert: "Could not import recipe: #{scraper.errors.join(', ')}"
+      return
+    end
+
+    if recipe_data[:title].blank?
+      redirect_to import_recipes_path, alert: "Could not find recipe data on that page. Try a different URL."
+      return
+    end
+
+    @recipe = current_user.recipes.build(
+      title: recipe_data[:title],
+      description: recipe_data[:description],
+      prep_time: recipe_data[:prep_time],
+      cook_time: recipe_data[:cook_time],
+      servings: recipe_data[:servings],
+      instructions: recipe_data[:instructions],
+      source_url: url
+    )
+
+    if @recipe.save
+      attach_image_from_url(recipe_data[:image_url]) if recipe_data[:image_url].present?
+
       if recipe_data[:ingredients].present?
         ingredients_text = recipe_data[:ingredients].join("\n")
         parse_and_add_ingredients(ingredients_text)
       end
-      
-      if @recipe.save
-        redirect_to @recipe, notice: 'Recipe imported successfully!'
-      else
-        render :import, alert: 'Failed to import recipe'
-      end
+
+      redirect_to @recipe, notice: "Recipe imported successfully!"
     else
-      redirect_to import_recipes_path, alert: "Failed to scrape recipe: #{scraper.errors.join(', ')}"
+      flash.now[:alert] = "Failed to save recipe: #{@recipe.errors.full_messages.join(', ')}"
+      render :import, status: :unprocessable_entity
     end
   end
   
@@ -204,5 +231,32 @@ class RecipesController < ApplicationController
         notes: notes
       )
     end
+  end
+
+  def attach_image_from_url(image_url)
+    return if image_url.blank?
+
+    response = HTTParty.get(image_url, timeout: 10)
+    return unless response.success?
+
+    content_type = response.headers["content-type"]
+    return unless content_type&.start_with?("image/")
+
+    extension = case content_type
+                when /jpeg|jpg/ then "jpg"
+                when /png/ then "png"
+                when /webp/ then "webp"
+                when /gif/ then "gif"
+                else "jpg"
+                end
+
+    filename = "imported_recipe.#{extension}"
+    @recipe.image.attach(
+      io: StringIO.new(response.body),
+      filename: filename,
+      content_type: content_type
+    )
+  rescue StandardError => e
+    Rails.logger.warn("Failed to attach image from #{image_url}: #{e.message}")
   end
 end

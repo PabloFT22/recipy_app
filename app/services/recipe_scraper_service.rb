@@ -1,5 +1,12 @@
 class RecipeScraperService
   attr_reader :url, :errors
+
+  BROWSER_HEADERS = {
+    "User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept" => "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language" => "en-US,en;q=0.9",
+    "Cache-Control" => "no-cache"
+  }.freeze
   
   def initialize(url)
     @url = url
@@ -10,10 +17,14 @@ class RecipeScraperService
     return nil unless url.present?
     
     begin
-      response = HTTParty.get(url, timeout: 10)
+      response = HTTParty.get(url, headers: BROWSER_HEADERS, timeout: 15, follow_redirects: true)
       
       unless response.success?
-        @errors << "Failed to fetch URL: #{response.code}"
+        if cloudflare_blocked?(response)
+          @errors << "This website uses bot protection (Cloudflare) and cannot be scraped automatically. Try copying the recipe details manually."
+        else
+          @errors << "Failed to fetch URL: #{response.code}"
+        end
         return nil
       end
       
@@ -34,6 +45,14 @@ class RecipeScraperService
   end
   
   private
+
+  def cloudflare_blocked?(response)
+    return false unless response.code == 403
+    headers = response.headers
+    headers["server"]&.downcase&.include?("cloudflare") ||
+      headers["cf-mitigated"].present? ||
+      headers["cf-ray"].present?
+  end
   
   def extract_json_ld(doc)
     json_ld_scripts = doc.css('script[type="application/ld+json"]')

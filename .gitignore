@@ -36,3 +36,4 @@
 
 # Ignore development documentation and process notes
 /.dev-docs/
+.github/
