@@ -52,7 +52,7 @@ class RecipeIngredient < ApplicationRecord
   
   def display_quantity
     return "To taste" if unit == "to_taste"
-    return quantity.to_s unless quantity
+    return nil unless quantity
     
     # Convert decimal to fraction if possible
     fraction = to_fraction(quantity)

@@ -9,7 +9,7 @@ class Ingredient < ApplicationRecord
   before_validation :normalize_name
   
   scope :by_category, ->(category) { where(category: category) }
-  scope :search, ->(query) { where("normalized_name ILIKE ?", "%#{query.downcase}%") }
+  scope :search, ->(query) { where("normalized_name LIKE ?", "%#{query.downcase}%") }
   
   CATEGORIES = %w[
     produce

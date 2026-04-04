@@ -23,7 +23,7 @@ class Recipe < ApplicationRecord
   scope :recent, -> { order(created_at: :desc) }
   scope :popular, -> { includes(:meal_plan_recipes).group(:id).order('COUNT(meal_plan_recipes.id) DESC') }
   scope :search, ->(query) do
-    where("title ILIKE ? OR description ILIKE ?", "%#{query}%", "%#{query}%")
+    where("title LIKE ? OR description LIKE ?", "%#{query}%", "%#{query}%")
   end
   
   def total_time

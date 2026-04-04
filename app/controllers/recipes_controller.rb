@@ -110,18 +110,20 @@ class RecipesController < ApplicationController
       source_url: url
     )
 
-    if @recipe.save
-      attach_image_from_url(recipe_data[:image_url]) if recipe_data[:image_url].present?
+    ActiveRecord::Base.transaction do
+      if @recipe.save
+        attach_image_from_url(recipe_data[:image_url]) if recipe_data[:image_url].present?
 
-      if recipe_data[:ingredients].present?
-        ingredients_text = recipe_data[:ingredients].join("\n")
-        parse_and_add_ingredients(ingredients_text)
+        if recipe_data[:ingredients].present?
+          ingredients_text = recipe_data[:ingredients].join("\n")
+          parse_and_add_ingredients(ingredients_text)
+        end
+
+        redirect_to @recipe, notice: "Recipe imported successfully!"
+      else
+        flash.now[:alert] = "Failed to save recipe: #{@recipe.errors.full_messages.join(', ')}"
+        render :import, status: :unprocessable_entity
       end
-
-      redirect_to @recipe, notice: "Recipe imported successfully!"
-    else
-      flash.now[:alert] = "Failed to save recipe: #{@recipe.errors.full_messages.join(', ')}"
-      render :import, status: :unprocessable_entity
     end
   end
   
@@ -258,6 +260,9 @@ class RecipesController < ApplicationController
 
     content_type = response.headers["content-type"]
     return unless content_type&.start_with?("image/")
+
+    # Reject excessively large images (max 10 MB)
+    return if response.body.bytesize > 10.megabytes
 
     extension = case content_type
                 when /jpeg|jpg/ then "jpg"

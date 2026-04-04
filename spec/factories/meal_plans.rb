@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :meal_plan do
-    user { nil }
-    name { "MyString" }
-    start_date { "2026-02-18" }
-    end_date { "2026-02-18" }
+    association :user
+    sequence(:name) { |n| "Meal Plan #{n}" }
+    start_date { Date.current }
+    end_date { Date.current + 7.days }
   end
 end

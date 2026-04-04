@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :grocery_list_item do
-    grocery_list { nil }
-    ingredient { nil }
-    quantity { "9.99" }
-    unit { "MyString" }
+    association :grocery_list
+    association :ingredient
+    quantity { 1.0 }
+    unit { "cup" }
     checked { false }
     on_hand { false }
   end

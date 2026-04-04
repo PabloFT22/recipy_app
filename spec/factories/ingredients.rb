@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :ingredient do
-    name { "MyString" }
-    normalized_name { "MyString" }
-    category { "MyString" }
+    sequence(:name) { |n| "Ingredient #{n}" }
+    sequence(:normalized_name) { |n| "ingredient #{n}" }
+    category { "pantry" }
   end
 end

@@ -171,7 +171,7 @@
               🖨️ Print Recipe
             </button>
             
-            <button class="btn btn-secondary" onclick="navigator.share ? navigator.share({title: '<%= @recipe.title %>', url: window.location.href}) : alert('Share via: ' + window.location.href)">
+            <button class="btn btn-secondary" onclick="navigator.share ? navigator.share({title: '<%= j(@recipe.title) %>', url: window.location.href}) : alert('Share via: ' + window.location.href)">
               📤 Share
             </button>
           </div>
@@ -185,25 +185,3 @@
     <%= link_to "← Back to Recipes", recipes_path, class: "link-secondary" %>
   </div>
 </div>
-
-<style>
-/* Print styles */
-@media print {
-  .recipe-actions,
-  .quick-actions,
-  .back-link,
-  nav,
-  footer {
-    display: none !important;
-  }
-  
-  .recipe-show-container {
-    max-width: 100%;
-    padding: 0;
-  }
-  
-  .ingredient-checkbox input {
-    display: none;
-  }
-}
-</style>
