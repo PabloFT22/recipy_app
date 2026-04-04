@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_02_18_200045) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_03_220402) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -115,7 +115,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_18_200045) do
   create_table "recipe_ingredients", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "recipe_id", null: false
     t.bigint "ingredient_id", null: false
-    t.decimal "quantity", precision: 10
+    t.decimal "quantity", precision: 10, scale: 3
     t.string "unit"
     t.string "notes"
     t.datetime "created_at", null: false

@@ -16,12 +16,10 @@
       <% if flash[:alert] %>
         <div class="alert alert-error mb-4">
           <p><%= flash[:alert] %></p>
-          <% if flash[:alert].include?("bot protection") %>
-            <p class="mt-2">
-              You can still add this recipe by
-              <%= link_to "creating it manually", new_recipe_path, class: "link-primary" %>.
-            </p>
-          <% end %>
+          <p class="mt-2">
+            You can also
+            <%= link_to "create a recipe manually", new_recipe_path, class: "link-primary" %>.
+          </p>
         </div>
       <% end %>
 
@@ -54,7 +52,7 @@
 
         <div class="import-loading hidden" data-import-recipe-target="loading">
           <div class="loading-spinner"></div>
-          <p>Fetching and parsing recipe… This may take a few seconds.</p>
+          <p>Fetching and parsing recipe… This may take up to 30 seconds for some sites.</p>
         </div>
       <% end %>
     </div>

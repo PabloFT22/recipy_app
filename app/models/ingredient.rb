@@ -34,7 +34,6 @@ class Ingredient < ApplicationRecord
     
     normalized = name.downcase.strip
     normalized = normalized.gsub(/\s+/, ' ')
-    normalized = normalized.singularize if normalized.respond_to?(:singularize)
     
     self.normalized_name = normalized
   end

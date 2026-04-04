@@ -1,3 +1,5 @@
+require 'ferrum'
+
 class RecipeScraperService
   attr_reader :url, :errors
 
@@ -15,43 +17,154 @@ class RecipeScraperService
   
   def scrape
     return nil unless url.present?
-    
-    begin
-      response = HTTParty.get(url, headers: BROWSER_HEADERS, timeout: 15, follow_redirects: true)
-      
-      unless response.success?
-        if cloudflare_blocked?(response)
-          @errors << "This website uses bot protection (Cloudflare) and cannot be scraped automatically. Try copying the recipe details manually."
-        else
-          @errors << "Failed to fetch URL: #{response.code}"
-        end
-        return nil
-      end
-      
-      doc = Nokogiri::HTML(response.body)
-      
-      recipe_data = extract_json_ld(doc)
-      return recipe_data if recipe_data
-      
-      extract_from_meta_and_selectors(doc)
-      
-    rescue HTTParty::Error, Timeout::Error => e
-      @errors << "Network error: #{e.message}"
-      nil
-    rescue StandardError => e
-      @errors << "Parsing error: #{e.message}"
-      nil
-    end
+
+    html = fetch_with_httparty
+    html = fetch_with_headless_browser if html.nil? && @use_browser_fallback
+
+    return nil if html.nil?
+
+    doc = Nokogiri::HTML(html)
+
+    recipe_data = extract_json_ld(doc)
+    return recipe_data if recipe_data
+
+    extract_from_meta_and_selectors(doc)
   end
   
   private
 
-  def cloudflare_blocked?(response)
-    return false unless response.code == 403
-    headers = response.headers
-    headers["server"]&.downcase&.include?("cloudflare") ||
-      headers["cf-mitigated"].present? ||
-      headers["cf-ray"].present?
+  # Fast path: plain HTTP request
+  def fetch_with_httparty
+    response = HTTParty.get(url, headers: BROWSER_HEADERS, timeout: 15, follow_redirects: true)
+
+    if response.success?
+      return response.body
+    end
+
+    # 403 typically means bot protection (Cloudflare, Akamai, etc.) — retry with a real browser
+    if response.code == 403
+      Rails.logger.info("[RecipeScraperService] 403 blocked for #{url}, will retry with headless browser")
+      @use_browser_fallback = true
+      return nil
+    end
+
+    @errors << "Failed to fetch URL: #{response.code}"
+    nil
+  rescue HTTParty::Error, Timeout::Error => e
+    @errors << "Network error: #{e.message}"
+    nil
+  rescue StandardError => e
+    @errors << "Error fetching URL: #{e.message}"
+    nil
+  end
+
+  # Slow path: headless Chrome via Ferrum (handles Cloudflare JS challenges)
+  # Slow path: headless Chrome via Ferrum (handles bot protection)
+  def fetch_with_headless_browser
+    attempt_browser_fetch
+  end
+
+  def attempt_browser_fetch
+    Rails.logger.info("[RecipeScraperService] Fetching #{url} with headless browser")
+
+    browser = Ferrum::Browser.new(
+      headless: "new",
+      timeout: 45,
+      window_size: [1440, 900],
+      browser_options: {
+        "no-sandbox" => nil,
+        "disable-gpu" => nil,
+        "disable-dev-shm-usage" => nil,
+        "disable-blink-features" => "AutomationControlled",
+        "disable-features" => "ChromeWhatsNewUI",
+        "user-agent" => BROWSER_HEADERS["User-Agent"]
+      }
+    )
+
+    # Comprehensive anti-detection: mask headless signals
+    browser.evaluate_on_new_document(<<~JS)
+      // Hide webdriver flag
+      Object.defineProperty(navigator, 'webdriver', { get: () => false });
+
+      // Fake plugins (headless has none)
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => [1, 2, 3, 4, 5]
+      });
+
+      // Fake languages
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['en-US', 'en']
+      });
+
+      // Override permissions query to avoid "denied" giveaway
+      const originalQuery = window.navigator.permissions.query;
+      window.navigator.permissions.query = (parameters) =>
+        parameters.name === 'notifications'
+          ? Promise.resolve({ state: Notification.permission })
+          : originalQuery(parameters);
+
+      // Fix chrome object (missing in headless)
+      window.chrome = { runtime: {} };
+
+      // Fake WebGL vendor/renderer (headless shows "Google SwiftShader")
+      const getParameter = WebGLRenderingContext.prototype.getParameter;
+      WebGLRenderingContext.prototype.getParameter = function(parameter) {
+        if (parameter === 37445) return 'Intel Inc.';
+        if (parameter === 37446) return 'Intel Iris OpenGL Engine';
+        return getParameter.call(this, parameter);
+      };
+    JS
+
+    browser.goto(url)
+    wait_for_cloudflare_and_content(browser)
+
+    html = browser.body
+    browser.quit
+
+    if html.blank? || html.length < 500 || html.include?("Just a moment")
+      @errors = ["The site's bot protection could not be bypassed. Try creating the recipe manually."]
+      return nil
+    end
+
+    html
+  rescue Ferrum::Error, Ferrum::TimeoutError => e
+    Rails.logger.warn("[RecipeScraperService] Browser error: #{e.message}")
+    @errors = ["The site's bot protection could not be bypassed. Try creating the recipe manually."]
+    nil
+  rescue StandardError => e
+    Rails.logger.warn("[RecipeScraperService] Unexpected error: #{e.message}")
+    @errors = ["Unexpected error fetching the recipe. Please try again."]
+    nil
+  ensure
+    browser&.quit rescue nil
+  end
+
+  def wait_for_cloudflare_and_content(browser)
+    # Phase 1: Wait for Cloudflare challenge to clear (up to 20 seconds)
+    # The page title changes from "Just a moment..." to the actual page title
+    40.times do
+      title = browser.evaluate("document.title") rescue ""
+      break unless title.downcase.include?("just a moment") || title.downcase.include?("checking")
+      sleep 0.5
+    end
+
+    # Small extra pause after Cloudflare clears for page to render
+    sleep 1
+
+    # Phase 2: Wait for recipe content to appear (up to 10 seconds)
+    20.times do
+      has_content = browser.evaluate(<<~JS) rescue false
+        !!(
+          document.querySelector('script[type="application/ld+json"]') ||
+          document.querySelector('[itemprop="recipeIngredient"]') ||
+          document.querySelector('.recipe-ingredients') ||
+          document.querySelector('h1')
+        )
+      JS
+
+      break if has_content
+      sleep 0.5
+    end
   end
   
   def extract_json_ld(doc)
@@ -60,12 +173,11 @@ class RecipeScraperService
     json_ld_scripts.each do |script|
       begin
         data = JSON.parse(script.content)
-        items = data.is_a?(Array) ? data : [data]
-        recipe = items.find { |item| item['@type'] == 'Recipe' }
+        recipe = find_recipe_in_json_ld(data)
         
         if recipe
           return {
-            title: recipe['name'],
+            title: recipe['name'] || recipe['headline'],
             description: recipe['description'],
             prep_time: parse_duration(recipe['prepTime']),
             cook_time: parse_duration(recipe['cookTime']),
@@ -81,6 +193,38 @@ class RecipeScraperService
     end
     
     nil
+  end
+
+  # Recursively search for a Recipe object in JSON-LD data
+  # Handles: plain object, array of objects, @graph arrays, and @type as string or array
+  def find_recipe_in_json_ld(data)
+    return nil unless data
+
+    if data.is_a?(Hash)
+      return data if recipe_type?(data['@type'])
+
+      # Check inside @graph (common in AllRecipes, NYT Cooking, etc.)
+      if data['@graph'].is_a?(Array)
+        data['@graph'].each do |item|
+          result = find_recipe_in_json_ld(item)
+          return result if result
+        end
+      end
+    elsif data.is_a?(Array)
+      data.each do |item|
+        result = find_recipe_in_json_ld(item)
+        return result if result
+      end
+    end
+
+    nil
+  end
+
+  # @type can be "Recipe" or ["Recipe"] or ["Recipe", "SomethingElse"]
+  def recipe_type?(type_value)
+    return false unless type_value
+    types = Array(type_value)
+    types.any? { |t| t.to_s == 'Recipe' }
   end
   
   def extract_from_meta_and_selectors(doc)

@@ -16,6 +16,9 @@ class IngredientFinderService
       normalized_name: normalized,
       category: guess_category(normalized)
     )
+
+    # If create failed (e.g. uniqueness race condition), retry find
+    ingredient = Ingredient.find_by(normalized_name: normalized) unless ingredient&.persisted?
     
     ingredient
   end
@@ -23,14 +26,11 @@ class IngredientFinderService
   private
   
   def normalize_name(text)
-    normalized = text.downcase.strip.gsub(/\s+/, ' ')
-    
-    descriptors = %w[fresh dried chopped diced sliced minced crushed whole ground]
-    descriptors.each do |descriptor|
-      normalized = normalized.gsub(/\b#{descriptor}\b/, '').strip
-    end
-    
-    normalized = normalized.singularize
+    normalized = text.downcase.strip
+
+    # Collapse whitespace
+    normalized = normalized.gsub(/\s+/, ' ').strip
+
     normalized
   end
   

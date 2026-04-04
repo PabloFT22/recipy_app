@@ -212,8 +212,11 @@ class RecipesController < ApplicationController
     parsed_ingredients = parser.parse
     
     parsed_ingredients.each do |ingredient_data|
+      next if ingredient_data[:ingredient_name].blank?
+
       finder = IngredientFinderService.new(ingredient_data[:ingredient_name])
       ingredient = finder.find_or_create
+      next unless ingredient&.persisted?
       
       # If unit is not recognized, store it as nil and move the unit text to notes
       unit = ingredient_data[:unit]
@@ -224,12 +227,26 @@ class RecipesController < ApplicationController
         unit = nil
       end
 
-      @recipe.recipe_ingredients.create(
-        ingredient: ingredient,
-        quantity: ingredient_data[:quantity],
-        unit: unit,
-        notes: notes
-      )
+      # If this ingredient already exists in the recipe (e.g., same ingredient in
+      # different sections like "Filling" and "Dough"), combine the quantities
+      existing_ri = @recipe.recipe_ingredients.find_by(ingredient: ingredient)
+
+      if existing_ri
+        new_qty = if existing_ri.quantity && ingredient_data[:quantity]
+                    existing_ri.unit == unit ? existing_ri.quantity + ingredient_data[:quantity] : existing_ri.quantity
+                  else
+                    existing_ri.quantity || ingredient_data[:quantity]
+                  end
+        combined_notes = [existing_ri.notes, notes].compact.reject(&:blank?).join('; ')
+        existing_ri.update(quantity: new_qty, notes: combined_notes.presence)
+      else
+        @recipe.recipe_ingredients.create(
+          ingredient: ingredient,
+          quantity: ingredient_data[:quantity],
+          unit: unit,
+          notes: notes
+        )
+      end
     end
   end
 

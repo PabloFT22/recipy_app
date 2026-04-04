@@ -53,6 +53,9 @@ gem "httparty"
 # HTML/XML parsing for recipe scraping
 gem "nokogiri"
 
+# Headless Chrome for scraping sites with bot protection
+gem "ferrum"
+
 # For ingredient parsing and normalization
 gem "ruby-measurement"
 
