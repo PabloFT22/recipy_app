@@ -41,6 +41,12 @@ class RecipeCollectionsController < ApplicationController
   
   def add_recipe
     recipe = Recipe.friendly.find(params[:recipe_id])
+
+    unless recipe.user == current_user || recipe.is_public
+      redirect_to @collection, alert: "Recipe not found or is private"
+      return
+    end
+
     @collection.add_recipe(recipe)
     
     redirect_to @collection, notice: 'Recipe added to collection.'

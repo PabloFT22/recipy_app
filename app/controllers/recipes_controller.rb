@@ -2,6 +2,7 @@ class RecipesController < ApplicationController
   skip_before_action :authenticate_user!, only: [:index, :show]
   before_action :set_recipe, only: [:show, :edit, :update, :destroy, :duplicate, :add_to_collection]
   before_action :authorize_recipe, only: [:edit, :update, :destroy]
+  before_action :authorize_recipe_access, only: [:duplicate, :add_to_collection]
   
   def index
     if user_signed_in?
@@ -165,6 +166,13 @@ class RecipesController < ApplicationController
   def authorize_recipe
     unless @recipe.user == current_user
       redirect_to recipes_path, alert: "You are not authorized to modify this recipe"
+    end
+  end
+
+  # Users can duplicate or add to collection their own recipes + any public recipe
+  def authorize_recipe_access
+    unless @recipe.user == current_user || @recipe.is_public
+      redirect_to recipes_path, alert: "Recipe not found or is private"
     end
   end
   

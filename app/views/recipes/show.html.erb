@@ -164,7 +164,7 @@
         <div class="recipe-section">
           <div class="quick-actions">
             <%= link_to "📋 Duplicate Recipe", duplicate_recipe_path(@recipe), 
-                method: :post, 
+                data: { turbo_method: :post }, 
                 class: "btn btn-secondary" %>
             
             <button class="btn btn-secondary" onclick="window.print()">

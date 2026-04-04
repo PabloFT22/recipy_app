@@ -1,4 +1,6 @@
 require 'ferrum'
+require 'resolv'
+require 'ipaddr'
 
 class RecipeScraperService
   attr_reader :url, :errors
@@ -9,6 +11,28 @@ class RecipeScraperService
     "Accept-Language" => "en-US,en;q=0.9",
     "Cache-Control" => "no-cache"
   }.freeze
+
+  # RFC 1918 / RFC 6890 private & reserved ranges
+  BLOCKED_RANGES = [
+    IPAddr.new("0.0.0.0/8"),
+    IPAddr.new("10.0.0.0/8"),
+    IPAddr.new("100.64.0.0/10"),
+    IPAddr.new("127.0.0.0/8"),
+    IPAddr.new("169.254.0.0/16"),
+    IPAddr.new("172.16.0.0/12"),
+    IPAddr.new("192.0.0.0/24"),
+    IPAddr.new("192.0.2.0/24"),
+    IPAddr.new("192.168.0.0/16"),
+    IPAddr.new("198.18.0.0/15"),
+    IPAddr.new("198.51.100.0/24"),
+    IPAddr.new("203.0.113.0/24"),
+    IPAddr.new("224.0.0.0/4"),
+    IPAddr.new("240.0.0.0/4"),
+    IPAddr.new("255.255.255.255/32"),
+    IPAddr.new("::1/128"),
+    IPAddr.new("fc00::/7"),
+    IPAddr.new("fe80::/10"),
+  ].freeze
   
   def initialize(url)
     @url = url
@@ -17,6 +41,11 @@ class RecipeScraperService
   
   def scrape
     return nil unless url.present?
+
+    unless safe_url?
+      @errors << "URL is not allowed (private or reserved address)"
+      return nil
+    end
 
     html = fetch_with_httparty
     html = fetch_with_headless_browser if html.nil? && @use_browser_fallback
@@ -32,6 +61,22 @@ class RecipeScraperService
   end
   
   private
+
+  # SSRF protection: resolve the hostname and reject private/reserved IPs
+  def safe_url?
+    host = URI.parse(url).host
+    return false if host.blank?
+
+    addrs = Resolv.getaddresses(host)
+    return false if addrs.empty?
+
+    addrs.all? do |addr_str|
+      ip = IPAddr.new(addr_str)
+      BLOCKED_RANGES.none? { |range| range.include?(ip) }
+    end
+  rescue URI::InvalidURIError, Resolv::ResolvError, IPAddr::InvalidAddressError
+    false
+  end
 
   # Fast path: plain HTTP request
   def fetch_with_httparty
