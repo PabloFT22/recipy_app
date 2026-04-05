@@ -140,8 +140,9 @@ export default class extends Controller {
       quantity = String(Math.round((whole + fracVal) * 1000) / 1000)
       remaining = line.slice(fracMatch[0].length)
     } else {
-      // Standard numeric quantity: 2, 2.5, 1 1/2, 1/2
-      const qtyPattern = /^(\d+(?:[\.,]\d+)?|\d+\s+\d+\s*\/\s*\d+|\d+\s*\/\s*\d+)\s*/
+      // Standard numeric quantity: 1 1/2, 1/2, 2.5, 2
+      // Order matters: try mixed fractions first, then simple fractions, then decimals/integers
+      const qtyPattern = /^(\d+\s+\d+\s*\/\s*\d+|\d+\s*\/\s*\d+|\d+(?:[\.,]\d+)?)\s*/
       const qtyMatch = remaining.match(qtyPattern)
 
       if (qtyMatch) {

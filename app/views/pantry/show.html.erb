@@ -1,0 +1,96 @@
+<div class="pantry-container">
+  <!-- Header -->
+  <div class="pantry-header">
+    <div class="pantry-header-content">
+      <div>
+        <h1 class="pantry-title">🏠 My Pantry</h1>
+        <p class="pantry-subtitle">
+          Ingredients you always keep stocked. These will be auto-marked as
+          <strong>"on hand"</strong> when added to grocery lists.
+        </p>
+      </div>
+      <div class="pantry-header-actions">
+        <%= link_to "🔄 Reset to Defaults", seed_defaults_pantry_path,
+            data: { turbo_method: :post, turbo_confirm: "This will reset your pantry to default staples. Continue?" },
+            class: "btn btn-secondary" %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Item Form -->
+  <div class="form-card mt-3">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="card-icon">➕</span>
+        <h3>Add to Pantry</h3>
+      </div>
+    </div>
+    <div class="card-body">
+      <%= form_with url: add_item_pantry_path, method: :post, local: true do |f| %>
+        <div class="pantry-add-row">
+          <div class="form-group pantry-add-input">
+            <%= f.text_field :ingredient_name, 
+                placeholder: "e.g., cumin, rice, soy sauce...",
+                class: "form-input",
+                required: true %>
+          </div>
+          <div class="form-group">
+            <%= f.submit "Add", class: "btn btn-success" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Pantry Items by Category -->
+  <div class="pantry-stats mt-3">
+    <span class="pantry-count"><%= current_user.pantry_items.count %> items in your pantry</span>
+  </div>
+
+  <% if @items_by_category.any? %>
+    <div class="pantry-categories mt-2">
+      <% category_icons = {
+           'produce' => '🥬', 'dairy' => '🧀', 'meat' => '🥩',
+           'seafood' => '🐟', 'bakery' => '🍞', 'pantry' => '🥫',
+           'frozen' => '🧊', 'beverages' => '🥤', 'condiments' => '🫙',
+           'spices' => '🧂', 'other' => '📦'
+         } %>
+
+      <% @items_by_category.each do |category, items| %>
+        <div class="pantry-category card mt-2">
+          <div class="pantry-category-header">
+            <span class="pantry-category-icon"><%= category_icons[category] || '📦' %></span>
+            <h3><%= category&.capitalize || 'Other' %></h3>
+            <span class="pantry-category-count"><%= items.size %></span>
+          </div>
+
+          <div class="pantry-category-items">
+            <% items.each do |pantry_item| %>
+              <div class="pantry-item">
+                <span class="pantry-item-name"><%= pantry_item.ingredient.name %></span>
+                <%= link_to "✕",
+                    remove_item_pantry_path(ingredient_id: pantry_item.ingredient_id),
+                    data: { turbo_method: :delete, turbo_confirm: "Remove #{pantry_item.ingredient.name} from pantry?" },
+                    class: "pantry-item-remove",
+                    title: "Remove from pantry" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="card text-center mt-3">
+      <div class="empty-state">
+        <span class="empty-icon">🏠</span>
+        <h3>Your pantry is empty</h3>
+        <p>Add ingredients you always have on hand, or reset to default staples.</p>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Back Link -->
+  <div class="back-link mt-3">
+    <%= link_to "← Back to Grocery Lists", grocery_lists_path, class: "link-secondary" %>
+  </div>
+</div>

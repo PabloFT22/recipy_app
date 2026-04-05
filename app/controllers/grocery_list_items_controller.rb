@@ -33,12 +33,31 @@ class GroceryListItemsController < ApplicationController
   
   def toggle_checked
     @item.toggle_checked!
-    redirect_to @grocery_list
+    respond_to do |format|
+      format.turbo_stream {
+        render turbo_stream: [
+          turbo_stream.replace("grocery_item_#{@item.id}",
+            partial: "grocery_list_items/item",
+            locals: { item: @item, grocery_list: @grocery_list }),
+          turbo_stream.replace("grocery_list_progress",
+            partial: "grocery_lists/progress",
+            locals: { grocery_list: @grocery_list.reload })
+        ]
+      }
+      format.html { redirect_to @grocery_list }
+    end
   end
   
   def toggle_on_hand
     @item.toggle_on_hand!
-    redirect_to @grocery_list
+    respond_to do |format|
+      format.turbo_stream {
+        render turbo_stream: turbo_stream.replace("grocery_item_#{@item.id}",
+          partial: "grocery_list_items/item",
+          locals: { item: @item, grocery_list: @grocery_list })
+      }
+      format.html { redirect_to @grocery_list }
+    end
   end
   
   private

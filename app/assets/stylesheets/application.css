@@ -1561,3 +1561,1143 @@ footer {
     -webkit-print-color-adjust: exact;
   }
 }
+
+/* =============================================
+   MEAL PLANS
+   ============================================= */
+
+/* Meal Plan Container */
+.mp-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── Index Cards ────────────────────────────── */
+.mp-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.mp-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.mp-card--active {
+  border: 2px solid #667eea;
+}
+
+.mp-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px 0;
+}
+
+.mp-card-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.mp-card-title a {
+  color: #2c3e50;
+  text-decoration: none;
+}
+
+.mp-card-title a:hover {
+  color: #667eea;
+}
+
+.mp-card-body {
+  padding: 12px 20px;
+  flex: 1;
+}
+
+.mp-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+.mp-card-days {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #95a5a6;
+}
+
+.mp-card-actions {
+  padding: 12px 20px 16px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mp-card-actions .btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* Status Badges */
+.mp-status-badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mp-status-active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.mp-status-upcoming {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.mp-status-past {
+  background: #f5f5f5;
+  color: #6c757d;
+}
+
+/* ── Show Page ─────────────────────────────── */
+.mp-show-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mp-show-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 32px 40px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+}
+
+.mp-show-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.mp-show-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.mp-show-meta {
+  font-size: 1rem;
+  opacity: 0.9;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.mp-show-meta .separator {
+  opacity: 0.5;
+}
+
+.mp-show-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Calendar Grid ─────────────────────────── */
+.mp-calendar {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.mp-day-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.mp-day-card--today {
+  border: 2px solid #667eea;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.2);
+}
+
+.mp-day-header {
+  background: #f8f9fa;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.mp-day-card--today .mp-day-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.mp-day-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.mp-day-date {
+  color: #7f8c8d;
+  font-size: 0.85rem;
+}
+
+.mp-day-card--today .mp-day-date {
+  color: rgba(255,255,255,0.8);
+}
+
+.mp-today-badge {
+  background: rgba(255,255,255,0.25);
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: auto;
+}
+
+.mp-day-meals {
+  padding: 8px;
+}
+
+/* ── Meal Slots ────────────────────────────── */
+.mp-meal-slot {
+  padding: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.mp-meal-slot:last-child {
+  border-bottom: none;
+}
+
+.mp-meal-type-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.mp-meal-type-icon {
+  font-size: 0.9rem;
+}
+
+.mp-meal-type-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #7f8c8d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mp-meal-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.mp-meal-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.mp-meal-link {
+  color: #2c3e50;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mp-meal-link:hover {
+  color: #667eea;
+}
+
+.mp-meal-servings {
+  font-size: 0.75rem;
+  color: #95a5a6;
+  white-space: nowrap;
+}
+
+.mp-meal-deleted {
+  color: #e74c3c;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.mp-meal-remove {
+  color: #e74c3c;
+  text-decoration: none;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.mp-meal-remove:hover {
+  opacity: 1;
+  background: #fde8e8;
+}
+
+.mp-add-recipe-btn {
+  display: block;
+  width: 100%;
+  padding: 6px;
+  margin-top: 4px;
+  background: none;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  color: #95a5a6;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mp-add-recipe-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+}
+
+/* ── Recipe Picker Modal ───────────────────── */
+.mp-picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.mp-picker {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.mp-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.mp-picker-header h3 {
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+
+.mp-picker-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #95a5a6;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.mp-picker-close:hover {
+  background: #f5f5f5;
+  color: #2c3e50;
+}
+
+.mp-picker-body {
+  padding: 16px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.mp-picker-search {
+  margin-bottom: 16px;
+}
+
+.mp-picker-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.mp-picker-recipe {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  transition: background 0.15s;
+}
+
+.mp-picker-recipe:hover {
+  background: #f8f9fa;
+}
+
+.mp-picker-recipe-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.mp-picker-recipe-info strong {
+  display: block;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.mp-picker-recipe-meta {
+  font-size: 0.8rem;
+  color: #95a5a6;
+}
+
+.mp-picker-empty {
+  text-align: center;
+  padding: 24px;
+  color: #95a5a6;
+}
+
+.mp-picker-confirm {
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.mp-picker-confirm-details p {
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+.mp-picker-confirm-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  padding-bottom: 8px;
+}
+
+.btn-small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+/* ── Empty State ───────────────────────────── */
+.empty-state {
+  padding: 40px 20px;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 16px;
+}
+
+/* =============================================
+   GROCERY LISTS
+   ============================================= */
+
+.gl-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── Filter Tabs ───────────────────────────── */
+.gl-filter-tabs {
+  display: flex;
+  gap: 4px;
+  background: white;
+  padding: 4px;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.gl-tab {
+  padding: 8px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #7f8c8d;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.gl-tab:hover {
+  background: #f5f5f5;
+  color: #2c3e50;
+}
+
+.gl-tab--active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.gl-tab--active:hover {
+  color: white;
+}
+
+/* ── Index Cards ───────────────────────────── */
+.gl-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.gl-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.gl-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px 0;
+}
+
+.gl-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.gl-card-title a {
+  color: #2c3e50;
+  text-decoration: none;
+}
+
+.gl-card-title a:hover {
+  color: #667eea;
+}
+
+.gl-card-body {
+  padding: 12px 20px;
+  flex: 1;
+}
+
+.gl-card-count {
+  color: #7f8c8d;
+  font-size: 0.85rem;
+  margin-top: 8px;
+}
+
+.gl-card-actions {
+  padding: 12px 20px 16px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.gl-card-actions .btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* Mini Progress Bar (for index cards) */
+.gl-progress-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gl-progress-bar-mini {
+  flex: 1;
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.gl-progress-fill-mini {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.gl-progress-text-mini {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #667eea;
+  min-width: 35px;
+  text-align: right;
+}
+
+/* Status Badges */
+.gl-status-badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gl-status-active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.gl-status-completed {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.gl-status-archived {
+  background: #f5f5f5;
+  color: #6c757d;
+}
+
+/* ── Show Page ─────────────────────────────── */
+.gl-show-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.gl-show-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 28px 36px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+}
+
+.gl-show-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.gl-show-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.gl-show-meta {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.gl-show-meta .separator {
+  opacity: 0.5;
+}
+
+.gl-show-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Progress Bar (show page) ──────────────── */
+.gl-progress {
+  background: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
+}
+
+.gl-progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.gl-progress-label {
+  font-size: 0.9rem;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.gl-progress-pct {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.gl-progress-bar {
+  height: 10px;
+  background: #e9ecef;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.gl-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+/* ── Categories ────────────────────────────── */
+.gl-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gl-category {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.gl-category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.gl-category-header:hover {
+  background: #f8f9fa;
+}
+
+.gl-category-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gl-category-icon {
+  font-size: 1.2rem;
+}
+
+.gl-category-title h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.gl-category-count {
+  background: #e9ecef;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6c757d;
+}
+
+.gl-category-chevron {
+  color: #95a5a6;
+  font-size: 0.8rem;
+  transition: transform 0.2s;
+}
+
+.gl-category-items {
+  border-top: 1px solid #f0f0f0;
+  padding: 8px 12px;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.gl-category-items--collapsed {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0 12px;
+  border-top: none;
+}
+
+/* ── Grocery Items ─────────────────────────── */
+.gl-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  border-radius: 8px;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.gl-item:hover {
+  background: #f8f9fa;
+}
+
+.gl-item--checked {
+  opacity: 0.5;
+}
+
+.gl-item--checked .gl-item-name {
+  text-decoration: line-through;
+  color: #95a5a6;
+}
+
+.gl-item--on-hand {
+  background: #fff9e6;
+}
+
+.gl-item--on-hand.gl-item--checked {
+  background: transparent;
+}
+
+.gl-item-check {
+  flex-shrink: 0;
+}
+
+.gl-checkbox {
+  text-decoration: none;
+}
+
+.gl-checkbox-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: white;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+
+.gl-checkbox-box:hover {
+  border-color: #667eea;
+}
+
+.gl-checkbox-box--checked {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-color: #667eea;
+}
+
+.gl-item-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.gl-item-quantity {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #667eea;
+  white-space: nowrap;
+}
+
+.gl-item-name {
+  font-size: 0.95rem;
+  color: #2c3e50;
+}
+
+.gl-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.gl-on-hand-badge {
+  text-decoration: none;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: #f5f5f5;
+  color: #95a5a6;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.gl-on-hand-badge:hover {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.gl-on-hand-badge--active {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.gl-item-delete {
+  text-decoration: none;
+  font-size: 0.8rem;
+  padding: 4px;
+  border-radius: 4px;
+  opacity: 0.3;
+  transition: opacity 0.15s;
+}
+
+.gl-item-delete:hover {
+  opacity: 1;
+}
+
+/* ── Add Item Form ─────────────────────────── */
+.gl-add-item-row {
+  display: grid;
+  grid-template-columns: 2fr 80px 120px auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.gl-add-item-name { grid-column: 1; }
+.gl-add-item-qty { grid-column: 2; }
+.gl-add-item-unit { grid-column: 3; }
+.gl-add-item-submit { grid-column: 4; }
+
+.gl-add-item-submit .btn {
+  margin-bottom: 20px;
+}
+
+/* ── Form Error ────────────────────────────── */
+.form-error {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  margin-top: 8px;
+}
+
+/* =============================================
+   RESPONSIVE — MEAL PLANS + GROCERY LISTS
+   ============================================= */
+
+@media (max-width: 768px) {
+  /* Meal Plans */
+  .mp-show-header {
+    padding: 20px 24px;
+  }
+
+  .mp-show-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mp-show-title {
+    font-size: 1.5rem;
+  }
+
+  .mp-show-actions {
+    width: 100%;
+  }
+
+  .mp-show-actions .btn {
+    flex: 1;
+    text-align: center;
+    font-size: 0.85rem;
+    padding: 0.6rem 0.8rem;
+  }
+
+  .mp-calendar {
+    grid-template-columns: 1fr;
+  }
+
+  .mp-picker {
+    max-width: 100%;
+    margin: 10px;
+    max-height: 90vh;
+  }
+
+  /* Grocery Lists */
+  .gl-show-header {
+    padding: 20px 24px;
+  }
+
+  .gl-show-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gl-show-title {
+    font-size: 1.4rem;
+  }
+
+  .gl-show-actions {
+    width: 100%;
+  }
+
+  .gl-show-actions .btn {
+    flex: 1;
+    text-align: center;
+    font-size: 0.85rem;
+    padding: 0.6rem 0.8rem;
+  }
+
+  .gl-add-item-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .gl-add-item-name {
+    grid-column: 1 / -1;
+  }
+
+  .gl-add-item-qty { grid-column: 1; }
+  .gl-add-item-unit { grid-column: 2; }
+  .gl-add-item-submit { grid-column: 1 / -1; }
+
+  .gl-filter-tabs {
+    flex-wrap: wrap;
+  }
+
+  .gl-tab {
+    flex: 1;
+    text-align: center;
+    min-width: 60px;
+  }
+
+  .gl-item {
+    flex-wrap: wrap;
+  }
+
+  .gl-item-actions {
+    margin-left: 36px;
+  }
+}
+
+/* =============================================
+   PRINT — GROCERY LISTS
+   ============================================= */
+
+@media print {
+  .gl-show-header {
+    background: none !important;
+    color: #2c3e50 !important;
+    box-shadow: none !important;
+    border: 2px solid #2c3e50;
+    padding: 16px 20px;
+  }
+
+  .gl-show-actions,
+  .gl-add-item-section,
+  .back-link,
+  .gl-item-delete,
+  .gl-on-hand-badge,
+  nav,
+  footer,
+  .alert {
+    display: none !important;
+  }
+
+  .gl-progress {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+
+  .gl-category {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    break-inside: avoid;
+  }
+
+  .gl-checkbox-box {
+    border-color: #333;
+    width: 16px;
+    height: 16px;
+  }
+
+  .gl-checkbox-box--checked {
+    background: #333 !important;
+  }
+
+  .gl-item--checked .gl-item-name {
+    text-decoration: line-through;
+  }
+
+  .gl-progress-fill {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* ── Pantry ─────────────────────────────────────────────────────── */
+
+.pantry-container { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
+
+.pantry-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px; padding: 2rem; color: white; margin-bottom: 1rem;
+}
+.pantry-header-content { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+.pantry-title { font-size: 1.75rem; font-weight: 700; margin: 0 0 0.25rem; }
+.pantry-subtitle { opacity: 0.9; font-size: 0.95rem; margin: 0; line-height: 1.5; }
+.pantry-subtitle strong { color: #ffd700; }
+
+.pantry-add-row { display: flex; gap: 0.75rem; align-items: flex-end; }
+.pantry-add-input { flex: 1; }
+
+.pantry-stats { font-size: 0.9rem; color: #6b7280; }
+.pantry-count { font-weight: 600; }
+
+.pantry-category { padding: 1rem 1.25rem; }
+.pantry-category-header {
+  display: flex; align-items: center; gap: 0.5rem; padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e7eb; margin-bottom: 0.75rem;
+}
+.pantry-category-header h3 { font-size: 1rem; font-weight: 600; margin: 0; }
+.pantry-category-icon { font-size: 1.25rem; }
+.pantry-category-count {
+  background: #e5e7eb; color: #6b7280; font-size: 0.75rem; font-weight: 600;
+  padding: 0.15rem 0.5rem; border-radius: 10px;
+}
+
+.pantry-category-items {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+}
+
+.pantry-item {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 20px;
+  padding: 0.35rem 0.5rem 0.35rem 0.85rem; font-size: 0.9rem;
+  transition: all 0.15s;
+}
+.pantry-item:hover { background: #e5e7eb; }
+.pantry-item-name { color: #374151; }
+.pantry-item-remove {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem;
+  color: #9ca3af; text-decoration: none; transition: all 0.15s;
+}
+.pantry-item-remove:hover { background: #fee2e2; color: #ef4444; }
+
+@media (max-width: 768px) {
+  .pantry-header-content { flex-direction: column; }
+  .pantry-add-row { flex-direction: column; }
+  .pantry-add-input { width: 100%; }
+}

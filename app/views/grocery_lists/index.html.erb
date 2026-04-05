@@ -1,0 +1,73 @@
+<div class="gl-container">
+  <div class="flex justify-between items-center mb-4">
+    <h1>🛒 My Grocery Lists</h1>
+    <div class="gl-header-actions" style="display: flex; gap: 0.5rem;">
+      <%= link_to "🏠 My Pantry", pantry_path, class: "btn btn-secondary" %>
+      <%= link_to "➕ New Grocery List", new_grocery_list_path, class: "btn btn-success" %>
+    </div>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="gl-filter-tabs mb-4">
+    <%= link_to "All", grocery_lists_path,
+        class: "gl-tab #{'gl-tab--active' unless params[:status].present?}" %>
+    <%= link_to "Active", grocery_lists_path(status: 'active'),
+        class: "gl-tab #{'gl-tab--active' if params[:status] == 'active'}" %>
+    <%= link_to "Completed", grocery_lists_path(status: 'completed'),
+        class: "gl-tab #{'gl-tab--active' if params[:status] == 'completed'}" %>
+    <%= link_to "Archived", grocery_lists_path(status: 'archived'),
+        class: "gl-tab #{'gl-tab--active' if params[:status] == 'archived'}" %>
+  </div>
+
+  <% if @grocery_lists.any? %>
+    <div class="grid grid-3">
+      <% @grocery_lists.each do |list| %>
+        <div class="gl-card">
+          <div class="gl-card-header">
+            <h3 class="gl-card-title"><%= link_to list.name, list %></h3>
+            <span class="gl-status-badge gl-status-<%= list.status %>"><%= list.status.capitalize %></span>
+          </div>
+
+          <div class="gl-card-body">
+            <% if list.total_items > 0 %>
+              <div class="gl-progress-mini">
+                <div class="gl-progress-bar-mini">
+                  <div class="gl-progress-fill-mini" style="width: <%= list.progress_percentage %>%"></div>
+                </div>
+                <span class="gl-progress-text-mini"><%= list.progress_percentage %>%</span>
+              </div>
+              <p class="gl-card-count"><%= list.checked_items %>/<%= list.total_items %> items checked</p>
+            <% else %>
+              <p class="gl-card-count">No items yet</p>
+            <% end %>
+          </div>
+
+          <div class="gl-card-actions">
+            <%= link_to "View", list, class: "btn" %>
+            <% if list.status == 'active' %>
+              <%= link_to "Edit", edit_grocery_list_path(list), class: "btn btn-secondary" %>
+            <% end %>
+            <%= link_to "Delete", list, data: { turbo_method: :delete, turbo_confirm: "Delete this grocery list?" }, class: "btn btn-danger" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="mt-4 text-center">
+      <%= paginate @grocery_lists %>
+    </div>
+  <% else %>
+    <div class="card text-center">
+      <div class="empty-state">
+        <span class="empty-icon">🛒</span>
+        <h3>No grocery lists found</h3>
+        <% if params[:status].present? %>
+          <p>No <%= params[:status] %> lists. <%= link_to "View all lists", grocery_lists_path %>.</p>
+        <% else %>
+          <p>Create a list manually or generate one from a meal plan!</p>
+          <%= link_to "Create a Grocery List", new_grocery_list_path, class: "btn btn-success mt-2" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

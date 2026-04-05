@@ -93,6 +93,9 @@ class RecipeParserService
       match = remaining.match(simple_unit_pattern)
       unit = normalize_unit(match[1])
       remaining = remaining[match[0].length..].strip
+      # If a unit was found but no quantity was parsed, default to 1
+      # e.g., "pinch red pepper flakes" → 1 pinch
+      quantity ||= 1.0
     end
 
     # --- Strip parenthetical info again (may appear after the unit) ---

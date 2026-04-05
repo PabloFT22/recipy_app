@@ -6,9 +6,12 @@ class MealPlanRecipesController < ApplicationController
     @meal_plan_recipe = @meal_plan.meal_plan_recipes.build(meal_plan_recipe_params)
     
     if @meal_plan_recipe.save
-      redirect_to @meal_plan, notice: 'Recipe added to meal plan.'
+      respond_to do |format|
+        format.turbo_stream { redirect_to @meal_plan, notice: 'Recipe added to meal plan.' }
+        format.html { redirect_to @meal_plan, notice: 'Recipe added to meal plan.' }
+      end
     else
-      redirect_to @meal_plan, alert: 'Failed to add recipe to meal plan.'
+      redirect_to @meal_plan, alert: "Failed to add recipe: #{@meal_plan_recipe.errors.full_messages.join(', ')}"
     end
   end
   

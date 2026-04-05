@@ -8,6 +8,8 @@ class MealPlansController < ApplicationController
   
   def show
     @recipes_by_date = @meal_plan.recipes_by_date
+    @user_recipes = current_user.recipes.order(:title)
+    @meal_types = %w[breakfast lunch dinner snack]
   end
   
   def new
@@ -44,6 +46,10 @@ class MealPlansController < ApplicationController
   end
   
   def generate_grocery_list
+    if @meal_plan.meal_plan_recipes.empty?
+      redirect_to @meal_plan, alert: 'Cannot generate a grocery list from a meal plan with no recipes.'
+      return
+    end
     @grocery_list = @meal_plan.generate_grocery_list
     redirect_to @grocery_list, notice: 'Grocery list generated from meal plan!'
   end

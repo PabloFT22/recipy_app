@@ -2,6 +2,7 @@ class Ingredient < ApplicationRecord
   has_many :recipe_ingredients, dependent: :destroy
   has_many :recipes, through: :recipe_ingredients
   has_many :grocery_list_items, dependent: :destroy
+  has_many :pantry_items, dependent: :destroy
   
   validates :name, presence: true
   validates :normalized_name, presence: true, uniqueness: true

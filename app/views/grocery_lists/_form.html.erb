@@ -1,0 +1,43 @@
+<div class="recipe-form-container">
+  <div class="recipe-form-header">
+    <h1><%= grocery_list.new_record? ? '🛒 New Grocery List' : '✏️ Edit Grocery List' %></h1>
+    <p class="subtitle"><%= grocery_list.new_record? ? 'Create a new shopping list' : 'Update your grocery list' %></p>
+  </div>
+
+  <%= form_with(model: grocery_list, class: "recipe-form") do |form| %>
+    <% if grocery_list.errors.any? %>
+      <div class="alert alert-error">
+        <h3><%= pluralize(grocery_list.errors.count, "error") %> prevented this grocery list from being saved:</h3>
+        <ul>
+          <% grocery_list.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="form-card">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="card-icon">📝</span>
+          <h3>List Details</h3>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="form-group">
+          <%= form.label :name, "List Name *" %>
+          <%= form.text_field :name,
+              placeholder: "e.g., Weekly Shopping, Party Supplies",
+              class: "form-input",
+              autofocus: true %>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions mt-3">
+      <%= form.submit grocery_list.new_record? ? "Create List" : "Update List", class: "btn btn-success" %>
+      <%= link_to "Cancel", grocery_lists_path, class: "btn btn-secondary" %>
+    </div>
+  <% end %>
+</div>

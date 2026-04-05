@@ -1,0 +1,49 @@
+<%= turbo_frame_tag "grocery_item_#{item.id}" do %>
+  <div class="gl-item <%= 'gl-item--checked' if item.checked %> <%= 'gl-item--on-hand' if item.on_hand %>"
+       id="grocery_item_<%= item.id %>">
+    <div class="gl-item-check">
+      <%= link_to toggle_checked_grocery_list_grocery_list_item_path(grocery_list, item),
+          data: { turbo_method: :patch },
+          class: "gl-checkbox" do %>
+        <span class="gl-checkbox-box <%= 'gl-checkbox-box--checked' if item.checked %>">
+          <% if item.checked %>✓<% end %>
+        </span>
+      <% end %>
+    </div>
+
+    <div class="gl-item-details">
+      <% if item.quantity.present? && item.quantity > 0 %>
+        <span class="gl-item-quantity">
+          <%= item.display_quantity %>
+          <% if item.display_unit.present? %>
+            <%= item.display_unit %>
+          <% end %>
+        </span>
+      <% end %>
+      <span class="gl-item-name"><%= item.display_name %></span>
+    </div>
+
+    <div class="gl-item-actions">
+      <% if item.on_hand %>
+        <%= link_to "🏠 On Hand",
+            toggle_on_hand_grocery_list_grocery_list_item_path(grocery_list, item),
+            data: { turbo_method: :patch },
+            class: "gl-on-hand-badge gl-on-hand-badge--active" %>
+      <% else %>
+        <%= link_to "🏠",
+            toggle_on_hand_grocery_list_grocery_list_item_path(grocery_list, item),
+            data: { turbo_method: :patch },
+            class: "gl-on-hand-badge",
+            title: "Mark as on hand" %>
+      <% end %>
+
+      <% if grocery_list.status == 'active' %>
+        <%= link_to "🗑️",
+            grocery_list_grocery_list_item_path(grocery_list, item),
+            data: { turbo_method: :delete, turbo_confirm: "Remove this item?" },
+            class: "gl-item-delete",
+            title: "Remove item" %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,16 @@
+<%= turbo_frame_tag "grocery_list_progress" do %>
+  <% if grocery_list.total_items > 0 %>
+    <div class="gl-progress" id="grocery_list_progress">
+      <div class="gl-progress-info">
+        <span class="gl-progress-label">
+          <%= grocery_list.checked_items %> of <%= grocery_list.total_items %> items checked
+        </span>
+        <span class="gl-progress-pct"><%= grocery_list.progress_percentage %>%</span>
+      </div>
+      <div class="gl-progress-bar">
+        <div class="gl-progress-fill" style="width: <%= grocery_list.progress_percentage %>%"
+             data-grocery-list-target="progressFill"></div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

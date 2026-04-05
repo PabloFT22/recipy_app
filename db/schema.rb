@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_03_220402) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_05_182536) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -42,7 +42,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_03_220402) do
   create_table "grocery_list_items", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "grocery_list_id", null: false
     t.bigint "ingredient_id", null: false
-    t.decimal "quantity", precision: 10
+    t.decimal "quantity", precision: 10, scale: 3
     t.string "unit"
     t.boolean "checked"
     t.boolean "on_hand"
@@ -92,6 +92,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_03_220402) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_meal_plans_on_user_id"
+  end
+
+  create_table "pantry_items", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "ingredient_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ingredient_id"], name: "index_pantry_items_on_ingredient_id"
+    t.index ["user_id", "ingredient_id"], name: "index_pantry_items_on_user_id_and_ingredient_id", unique: true
+    t.index ["user_id"], name: "index_pantry_items_on_user_id"
   end
 
   create_table "recipe_collection_memberships", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -164,6 +174,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_03_220402) do
   add_foreign_key "meal_plan_recipes", "meal_plans"
   add_foreign_key "meal_plan_recipes", "recipes"
   add_foreign_key "meal_plans", "users"
+  add_foreign_key "pantry_items", "ingredients"
+  add_foreign_key "pantry_items", "users"
   add_foreign_key "recipe_collection_memberships", "recipe_collections"
   add_foreign_key "recipe_collection_memberships", "recipes"
   add_foreign_key "recipe_collections", "users"

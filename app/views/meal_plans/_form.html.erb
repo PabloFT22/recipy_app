@@ -1,0 +1,69 @@
+<div class="recipe-form-container" data-controller="meal-plan">
+  <div class="recipe-form-header">
+    <h1><%= meal_plan.new_record? ? '📅 Create New Meal Plan' : '✏️ Edit Meal Plan' %></h1>
+    <p class="subtitle"><%= meal_plan.new_record? ? 'Plan your meals for the week' : 'Update your meal plan details' %></p>
+  </div>
+
+  <%= form_with(model: meal_plan, class: "recipe-form") do |form| %>
+    <% if meal_plan.errors.any? %>
+      <div class="alert alert-error">
+        <h3><%= pluralize(meal_plan.errors.count, "error") %> prevented this meal plan from being saved:</h3>
+        <ul>
+          <% meal_plan.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="form-card">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="card-icon">📋</span>
+          <h3>Meal Plan Details</h3>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="form-group">
+          <%= form.label :name, "Plan Name *" %>
+          <%= form.text_field :name,
+              placeholder: "e.g., Week of April 7th",
+              class: "form-input",
+              autofocus: true %>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <%= form.label :start_date, "Start Date *" %>
+            <%= form.date_field :start_date,
+                class: "form-input",
+                data: { meal_plan_target: "startDate", action: "change->meal-plan#validateDates" } %>
+          </div>
+
+          <div class="form-group">
+            <%= form.label :end_date, "End Date *" %>
+            <%= form.date_field :end_date,
+                class: "form-input",
+                data: { meal_plan_target: "endDate", action: "change->meal-plan#validateDates" } %>
+          </div>
+        </div>
+
+        <p class="helper-text" data-meal-plan-target="dateHint">
+          <% if meal_plan.start_date && meal_plan.end_date %>
+            <%= pluralize((meal_plan.end_date - meal_plan.start_date).to_i + 1, 'day') %> selected
+          <% else %>
+            Select a date range for your meal plan
+          <% end %>
+        </p>
+
+        <div data-meal-plan-target="dateError" class="form-error" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="form-actions mt-3">
+      <%= form.submit meal_plan.new_record? ? "Create Meal Plan" : "Update Meal Plan", class: "btn btn-success" %>
+      <%= link_to "Cancel", meal_plans_path, class: "btn btn-secondary" %>
+    </div>
+  <% end %>
+</div>

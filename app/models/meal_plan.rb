@@ -15,14 +15,18 @@ class MealPlan < ApplicationRecord
   
   def generate_grocery_list(name: nil)
     list_name = name || "#{self.name} - Grocery List"
-    grocery_list = user.grocery_lists.create!(name: list_name, status: 'active')
-    
-    meal_plan_recipes.includes(recipe: [:recipe_ingredients, :ingredients]).each do |meal_plan_recipe|
-      multiplier = meal_plan_recipe.servings.to_f / meal_plan_recipe.recipe.servings
-      grocery_list.add_recipes([meal_plan_recipe.recipe], multiplier)
+
+    ActiveRecord::Base.transaction do
+      grocery_list = user.grocery_lists.create!(name: list_name, status: 'active')
+
+      meal_plan_recipes.includes(recipe: [:recipe_ingredients, :ingredients]).each do |meal_plan_recipe|
+        recipe_servings = meal_plan_recipe.recipe.servings
+        multiplier = recipe_servings.to_f > 0 ? meal_plan_recipe.servings.to_f / recipe_servings : 1
+        grocery_list.add_recipes([meal_plan_recipe.recipe], multiplier)
+      end
+
+      grocery_list
     end
-    
-    grocery_list
   end
   
   def recipes_by_date

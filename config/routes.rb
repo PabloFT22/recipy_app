@@ -40,6 +40,12 @@ Rails.application.routes.draw do
       delete :remove_recipe
     end
   end
+
+  resource :pantry, only: [:show], controller: 'pantry' do
+    post :add_item
+    delete :remove_item
+    post :seed_defaults
+  end
   
   get "up" => "rails/health#show", as: :rails_health_check
 end

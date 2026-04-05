@@ -13,9 +13,12 @@ class GroceryList < ApplicationRecord
   def add_recipes(recipes, servings_multiplier = 1)
     recipes.each do |recipe|
       recipe.recipe_ingredients.each do |recipe_ingredient|
+        scaled_quantity = if recipe_ingredient.quantity
+                           recipe_ingredient.quantity * servings_multiplier
+                         end
         add_or_update_ingredient(
           recipe_ingredient.ingredient,
-          recipe_ingredient.quantity * servings_multiplier,
+          scaled_quantity,
           recipe_ingredient.unit
         )
       end
@@ -23,19 +26,69 @@ class GroceryList < ApplicationRecord
   end
   
   def add_or_update_ingredient(ingredient, quantity, unit)
-    item = grocery_list_items.find_or_initialize_by(ingredient: ingredient, unit: unit)
-    
-    if item.persisted?
-      item.quantity = (item.quantity || 0) + (quantity || 0)
-      item.save
+    # Normalize size qualifiers (large, medium, small, whole, pieces) to plain count
+    normalized_unit = if UnitConversionService::SIZE_QUALIFIERS.include?(unit)
+                        nil
+                      else
+                        unit
+                      end
+
+    # Try to find an existing item for this ingredient with a combinable unit
+    existing_item = grocery_list_items
+      .where(ingredient: ingredient)
+      .detect { |item| UnitConversionService.combinable?(item.unit, normalized_unit) }
+
+    if existing_item
+      if quantity && existing_item.quantity
+        # Convert the new quantity into the existing item's unit family base,
+        # then add and pick the best display unit
+        family, = UnitConversionService.unit_family(existing_item.unit)
+
+        case family
+        when :volume
+          existing_tsp = existing_item.quantity * (UnitConversionService::VOLUME_TO_TSP[existing_item.unit] || 1)
+          new_tsp = quantity * (UnitConversionService::VOLUME_TO_TSP[normalized_unit] || 1)
+          total_tsp = existing_tsp + new_tsp
+          best_qty, best_unit = UnitConversionService.best_volume_unit(total_tsp)
+          existing_item.quantity = best_qty.round(3)
+          existing_item.unit = best_unit
+        when :weight_metric
+          existing_base = existing_item.quantity * UnitConversionService::WEIGHT_METRIC_TO_G[existing_item.unit]
+          new_base = quantity * UnitConversionService::WEIGHT_METRIC_TO_G[normalized_unit]
+          total = existing_base + new_base
+          best_qty, best_unit = UnitConversionService.best_metric_weight_unit(total)
+          existing_item.quantity = best_qty.round(3)
+          existing_item.unit = best_unit
+        when :weight_imperial
+          existing_base = existing_item.quantity * UnitConversionService::WEIGHT_IMPERIAL_TO_OZ[existing_item.unit]
+          new_base = quantity * UnitConversionService::WEIGHT_IMPERIAL_TO_OZ[normalized_unit]
+          total = existing_base + new_base
+          best_qty, best_unit = UnitConversionService.best_imperial_weight_unit(total)
+          existing_item.quantity = best_qty.round(3)
+          existing_item.unit = best_unit
+        else
+          # :count or :other — just add quantities
+          existing_item.quantity = (existing_item.quantity || 0) + (quantity || 0)
+        end
+      elsif quantity
+        existing_item.quantity = quantity
+        existing_item.unit = normalized_unit
+      end
+      # If both are nil quantity, nothing to update
+      existing_item.save
+      existing_item
     else
-      item.quantity = quantity
-      item.checked = false
-      item.on_hand = false
+      is_pantry = user.pantry_items.exists?(ingredient: ingredient)
+      item = grocery_list_items.build(
+        ingredient: ingredient,
+        quantity: quantity,
+        unit: normalized_unit,
+        checked: false,
+        on_hand: is_pantry
+      )
       item.save
+      item
     end
-    
-    item
   end
   
   def complete!

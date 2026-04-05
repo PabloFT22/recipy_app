@@ -1,0 +1,171 @@
+<div class="mp-show-container" data-controller="meal-plan">
+  <!-- Header -->
+  <div class="mp-show-header">
+    <div class="mp-show-header-content">
+      <div>
+        <h1 class="mp-show-title"><%= @meal_plan.name %></h1>
+        <div class="mp-show-meta">
+          <span>📅 <%= @meal_plan.start_date.strftime('%B %d') %> — <%= @meal_plan.end_date.strftime('%B %d, %Y') %></span>
+          <span class="separator">•</span>
+          <span>🍽️ <%= @meal_plan.total_recipes %> <%= 'recipe'.pluralize(@meal_plan.total_recipes) %></span>
+          <span class="separator">•</span>
+          <span><%= pluralize((@meal_plan.end_date - @meal_plan.start_date).to_i + 1, 'day') %></span>
+        </div>
+      </div>
+      <div class="mp-show-actions">
+        <%= link_to "✏️ Edit", edit_meal_plan_path(@meal_plan), class: "btn btn-secondary" %>
+        <%= link_to "🛒 Generate Grocery List", generate_grocery_list_meal_plan_path(@meal_plan),
+            data: { turbo_method: :post, turbo_confirm: "Generate a grocery list from this meal plan?" },
+            class: "btn btn-success" %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="mp-calendar">
+    <% (@meal_plan.start_date..@meal_plan.end_date).each do |date| %>
+      <% day_recipes = @recipes_by_date.to_h[date] || [] %>
+      <div class="mp-day-card <%= 'mp-day-card--today' if date == Date.current %>">
+        <div class="mp-day-header">
+          <span class="mp-day-name"><%= date.strftime('%A') %></span>
+          <span class="mp-day-date"><%= date.strftime('%b %d') %></span>
+          <% if date == Date.current %>
+            <span class="mp-today-badge">Today</span>
+          <% end %>
+        </div>
+
+        <div class="mp-day-meals">
+          <% %w[breakfast lunch dinner snack].each do |meal_type| %>
+            <% meals = day_recipes.select { |mpr| mpr.meal_type == meal_type } %>
+            <div class="mp-meal-slot">
+              <div class="mp-meal-type-header">
+                <span class="mp-meal-type-icon">
+                  <%= case meal_type
+                      when 'breakfast' then '🌅'
+                      when 'lunch' then '☀️'
+                      when 'dinner' then '🌙'
+                      when 'snack' then '🍎'
+                      end %>
+                </span>
+                <span class="mp-meal-type-name"><%= meal_type.capitalize %></span>
+              </div>
+
+              <% if meals.any? %>
+                <% meals.each do |mpr| %>
+                  <div class="mp-meal-item">
+                    <div class="mp-meal-info">
+                      <% if mpr.recipe %>
+                        <%= link_to mpr.recipe.title, mpr.recipe, class: "mp-meal-link" %>
+                        <span class="mp-meal-servings">👥 <%= mpr.servings %></span>
+                      <% else %>
+                        <span class="mp-meal-deleted">(Deleted recipe)</span>
+                      <% end %>
+                    </div>
+                    <%= link_to "✕",
+                        meal_plan_meal_plan_recipe_path(@meal_plan, mpr),
+                        data: { turbo_method: :delete, turbo_confirm: "Remove this recipe?" },
+                        class: "mp-meal-remove" %>
+                  </div>
+                <% end %>
+              <% end %>
+
+              <!-- Add Recipe Button -->
+              <button type="button"
+                      class="mp-add-recipe-btn"
+                      data-action="click->meal-plan#openPicker"
+                      data-date="<%= date.to_s %>"
+                      data-meal-type="<%= meal_type %>">
+                + Add
+              </button>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Empty State -->
+  <% if @meal_plan.total_recipes == 0 %>
+    <div class="card text-center mt-3">
+      <div class="empty-state">
+        <span class="empty-icon">🍽️</span>
+        <h3>No recipes planned yet</h3>
+        <p>Click the "+ Add" buttons on any meal slot above to start building your plan.</p>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Recipe Picker Modal -->
+  <div class="mp-picker-overlay" data-meal-plan-target="pickerOverlay" style="display:none;">
+    <div class="mp-picker" data-meal-plan-target="picker">
+      <div class="mp-picker-header">
+        <h3>Add Recipe to <span data-meal-plan-target="pickerMealLabel"></span></h3>
+        <button type="button" class="mp-picker-close" data-action="click->meal-plan#closePicker">✕</button>
+      </div>
+
+      <div class="mp-picker-body">
+        <div class="mp-picker-search">
+          <input type="text"
+                 placeholder="Search your recipes..."
+                 class="form-input"
+                 data-meal-plan-target="searchInput"
+                 data-action="input->meal-plan#filterRecipes">
+        </div>
+
+        <div class="mp-picker-list" data-meal-plan-target="recipeList">
+          <% @user_recipes.each do |recipe| %>
+            <div class="mp-picker-recipe" data-recipe-title="<%= recipe.title.downcase %>">
+              <div class="mp-picker-recipe-info">
+                <strong><%= recipe.title %></strong>
+                <% if recipe.servings %>
+                  <span class="mp-picker-recipe-meta">👥 <%= recipe.servings %> servings</span>
+                <% end %>
+              </div>
+              <button type="button"
+                      class="btn btn-small"
+                      data-action="click->meal-plan#selectRecipe"
+                      data-recipe-id="<%= recipe.id %>">
+                Select
+              </button>
+            </div>
+          <% end %>
+
+          <% if @user_recipes.empty? %>
+            <div class="mp-picker-empty">
+              <p>You don't have any recipes yet.</p>
+              <%= link_to "Create a Recipe", new_recipe_path, class: "btn mt-2" %>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Confirm Section (shown after selecting a recipe) -->
+        <div class="mp-picker-confirm" data-meal-plan-target="confirmSection" style="display:none;">
+          <%= form_with url: meal_plan_meal_plan_recipes_path(@meal_plan), method: :post, data: { turbo_frame: "_top" } do |f| %>
+            <%= f.hidden_field :meal_plan_recipe, value: "", name: "meal_plan_recipe[recipe_id]", data: { meal_plan_target: "recipeIdField" } %>
+            <%= f.hidden_field :meal_plan_recipe, value: "", name: "meal_plan_recipe[scheduled_for]", data: { meal_plan_target: "dateField" } %>
+            <%= f.hidden_field :meal_plan_recipe, value: "", name: "meal_plan_recipe[meal_type]", data: { meal_plan_target: "mealTypeField" } %>
+
+            <div class="mp-picker-confirm-details">
+              <p>Adding: <strong data-meal-plan-target="selectedRecipeName"></strong></p>
+
+              <div class="form-group">
+                <label for="servings">Servings</label>
+                <input type="number" name="meal_plan_recipe[servings]" min="1" value="4" class="form-input" data-meal-plan-target="servingsField">
+              </div>
+            </div>
+
+            <div class="mp-picker-confirm-actions">
+              <%= f.submit "Add to Plan", class: "btn btn-success" %>
+              <button type="button" class="btn btn-secondary" data-action="click->meal-plan#cancelSelect">Back</button>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back Link -->
+  <div class="back-link mt-3">
+    <%= link_to "← Back to Meal Plans", meal_plans_path, class: "link-secondary" %>
+  </div>
+</div>

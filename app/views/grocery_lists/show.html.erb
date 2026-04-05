@@ -1,0 +1,131 @@
+<div class="gl-show-container" data-controller="grocery-list">
+  <!-- Header -->
+  <div class="gl-show-header">
+    <div class="gl-show-header-content">
+      <div>
+        <h1 class="gl-show-title"><%= @grocery_list.name %></h1>
+        <div class="gl-show-meta">
+          <span class="gl-status-badge gl-status-<%= @grocery_list.status %>"><%= @grocery_list.status.capitalize %></span>
+          <span class="separator">•</span>
+          <span><%= @grocery_list.total_items %> <%= 'item'.pluralize(@grocery_list.total_items) %></span>
+          <span class="separator">•</span>
+          <span>Created <%= time_ago_in_words(@grocery_list.created_at) %> ago</span>
+        </div>
+      </div>
+      <div class="gl-show-actions">
+        <% if @grocery_list.status == 'active' %>
+          <%= link_to "✅ Mark Complete", complete_grocery_list_path(@grocery_list),
+              data: { turbo_method: :post, turbo_confirm: "Mark this list as complete?" },
+              class: "btn btn-success" %>
+          <%= link_to "📦 Archive", archive_grocery_list_path(@grocery_list),
+              data: { turbo_method: :post, turbo_confirm: "Archive this list?" },
+              class: "btn btn-secondary" %>
+        <% end %>
+        <button class="btn btn-secondary" onclick="window.print()">🖨️ Print</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <%= render 'grocery_lists/progress', grocery_list: @grocery_list %>
+
+  <!-- Items By Category -->
+  <% if @items_by_category.any? %>
+    <div class="gl-categories">
+      <% @items_by_category.each do |category, items| %>
+        <div class="gl-category" data-grocery-list-target="category">
+          <div class="gl-category-header" data-action="click->grocery-list#toggleCategory">
+            <div class="gl-category-title">
+              <span class="gl-category-icon">
+                <%= case category
+                    when 'produce' then '🥬'
+                    when 'dairy' then '🧀'
+                    when 'meat' then '🥩'
+                    when 'seafood' then '🐟'
+                    when 'bakery' then '🍞'
+                    when 'pantry' then '🥫'
+                    when 'frozen' then '🧊'
+                    when 'beverages' then '🥤'
+                    when 'condiments' then '🫙'
+                    when 'spices' then '🧂'
+                    else '📦'
+                    end %>
+              </span>
+              <h3><%= category.capitalize %></h3>
+              <span class="gl-category-count"><%= items.size %></span>
+            </div>
+            <span class="gl-category-chevron" data-grocery-list-target="chevron">▼</span>
+          </div>
+
+          <div class="gl-category-items" data-grocery-list-target="categoryItems">
+            <% items.each do |item| %>
+              <%= render 'grocery_list_items/item', item: item, grocery_list: @grocery_list %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="card text-center mt-3">
+      <div class="empty-state">
+        <span class="empty-icon">🛒</span>
+        <h3>No items on this list</h3>
+        <p>Add items below or generate this list from a meal plan.</p>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Add Item Form -->
+  <% if @grocery_list.status == 'active' %>
+    <div class="gl-add-item-section mt-3">
+      <div class="form-card">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="card-icon">➕</span>
+            <h3>Add Item</h3>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <%= form_with url: grocery_list_grocery_list_items_path(@grocery_list), method: :post do |f| %>
+            <div class="gl-add-item-row">
+              <div class="form-group gl-add-item-name">
+                <%= f.label :ingredient_name, "Ingredient" %>
+                <%= f.text_field :ingredient_name, name: "grocery_list_item[ingredient_name]",
+                    placeholder: "e.g., Chicken breast",
+                    class: "form-input",
+                    required: true %>
+              </div>
+
+              <div class="form-group gl-add-item-qty">
+                <%= f.label :quantity, "Qty" %>
+                <%= f.number_field :quantity, name: "grocery_list_item[quantity]",
+                    placeholder: "1",
+                    min: 0.1,
+                    step: 0.01,
+                    class: "form-input" %>
+              </div>
+
+              <div class="form-group gl-add-item-unit">
+                <%= f.label :unit, "Unit" %>
+                <%= f.select :unit, RecipeIngredient::UNITS.uniq.sort.map { |u| [u, u] },
+                    { include_blank: "—" },
+                    name: "grocery_list_item[unit]",
+                    class: "form-select" %>
+              </div>
+
+              <div class="form-group gl-add-item-submit">
+                <%= f.submit "Add", class: "btn btn-success" %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Back Link -->
+  <div class="back-link mt-3">
+    <%= link_to "← Back to Grocery Lists", grocery_lists_path, class: "link-secondary" %>
+  </div>
+</div>
