@@ -1,0 +1,51 @@
+<div class="recipe-form-container">
+  <div class="recipe-form-header">
+    <h1><%= collection.new_record? ? '📚 Create New Collection' : '✏️ Edit Collection' %></h1>
+    <p class="subtitle"><%= collection.new_record? ? 'Organize your favorite recipes' : 'Update your collection details' %></p>
+  </div>
+
+  <%= form_with(model: collection, class: "recipe-form") do |form| %>
+    <% if collection.errors.any? %>
+      <div class="alert alert-error">
+        <h3><%= pluralize(collection.errors.count, "error") %> prevented this collection from being saved:</h3>
+        <ul>
+          <% collection.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="form-card">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="card-icon">📋</span>
+          <h3>Collection Details</h3>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="form-group">
+          <%= form.label :name, "Collection Name *" %>
+          <%= form.text_field :name,
+              placeholder: "e.g., Weeknight Dinners",
+              class: "form-input",
+              autofocus: true %>
+        </div>
+
+        <div class="form-group">
+          <%= form.label :description, "Description" %>
+          <%= form.text_area :description,
+              placeholder: "What kind of recipes are in this collection?",
+              class: "form-input",
+              rows: 3 %>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions mt-3">
+      <%= form.submit collection.new_record? ? "Create Collection" : "Update Collection", class: "btn btn-success" %>
+      <%= link_to "Cancel", recipe_collections_path, class: "btn btn-secondary" %>
+    </div>
+  <% end %>
+</div>

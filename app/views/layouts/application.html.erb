@@ -44,14 +44,16 @@
     </nav>
 
     <% if notice %>
-      <div class="alert alert-notice">
-        <%= notice %>
+      <div class="alert alert-notice" data-controller="flash" data-flash-delay-value="4000">
+        <span><%= notice %></span>
+        <button class="alert-dismiss" data-action="click->flash#dismiss" aria-label="Dismiss">&times;</button>
       </div>
     <% end %>
 
     <% if alert %>
-      <div class="alert alert-alert">
-        <%= alert %>
+      <div class="alert alert-alert" data-controller="flash" data-flash-delay-value="5000">
+        <span><%= alert %></span>
+        <button class="alert-dismiss" data-action="click->flash#dismiss" aria-label="Dismiss">&times;</button>
       </div>
     <% end %>
 

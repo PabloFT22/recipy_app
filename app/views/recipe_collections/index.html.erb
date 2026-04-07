@@ -1,0 +1,61 @@
+<div class="rc-container">
+  <div class="flex justify-between items-center mb-4">
+    <h1>📚 My Collections</h1>
+    <%= link_to "➕ New Collection", new_recipe_collection_path, class: "btn btn-success" %>
+  </div>
+
+  <% if @collections.any? %>
+    <div class="grid grid-3">
+      <% @collections.each do |collection| %>
+        <div class="rc-card">
+          <div class="rc-card-header">
+            <h3 class="rc-card-title"><%= link_to collection.name, collection %></h3>
+            <span class="rc-recipe-count">🍽️ <%= collection.recipe_count %></span>
+          </div>
+
+          <div class="rc-card-body">
+            <% if collection.description.present? %>
+              <p class="rc-card-description"><%= truncate(collection.description, length: 80) %></p>
+            <% end %>
+
+            <div class="rc-thumb-strip">
+              <% collection.recipes.limit(3).each do |recipe| %>
+                <% if recipe.image.attached? %>
+                  <%= image_tag recipe.image, class: "rc-thumb" %>
+                <% else %>
+                  <div class="rc-thumb rc-thumb--placeholder">🍽️</div>
+                <% end %>
+              <% end %>
+              <% if collection.recipe_count == 0 %>
+                <span class="rc-no-thumbs">No recipes yet</span>
+              <% end %>
+            </div>
+
+            <div class="rc-card-meta">
+              <span>📅 Created <%= time_ago_in_words(collection.created_at) %> ago</span>
+            </div>
+          </div>
+
+          <div class="rc-card-actions">
+            <%= link_to "View", collection, class: "btn" %>
+            <%= link_to "Edit", edit_recipe_collection_path(collection), class: "btn btn-secondary" %>
+            <%= link_to "Delete", collection, data: { turbo_method: :delete, turbo_confirm: "Delete this collection and remove all recipes from it?" }, class: "btn btn-danger" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="mt-4 text-center">
+      <%= paginate @collections %>
+    </div>
+  <% else %>
+    <div class="card text-center">
+      <div class="empty-state">
+        <span class="empty-icon">📚</span>
+        <h3>No collections yet</h3>
+        <p>Organize your recipes into collections!</p>
+        <%= link_to "Create Your First Collection", new_recipe_collection_path, class: "btn btn-success mt-2" %>
+      </div>
+    </div>
+  <% end %>
+</div>
