@@ -275,3 +275,86 @@ footer {
 .gap-2 {
   gap: 1rem;
 }
+
+/* Star Rating */
+.star {
+  color: #bdc3c7;
+  font-size: 1.2rem;
+}
+.star.filled, .star-btn.selected, .star-btn.hovered {
+  color: #f1c40f;
+}
+.star-btn {
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #bdc3c7;
+  transition: color 0.1s;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #ecf0f1;
+  color: #2c3e50;
+}
+.badge-easy { background: #d4edda; color: #155724; }
+.badge-medium { background: #fff3cd; color: #856404; }
+.badge-hard { background: #f8d7da; color: #721c24; }
+
+/* Buttons */
+.btn-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+.btn-danger { background-color: #e74c3c; color: white; border-color: #e74c3c; }
+.btn-danger:hover { background-color: #c0392b; }
+.btn-success { background-color: #27ae60; color: white; border-color: #27ae60; }
+.btn-success:hover { background-color: #219a52; }
+
+/* Ingredient list */
+.ingredient-list {
+  list-style: none;
+  padding: 0;
+}
+.ingredient-list li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+/* Cooking mode */
+.cooking-step {
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Review cards */
+.review-card { border-left: 4px solid #3498db; }
+
+/* Print styles */
+@media print {
+  .navbar, footer, .btn, .alert, .pagination, form, button,
+  [data-controller="pwa-install"] {
+    display: none !important;
+  }
+  body { font-size: 12pt; color: #000; }
+  .recipe-show { max-width: 100%; }
+  .card { border: 1px solid #ddd; break-inside: avoid; }
+  a { color: #000; text-decoration: none; }
+  .print-recipe-card { page-break-inside: avoid; }
+}
+
+/* Form helpers */
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+}
+.form-text { color: #6c757d; font-size: 0.85rem; }
+.text-muted { color: #6c757d; }
+.text-danger { color: #e74c3c; }
+.ml-auto { margin-left: auto; }

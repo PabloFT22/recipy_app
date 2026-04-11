@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :recipe_collection do
-    user { nil }
-    name { "MyString" }
-    description { "MyText" }
+    association :user
+    name { Faker::Lorem.words(number: 3).map(&:capitalize).join(' ') }
+    description { Faker::Lorem.sentence }
   end
 end

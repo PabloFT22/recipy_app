@@ -1,2 +1,191 @@
-<h1>Recipes#show</h1>
-<p>Find me in app/views/recipes/show.html.erb</p>
+<div class="recipe-show" data-controller="print">
+  <%# Breadcrumb %>
+  <div class="mb-3">
+    <%= link_to "← Back to Recipes", recipes_path %>
+  </div>
+
+  <div class="flex justify-between items-center mb-4">
+    <h1><%= @recipe.title %></h1>
+    <div class="flex gap-2">
+      <%# Print button %>
+      <button onclick="window.print()" class="btn btn-secondary">🖨️ Print</button>
+
+      <%# Cook Mode %>
+      <%= link_to "👨‍🍳 Cook Mode", cook_recipe_path(@recipe), class: "btn btn-success" %>
+
+      <% if user_signed_in? && @recipe.user == current_user %>
+        <%= link_to "Edit", edit_recipe_path(@recipe), class: "btn btn-secondary" %>
+        <%= link_to "Delete", @recipe,
+            data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
+            class: "btn btn-danger" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-2 mb-4">
+    <div>
+      <%# Recipe image %>
+      <% if @recipe.image.attached? %>
+        <%= image_tag @recipe.image.variant(resize_to_limit: [800, 600]), class: "recipe-card-image", loading: "lazy", style: "width:100%; border-radius: 8px;" %>
+      <% else %>
+        <div class="recipe-card-image" style="height: 300px; background: #ecf0f1; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 4rem;">🍽️</span>
+        </div>
+      <% end %>
+    </div>
+
+    <div>
+      <%# Meta info %>
+      <div class="card mb-3">
+        <div class="grid grid-2">
+          <% if @recipe.prep_time %>
+            <div><strong>Prep Time</strong><br>⏱️ <%= @recipe.prep_time %> min</div>
+          <% end %>
+          <% if @recipe.cook_time %>
+            <div><strong>Cook Time</strong><br>🔥 <%= @recipe.cook_time %> min</div>
+          <% end %>
+          <% if @recipe.total_time %>
+            <div><strong>Total Time</strong><br>⏰ <%= @recipe.total_time %> min</div>
+          <% end %>
+          <% if @recipe.servings %>
+            <div><strong>Servings</strong><br>🍽️ <%= @recipe.servings %></div>
+          <% end %>
+          <% if @recipe.difficulty %>
+            <div><strong>Difficulty</strong><br>
+              <span class="badge badge-<%= @recipe.difficulty %>"><%= @recipe.difficulty.capitalize %></span>
+            </div>
+          <% end %>
+          <% if @recipe.cuisine_type.present? %>
+            <div><strong>Cuisine</strong><br>🌍 <%= @recipe.cuisine_type %></div>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Rating display %>
+      <% if @recipe.reviews_count.to_i > 0 %>
+        <div class="card mb-3">
+          <div class="flex items-center gap-2">
+            <div class="star-rating-display">
+              <% 5.times do |i| %>
+                <span class="star <%= i < @recipe.average_rating.to_f.round ? 'filled' : '' %>">★</span>
+              <% end %>
+            </div>
+            <strong><%= number_with_precision(@recipe.average_rating, precision: 1) %></strong>
+            <span class="text-muted">(<%= @recipe.reviews_count %> <%= 'review'.pluralize(@recipe.reviews_count) %>)</span>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Like button %>
+      <% if user_signed_in? %>
+        <%= turbo_frame_tag "like_button_#{@recipe.id}" do %>
+          <% if @recipe.liked_by?(current_user) %>
+            <%= link_to unlike_recipe_path(@recipe), data: { turbo_method: :delete }, class: "btn btn-secondary" %>
+              ❤️ Liked (<%= @recipe.likes.count %>)
+            <% else %>
+            <%= link_to like_recipe_path(@recipe), data: { turbo_method: :post }, class: "btn" %>
+              🤍 Like (<%= @recipe.likes.count %>)
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%# Dietary tags %>
+      <% if @recipe.dietary_tags.present? %>
+        <div class="mt-2">
+          <% @recipe.dietary_tags.split(',').each do |tag| %>
+            <span class="badge"><%= tag.strip %></span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Description %>
+  <% if @recipe.description.present? %>
+    <div class="card mb-4">
+      <h2>About This Recipe</h2>
+      <p><%= @recipe.description %></p>
+    </div>
+  <% end %>
+
+  <div class="grid grid-2 mb-4">
+    <%# Ingredients %>
+    <div class="card">
+      <h2>Ingredients</h2>
+      <% if @recipe.recipe_ingredients.any? %>
+        <ul class="ingredient-list">
+          <% @recipe.recipe_ingredients.includes(:ingredient).each do |ri| %>
+            <li>
+              <strong><%= ri.display_quantity %> <%= ri.unit %></strong>
+              <%= ri.ingredient.name %>
+              <% if ri.notes.present? %><em>(<%= ri.notes %>)</em><% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-muted">No ingredients listed.</p>
+      <% end %>
+    </div>
+
+    <%# Instructions %>
+    <div class="card">
+      <h2>Instructions</h2>
+      <% if @recipe.instructions.present? %>
+        <div class="instructions-text">
+          <%= simple_format(@recipe.instructions) %>
+        </div>
+      <% else %>
+        <p class="text-muted">No instructions provided.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Nutrition Info %>
+  <% if @recipe.nutrition_info %>
+    <div class="card mb-4">
+      <details>
+        <summary><strong>Nutrition Information</strong> (per serving)</summary>
+        <div class="grid grid-3 mt-3">
+          <% ni = @recipe.nutrition_info.per_serving %>
+          <div class="text-center"><strong><%= ni.calories.to_f.round %></strong><br><small>Calories</small></div>
+          <div class="text-center"><strong><%= ni.protein_g.to_f.round(1) %>g</strong><br><small>Protein</small></div>
+          <div class="text-center"><strong><%= ni.carbs_g.to_f.round(1) %>g</strong><br><small>Carbs</small></div>
+          <div class="text-center"><strong><%= ni.fat_g.to_f.round(1) %>g</strong><br><small>Fat</small></div>
+          <div class="text-center"><strong><%= ni.fiber_g.to_f.round(1) %>g</strong><br><small>Fiber</small></div>
+          <div class="text-center"><strong><%= ni.sodium_mg.to_f.round %>mg</strong><br><small>Sodium</small></div>
+        </div>
+      </details>
+    </div>
+  <% end %>
+
+  <%# Source -%>
+  <% if @recipe.source_url.present? %>
+    <p class="mb-4">Source: <%= link_to @recipe.source_url, @recipe.source_url, target: "_blank" %></p>
+  <% end %>
+
+  <%# Reviews Section %>
+  <div class="card mb-4" id="reviews">
+    <h2>Reviews</h2>
+
+    <% if @reviews.any? %>
+      <% @reviews.each do |review| %>
+        <%= render "reviews/review", review: review %>
+      <% end %>
+    <% else %>
+      <p class="text-muted">No reviews yet. Be the first to review this recipe!</p>
+    <% end %>
+
+    <% if user_signed_in? %>
+      <% if @user_review %>
+        <p class="mt-3">You've already reviewed this recipe. <%= link_to "Edit your review", edit_recipe_review_path(@recipe, @user_review) %></p>
+      <% else %>
+        <div class="mt-4">
+          <h3>Write a Review</h3>
+          <%= render "reviews/form", review: Review.new %>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="mt-3"><%= link_to "Sign in", new_user_session_path %> to leave a review.</p>
+    <% end %>
+  </div>
+</div>

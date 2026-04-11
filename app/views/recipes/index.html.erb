@@ -8,51 +8,77 @@
 
 <div class="card mb-4">
   <%= form_with url: recipes_path, method: :get, local: true do |f| %>
-    <div class="flex gap-2">
+    <div class="grid grid-2 mb-2">
       <%= f.text_field :search, value: params[:search], placeholder: "Search recipes...", class: "form-control" %>
       <%= f.select :difficulty, options_for_select([['All Difficulties', ''], ['Easy', 'easy'], ['Medium', 'medium'], ['Hard', 'hard']], params[:difficulty]), {}, class: "form-control" %>
+    </div>
+    <div class="grid grid-3 mb-2">
+      <%= f.text_field :cuisine_type, value: params[:cuisine_type], placeholder: "Cuisine type...", class: "form-control" %>
+      <%= f.number_field :max_time, value: params[:max_time], placeholder: "Max total time (min)", class: "form-control", min: 1 %>
+      <%= f.select :sort, options_for_select([['Sort by: Newest', 'recent'], ['Sort by: Rating', 'rating']], params[:sort]), {}, class: "form-control" %>
+    </div>
+    <div class="flex gap-2 mb-2" style="flex-wrap: wrap;">
+      <% %w[vegetarian vegan gluten-free dairy-free nut-free].each do |tag| %>
+        <label class="checkbox-label">
+          <input type="checkbox" name="dietary_tag" value="<%= tag %>" <%= params[:dietary_tag] == tag ? 'checked' : '' %>>
+          <%= tag %>
+        </label>
+      <% end %>
+    </div>
+    <div class="flex gap-2">
       <%= f.submit "Search", class: "btn" %>
+      <%= link_to "Clear", recipes_path, class: "btn btn-secondary" %>
     </div>
   <% end %>
 </div>
 
-<% if @recipes.any? %>
-  <div class="grid grid-3">
-    <% @recipes.each do |recipe| %>
-      <div class="recipe-card">
-        <% if recipe.image.attached? %>
-          <%= image_tag recipe.image, class: "recipe-card-image" %>
-        <% else %>
-          <div class="recipe-card-image"></div>
+<%= turbo_frame_tag "recipes_list" do %>
+  <% if @recipes.any? %>
+    <div class="grid grid-3">
+      <% @recipes.each do |recipe| %>
+        <%= cache recipe do %>
+          <div class="recipe-card">
+            <% if recipe.image.attached? %>
+              <%= image_tag recipe.image.variant(resize_to_limit: [400, 300]), class: "recipe-card-image", loading: "lazy" %>
+            <% else %>
+              <div class="recipe-card-image"></div>
+            <% end %>
+            <div class="recipe-card-body">
+              <h3 class="recipe-card-title"><%= link_to recipe.title, recipe %></h3>
+              <p class="recipe-card-description"><%= truncate(recipe.description, length: 100) %></p>
+              <div class="flex gap-2 mb-2">
+                <% if recipe.prep_time %>
+                  <span>⏱️ <%= recipe.prep_time %>min</span>
+                <% end %>
+                <% if recipe.servings %>
+                  <span>🍽️ <%= recipe.servings %></span>
+                <% end %>
+                <% if recipe.difficulty %>
+                  <span>📊 <%= recipe.difficulty.capitalize %></span>
+                <% end %>
+                <% if recipe.reviews_count.to_i > 0 %>
+                  <span>⭐ <%= number_with_precision(recipe.average_rating, precision: 1) %></span>
+                <% end %>
+                <span>❤️ <%= recipe.likes.count %></span>
+              </div>
+              <div class="flex gap-2">
+                <%= link_to "View", recipe, class: "btn" %>
+                <% if user_signed_in? && recipe.user == current_user %>
+                  <%= link_to "Edit", edit_recipe_path(recipe), class: "btn btn-secondary" %>
+                <% end %>
+              </div>
+            </div>
+          </div>
         <% end %>
-        <div class="recipe-card-body">
-          <h3 class="recipe-card-title"><%= link_to recipe.title, recipe %></h3>
-          <p class="recipe-card-description"><%= truncate(recipe.description, length: 100) %></p>
-          <div class="flex gap-2 mb-2">
-            <% if recipe.prep_time %>
-              <span>⏱️ <%= recipe.prep_time %>min</span>
-            <% end %>
-            <% if recipe.servings %>
-              <span>🍽️ <%= recipe.servings %></span>
-            <% end %>
-            <% if recipe.difficulty %>
-              <span>📊 <%= recipe.difficulty.capitalize %></span>
-            <% end %>
-          </div>
-          <div class="flex gap-2">
-            <%= link_to "View", recipe, class: "btn" %>
-            <%= link_to "Edit", edit_recipe_path(recipe), class: "btn btn-secondary" %>
-          </div>
-        </div>
-      </div>
-    <% end %>
-  </div>
-  
-  <div class="mt-4 text-center">
-    <%= paginate @recipes %>
-  </div>
-<% else %>
-  <div class="card text-center">
-    <p>No recipes found. <%= link_to "Create your first recipe", new_recipe_path %>!</p>
-  </div>
+      <% end %>
+    </div>
+
+    <div class="mt-4 text-center">
+      <%= paginate @recipes %>
+    </div>
+  <% else %>
+    <div class="card text-center">
+      <p>No recipes found. <%= link_to "Create your first recipe", new_recipe_path %>!</p>
+    </div>
+  <% end %>
 <% end %>

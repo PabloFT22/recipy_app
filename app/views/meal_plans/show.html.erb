@@ -1,0 +1,74 @@
+<div class="flex justify-between items-center mb-4">
+  <div>
+    <h1><%= @meal_plan.name %></h1>
+    <p class="text-muted">
+      <%= @meal_plan.start_date.strftime('%B %d') %> – <%= @meal_plan.end_date.strftime('%B %d, %Y') %>
+      • <%= @meal_plan.total_recipes %> recipes
+    </p>
+  </div>
+  <div class="flex gap-2">
+    <% if @meal_plan.is_template %>
+      <span class="badge">Template</span>
+    <% end %>
+    <%= link_to "Generate Grocery List", generate_grocery_list_meal_plan_path(@meal_plan),
+        data: { turbo_method: :post }, class: "btn btn-secondary" %>
+    <%= link_to "📅 Export iCal", export_ical_meal_plan_path(@meal_plan), class: "btn btn-secondary" %>
+    <%= link_to "Edit", edit_meal_plan_path(@meal_plan), class: "btn btn-secondary" %>
+    <%= link_to "Delete", @meal_plan,
+        data: { turbo_method: :delete, turbo_confirm: "Delete this meal plan?" },
+        class: "btn btn-danger" %>
+  </div>
+</div>
+
+<%# Week calendar grid %>
+<div class="card mb-4">
+  <h2>Weekly Overview</h2>
+  <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; overflow-x: auto;">
+    <% current_date = @meal_plan.start_date %>
+    <% while current_date <= @meal_plan.end_date %>
+      <div style="min-width: 120px;">
+        <div style="background: #2c3e50; color: white; padding: 0.5rem; border-radius: 4px 4px 0 0; text-align: center; font-size: 0.85rem;">
+          <strong><%= current_date.strftime('%A') %></strong><br>
+          <small><%= current_date.strftime('%b %d') %></small>
+        </div>
+        <div style="border: 1px solid #ecf0f1; border-top: none; padding: 0.5rem; min-height: 100px; border-radius: 0 0 4px 4px;">
+          <% day_recipes = @recipes_by_date.find { |date, _| date == current_date } %>
+          <% if day_recipes %>
+            <% day_recipes[1].each do |mpr| %>
+              <div style="background: #f0f8f0; border-radius: 4px; padding: 0.3rem; margin-bottom: 0.3rem; font-size: 0.8rem;">
+                <strong><%= mpr.meal_type.capitalize %></strong><br>
+                <%= link_to truncate(mpr.recipe.title, length: 25), mpr.recipe %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+      <% current_date += 1.day %>
+    <% end %>
+  </div>
+</div>
+
+<%# Recipes list by date %>
+<div class="card">
+  <h2>All Meals</h2>
+  <% if @recipes_by_date.any? %>
+    <% @recipes_by_date.each do |date, recipes| %>
+      <div class="mb-4">
+        <h3><%= date.strftime('%A, %B %d') %></h3>
+        <div class="grid grid-3">
+          <% recipes.each do |mpr| %>
+            <div class="recipe-card">
+              <div class="recipe-card-body">
+                <span class="badge"><%= mpr.meal_type.capitalize %></span>
+                <h4 class="recipe-card-title mt-1"><%= link_to mpr.recipe.title, mpr.recipe %></h4>
+                <p class="text-muted"><%= mpr.servings %> servings</p>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="text-muted">No recipes planned yet.</p>
+  <% end %>
+</div>

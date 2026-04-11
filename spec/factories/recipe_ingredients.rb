@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :recipe_ingredient do
-    recipe { nil }
-    ingredient { nil }
-    quantity { "9.99" }
-    unit { "MyString" }
-    notes { "MyString" }
+    association :recipe
+    association :ingredient
+    quantity { Faker::Number.decimal(l_digits: 1, r_digits: 2).to_f }
+    unit { RecipeIngredient::UNITS.sample }
+    notes { nil }
   end
 end

@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :meal_plan_recipe do
-    meal_plan { nil }
-    recipe { nil }
-    scheduled_for { "2026-02-18" }
-    meal_type { "MyString" }
-    servings { 1 }
+    association :meal_plan
+    association :recipe
+    scheduled_for { Date.current }
+    meal_type { %w[breakfast lunch dinner snack].sample }
+    servings { Faker::Number.between(from: 1, to: 8) }
   end
 end

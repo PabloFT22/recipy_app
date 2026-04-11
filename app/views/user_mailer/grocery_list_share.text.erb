@@ -1,0 +1,12 @@
+<%= @user.display_name %> shared a grocery list with you!
+
+<%= @grocery_list.name %>
+
+<% @items_by_category.each do |category, items| %>
+<%= category.upcase %>
+<% items.each do |item| %>
+  - <%= item.display_quantity %> <%= item.unit %> <%= item.ingredient.name %>
+<% end %>
+<% end %>
+
+— The Recipy Team

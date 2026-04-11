@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1><%= @user.display_name %> shared a grocery list with you!</h1>
+    <h2><%= @grocery_list.name %></h2>
+
+    <% @items_by_category.each do |category, items| %>
+      <h3><%= category.capitalize %></h3>
+      <ul>
+        <% items.each do |item| %>
+          <li><%= item.display_quantity %> <%= item.unit %> <%= item.ingredient.name %></li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <p>— The Recipy Team</p>
+  </body>
+</html>

@@ -1,0 +1,111 @@
+<%= form_with model: recipe, local: true, multipart: true do |f| %>
+  <% if recipe.errors.any? %>
+    <div class="alert alert-alert">
+      <% recipe.errors.full_messages.each do |msg| %>
+        <p><%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="grid grid-2">
+    <div class="form-group mb-3">
+      <%= f.label :title %>
+      <%= f.text_field :title, class: "form-control", placeholder: "Recipe title" %>
+    </div>
+
+    <div class="form-group mb-3">
+      <%= f.label :difficulty %>
+      <%= f.select :difficulty,
+          options_for_select([['-- Select Difficulty --', ''], ['Easy', 'easy'], ['Medium', 'medium'], ['Hard', 'hard']], recipe.difficulty),
+          {}, class: "form-control" %>
+    </div>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= f.label :description %>
+    <%= f.text_area :description, class: "form-control", rows: 3,
+        placeholder: "Describe your recipe..." %>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="form-group mb-3">
+      <%= f.label :servings %>
+      <%= f.number_field :servings, class: "form-control", min: 1, placeholder: "4" %>
+    </div>
+
+    <div class="form-group mb-3">
+      <%= f.label :prep_time, "Prep Time (min)" %>
+      <%= f.number_field :prep_time, class: "form-control", min: 0, placeholder: "15" %>
+    </div>
+
+    <div class="form-group mb-3">
+      <%= f.label :cook_time, "Cook Time (min)" %>
+      <%= f.number_field :cook_time, class: "form-control", min: 0, placeholder: "30" %>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="form-group mb-3">
+      <%= f.label :cuisine_type %>
+      <%= f.text_field :cuisine_type, class: "form-control", placeholder: "Italian, Mexican, etc." %>
+    </div>
+
+    <div class="form-group mb-3">
+      <%= f.label :dietary_tags, "Dietary Tags" %>
+      <div class="flex gap-2" style="flex-wrap: wrap;">
+        <% %w[vegetarian vegan gluten-free dairy-free nut-free].each do |tag| %>
+          <label class="checkbox-label">
+            <input type="checkbox" name="recipe[dietary_tags_array][]" value="<%= tag %>"
+                   <%= recipe.dietary_tags&.include?(tag) ? 'checked' : '' %>>
+            <%= tag %>
+          </label>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= f.label :ingredients_text, "Ingredients (one per line)" %>
+    <% current_ingredients = recipe.recipe_ingredients.includes(:ingredient).map { |ri|
+      [ri.display_quantity, ri.unit, ri.ingredient.name, ri.notes].compact.join(' ')
+    }.join("\n") %>
+    <%= f.text_area :ingredients_text, class: "form-control", rows: 8,
+        placeholder: "2 cups flour\n1 tsp salt\n3 eggs",
+        value: current_ingredients %>
+    <small class="form-text">Enter each ingredient on a new line with quantity, unit, and name.</small>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= f.label :instructions %>
+    <%= f.text_area :instructions, class: "form-control", rows: 10,
+        placeholder: "1. Preheat oven to 350°F...\n2. Mix ingredients..." %>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= f.label :image, "Recipe Photo" %>
+    <%= f.file_field :image, class: "form-control", accept: "image/*" %>
+    <% if recipe.image.attached? %>
+      <div class="mt-2">
+        <small>Current image:</small>
+        <%= image_tag recipe.image.variant(resize_to_limit: [200, 150]), style: "max-width: 200px; border-radius: 4px;" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= f.label :source_url, "Source URL (optional)" %>
+    <%= f.url_field :source_url, class: "form-control", placeholder: "https://..." %>
+  </div>
+
+  <div class="form-group mb-3">
+    <label class="checkbox-label">
+      <%= f.check_box :is_public %>
+      Make this recipe public
+    </label>
+  </div>
+
+  <div class="flex gap-2">
+    <%= f.submit recipe.new_record? ? "Create Recipe" : "Update Recipe", class: "btn" %>
+    <%= link_to "Cancel", recipe.new_record? ? recipes_path : recipe, class: "btn btn-secondary" %>
+  </div>
+<% end %>
