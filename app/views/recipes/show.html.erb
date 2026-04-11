@@ -22,6 +22,16 @@
             <% end %>
           <% end %>
 
+          <% if @recipe.dietary_tags.present? %>
+            <% @recipe.dietary_tags.split(',').each do |tag| %>
+              <span class="badge"><%= tag.strip %></span>
+            <% end %>
+          <% end %>
+
+          <% if @recipe.cuisine_type.present? %>
+            <span class="meta-item">🌍 <%= @recipe.cuisine_type %></span>
+          <% end %>
+
           <% if @recipe.servings.present? %>
             <span class="meta-item">
               👥 <%= @recipe.servings %> servings
@@ -45,10 +55,19 @@
               ⏰ Total: <%= @recipe.total_time %> min
             </span>
           <% end %>
+
+          <% if @recipe.reviews_count.to_i > 0 %>
+            <span class="meta-item">
+              ⭐ <%= number_with_precision(@recipe.average_rating, precision: 1) %>
+              (<%= @recipe.reviews_count %> <%= 'review'.pluralize(@recipe.reviews_count) %>)
+            </span>
+          <% end %>
+
+          <span class="meta-item">❤️ <%= @recipe.likes.count %></span>
         </div>
 
         <div class="recipe-author">
-          <span>By <%= @recipe.user.email.split('@').first.titleize %></span>
+          <span>By <%= @recipe.user.display_name %></span>
           <span class="separator">•</span>
           <span><%= time_ago_in_words(@recipe.created_at) %> ago</span>
           <% unless @recipe.is_public %>
@@ -59,12 +78,27 @@
       </div>
 
       <!-- Action Buttons -->
-      <% if user_signed_in? && @recipe.user == current_user %>
+      <% if user_signed_in? %>
         <div class="recipe-actions">
-          <%= link_to "✏️ Edit", edit_recipe_path(@recipe), class: "btn btn-secondary" %>
-          <%= link_to "🗑️ Delete", recipe_path(@recipe), 
-              data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete this recipe?" },
-              class: "btn btn-danger" %>
+          <%= link_to "👨‍🍳 Cook Mode", cook_recipe_path(@recipe), class: "btn btn-success" %>
+
+          <% if @recipe.user == current_user %>
+            <%= link_to "✏️ Edit", edit_recipe_path(@recipe), class: "btn btn-secondary" %>
+            <%= link_to "🗑️ Delete", recipe_path(@recipe), 
+                data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete this recipe?" },
+                class: "btn btn-danger" %>
+          <% end %>
+
+          <%# Like button %>
+          <%= turbo_frame_tag "like_button_#{@recipe.id}" do %>
+            <% if @recipe.liked_by?(current_user) %>
+              <%= link_to "❤️ Liked (#{@recipe.likes.count})", unlike_recipe_path(@recipe),
+                  data: { turbo_method: :delete }, class: "btn btn-secondary" %>
+            <% else %>
+              <%= link_to "🤍 Like (#{@recipe.likes.count})", like_recipe_path(@recipe),
+                  data: { turbo_method: :post }, class: "btn" %>
+            <% end %>
+          <% end %>
         </div>
       <% end %>
     </div>
@@ -130,15 +164,11 @@
         <% if @recipe.instructions.present? %>
           <div class="instructions-list">
             <%
-              # Normalize line endings and split by blank lines
               normalized = @recipe.instructions.gsub(/\r\n/, "\n")
               steps = normalized.split(/\n\n+/).reject(&:blank?)
             %>
             <% steps.each_with_index do |step, index| %>
-              <% 
-                # Remove any manual numbering like "1.", "2)", "Step 1:", etc.
-                cleaned_step = step.gsub(/^\d+[\.\)]\s*|^Step\s+\d+:?\s*/i, '').strip
-              %>
+              <% cleaned_step = step.gsub(/^\d+[\.\)]\s*|^Step\s+\d+:?\s*/i, '').strip %>
               <div class="instruction-step">
                 <div class="step-number"><%= index + 1 %></div>
                 <div class="step-text"><%= simple_format(cleaned_step) %></div>
@@ -149,6 +179,30 @@
           <p class="empty-state">No instructions added yet.</p>
         <% end %>
       </div>
+
+      <!-- Nutrition Info -->
+      <% if @recipe.nutrition_info && @recipe.servings.to_i > 0 %>
+        <div class="recipe-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span class="section-icon">📊</span>
+              Nutrition Information
+            </h2>
+          </div>
+          <details>
+            <summary><strong>Per serving</strong></summary>
+            <div class="grid grid-3 mt-3">
+              <% ni = @recipe.nutrition_info.per_serving(1) %>
+              <div class="text-center"><strong><%= ni.calories.to_f.round %></strong><br><small>Calories</small></div>
+              <div class="text-center"><strong><%= ni.protein_g.to_f.round(1) %>g</strong><br><small>Protein</small></div>
+              <div class="text-center"><strong><%= ni.carbs_g.to_f.round(1) %>g</strong><br><small>Carbs</small></div>
+              <div class="text-center"><strong><%= ni.fat_g.to_f.round(1) %>g</strong><br><small>Fat</small></div>
+              <div class="text-center"><strong><%= ni.fiber_g.to_f.round(1) %>g</strong><br><small>Fiber</small></div>
+              <div class="text-center"><strong><%= ni.sodium_mg.to_f.round %>mg</strong><br><small>Sodium</small></div>
+            </div>
+          </details>
+        </div>
+      <% end %>
 
       <!-- Source Section -->
       <% if @recipe.source_url.present? %>
@@ -164,6 +218,37 @@
           </div>
         </div>
       <% end %>
+
+      <!-- Reviews Section -->
+      <div class="recipe-section" id="reviews">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="section-icon">⭐</span>
+            Reviews
+          </h2>
+        </div>
+
+        <% if @reviews.any? %>
+          <% @reviews.each do |review| %>
+            <%= render "reviews/review", review: review %>
+          <% end %>
+        <% else %>
+          <p class="text-muted">No reviews yet. Be the first to review this recipe!</p>
+        <% end %>
+
+        <% if user_signed_in? %>
+          <% if @user_review %>
+            <p class="mt-3">You've already reviewed this recipe. <%= link_to "Edit your review", edit_recipe_review_path(@recipe, @user_review) %></p>
+          <% else %>
+            <div class="mt-4">
+              <h3>Write a Review</h3>
+              <%= render "reviews/form", review: Review.new %>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="mt-3"><%= link_to "Sign in", new_user_session_path %> to leave a review.</p>
+        <% end %>
+      </div>
 
       <!-- Additional Actions -->
       <% if user_signed_in? %>

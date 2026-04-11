@@ -1,0 +1,107 @@
+<div class="cooking-mode-page" data-controller="cooking-mode" data-cooking-mode-steps-count-value="<%= @steps.length %>">
+  <div class="cooking-header flex justify-between items-center mb-4">
+    <div class="flex items-center gap-2">
+      <%= link_to "← Exit", @recipe, class: "btn btn-secondary" %>
+      <h1 style="font-size: 1.5rem; margin: 0;"><%= @recipe.title %></h1>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn btn-secondary" data-action="click->cooking-mode#toggleLargeText">
+        🔤 Large Text
+      </button>
+      <div data-controller="timer" class="flex items-center gap-2">
+        <span data-timer-target="display">00:00</span>
+        <button class="btn btn-secondary btn-sm" data-action="click->timer#toggle">Start Timer</button>
+        <button class="btn btn-secondary btn-sm" data-action="click->timer#reset">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cooking-layout" style="display: grid; grid-template-columns: 1fr 3fr; gap: 2rem;">
+    <%# Ingredients Sidebar %>
+    <div class="card" style="height: fit-content; position: sticky; top: 1rem;">
+      <h3>Ingredients</h3>
+      <% @recipe.recipe_ingredients.includes(:ingredient).each_with_index do |ri, idx| %>
+        <div class="ingredient-check-item flex items-center gap-2 mb-2"
+             data-cooking-mode-target="ingredientItem"
+             data-action="click->cooking-mode#toggleIngredient">
+          <input type="checkbox" id="ing_<%= idx %>">
+          <label for="ing_<%= idx %>" style="cursor: pointer;">
+            <strong><%= ri.display_quantity %> <%= ri.unit %></strong>
+            <%= ri.ingredient.name %>
+          </label>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Steps area %>
+    <div class="steps-area">
+      <%# Progress bar %>
+      <div class="mb-4">
+        <div style="background: #ecf0f1; border-radius: 4px; height: 8px;">
+          <div data-cooking-mode-target="progressBar"
+               style="background: #27ae60; height: 8px; border-radius: 4px; transition: width 0.3s; width: 0%;"></div>
+        </div>
+        <small class="text-muted">
+          Step <span data-cooking-mode-target="currentStepNumber">1</span> of <%= @steps.length %>
+        </small>
+      </div>
+
+      <%# Steps %>
+      <div data-cooking-mode-target="stepsContainer">
+        <% @steps.each_with_index do |step, idx| %>
+          <div class="cooking-step card"
+               data-cooking-mode-target="step"
+               data-step-index="<%= idx %>"
+               style="<%= idx > 0 ? 'display: none;' : '' %>">
+            <div class="step-number mb-2">
+              <span style="background: #2c3e50; color: white; border-radius: 50%; width: 2rem; height: 2rem; display: inline-flex; align-items: center; justify-content: center; font-weight: bold;">
+                <%= idx + 1 %>
+              </span>
+            </div>
+            <p class="step-text" data-cooking-mode-target="stepText" style="font-size: 1.25rem; line-height: 1.8;">
+              <%= step %>
+            </p>
+
+            <%# Auto-detect timer in step %>
+            <% if step.match?(/(\d+)\s*(minute|min|hour|hr)/i) %>
+              <div class="mt-3">
+                <button class="btn btn-secondary btn-sm"
+                        data-action="click->timer#startFromStep"
+                        data-timer-text="<%= step %>">
+                  ⏱️ Start Timer for this step
+                </button>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Navigation %>
+      <div class="flex justify-between mt-4">
+        <button class="btn btn-secondary"
+                data-cooking-mode-target="prevBtn"
+                data-action="click->cooking-mode#previous"
+                disabled>
+          ← Previous
+        </button>
+        <button class="btn"
+                data-cooking-mode-target="nextBtn"
+                data-action="click->cooking-mode#next"
+                <%= @steps.length <= 1 ? 'disabled' : '' %>>
+          Next →
+        </button>
+      </div>
+
+      <% if @steps.empty? %>
+        <div class="card text-center">
+          <p>No step-by-step instructions available.</p>
+          <% if @recipe.instructions.present? %>
+            <div style="text-align: left;">
+              <%= simple_format(@recipe.instructions) %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

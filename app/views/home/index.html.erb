@@ -4,6 +4,17 @@
     <p class="mt-2">Manage your recipes, plan meals, and generate grocery lists.</p>
   </div>
 
+  <%# Pantry expiring soon alert %>
+  <% if defined?(@expiring_soon_items) && @expiring_soon_items.any? %>
+    <div class="alert alert-alert mb-4">
+      <strong>⚠️ Pantry items expiring soon:</strong>
+      <% @expiring_soon_items.each do |item| %>
+        <span><%= item.ingredient.name %> (<%= item.expiration_date.strftime('%b %d') %>)</span>
+      <% end %>
+      <%= link_to "View Pantry", pantry_items_path, class: "btn btn-sm" %>
+    </div>
+  <% end %>
+
   <div class="grid grid-2 mb-4">
     <div class="card">
       <h2 class="card-title">Quick Actions</h2>

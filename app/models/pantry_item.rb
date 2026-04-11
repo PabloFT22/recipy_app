@@ -3,6 +3,11 @@ class PantryItem < ApplicationRecord
   belongs_to :ingredient
 
   validates :ingredient_id, uniqueness: { scope: :user_id, message: "is already in your pantry" }
+  validates :quantity, numericality: { greater_than: 0, allow_nil: true }
+
+  scope :expiring_soon, -> { where(expiration_date: ..3.days.from_now).where.not(expiration_date: nil) }
+  scope :by_category, -> { joins(:ingredient).order('ingredients.category') }
+  scope :expired, -> { where('expiration_date < ?', Date.current) }
 
   # Default pantry staples — normalized ingredient names that most people keep stocked.
   # These get seeded when a user first visits their pantry.
@@ -44,6 +49,14 @@ class PantryItem < ApplicationRecord
       end
       user.pantry_items.find_or_create_by(ingredient: ingredient)
     end
+  end
+
+  def expiring?
+    expiration_date.present? && expiration_date <= 3.days.from_now
+  end
+
+  def expired?
+    expiration_date.present? && expiration_date < Date.current
   end
 
   private

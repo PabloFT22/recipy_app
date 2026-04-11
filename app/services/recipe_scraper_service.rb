@@ -211,7 +211,7 @@ class RecipeScraperService
       sleep 0.5
     end
   end
-  
+
   def extract_json_ld(doc)
     json_ld_scripts = doc.css('script[type="application/ld+json"]')
     

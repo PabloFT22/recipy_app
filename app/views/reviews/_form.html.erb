@@ -1,0 +1,34 @@
+<%= form_with model: [@recipe, review], local: true do |f| %>
+  <% if review.errors.any? %>
+    <div class="alert alert-alert">
+      <% review.errors.full_messages.each do |msg| %>
+        <p><%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="form-group mb-3">
+    <%= f.label :rating, "Rating" %>
+    <div class="star-rating-widget" data-controller="star-rating" data-star-rating-value="<%= review.rating || 0 %>">
+      <div class="stars-container" data-star-rating-target="stars">
+        <% 5.times do |i| %>
+          <span class="star-btn <%= i < (review.rating || 0) ? 'selected' : '' %>"
+                data-action="click->star-rating#select mouseover->star-rating#hover mouseout->star-rating#unhover"
+                data-value="<%= i + 1 %>">★</span>
+        <% end %>
+      </div>
+      <%= f.hidden_field :rating, data: { star_rating_target: "input" }, value: review.rating %>
+    </div>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= f.label :body, "Review (optional)" %>
+    <%= f.text_area :body, class: "form-control", rows: 4,
+        placeholder: "Share your thoughts about this recipe..." %>
+  </div>
+
+  <div class="flex gap-2">
+    <%= f.submit review.new_record? ? "Submit Review" : "Update Review", class: "btn" %>
+    <%= link_to "Cancel", @recipe, class: "btn btn-secondary" %>
+  </div>
+<% end %>

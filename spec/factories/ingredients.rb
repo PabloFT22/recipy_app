@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :ingredient do
-    sequence(:name) { |n| "Ingredient #{n}" }
-    sequence(:normalized_name) { |n| "ingredient #{n}" }
-    category { "pantry" }
+    name { Faker::Food.ingredient }
+    normalized_name { name.downcase.strip }
+    category { Ingredient::CATEGORIES.sample }
   end
 end

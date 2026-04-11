@@ -1,0 +1,78 @@
+<div class="profile-page">
+  <div class="card mb-4">
+    <div class="flex items-center gap-4">
+      <div class="avatar" style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; background: #ecf0f1; display: flex; align-items: center; justify-content: center;">
+        <% if @user.avatar.attached? %>
+          <%= image_tag @user.avatar.variant(resize_to_fill: [80, 80]), style: "width: 80px; height: 80px; object-fit: cover;" %>
+        <% else %>
+          <span style="font-size: 2rem;">👤</span>
+        <% end %>
+      </div>
+      <div>
+        <h1><%= @user.display_name %></h1>
+        <% if @user.username.present? %>
+          <p class="text-muted">@<%= @user.username %></p>
+        <% end %>
+        <% if @user.bio.present? %>
+          <p><%= @user.bio %></p>
+        <% end %>
+        <div class="flex gap-2 mt-2">
+          <span><strong><%= @followers_count %></strong> followers</span>
+          <span><strong><%= @following_count %></strong> following</span>
+          <span><strong><%= @user.recipes.public_recipes.count %></strong> recipes</span>
+        </div>
+      </div>
+      <div class="ml-auto">
+        <% if user_signed_in? %>
+          <% if @user == current_user %>
+            <%= link_to "Edit Profile", edit_user_path(@user), class: "btn btn-secondary" %>
+          <% else %>
+            <%= turbo_frame_tag "follow_button_#{@user.id}" do %>
+              <% if current_user.following?(@user) %>
+                <%= link_to "Unfollow", unfollow_user_path(@user),
+                    data: { turbo_method: :delete }, class: "btn btn-secondary" %>
+              <% else %>
+                <%= link_to "Follow", follow_user_path(@user),
+                    data: { turbo_method: :post }, class: "btn" %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="mb-3">Recipes</h2>
+  <% if @public_recipes.any? %>
+    <div class="grid grid-3">
+      <% @public_recipes.each do |recipe| %>
+        <div class="recipe-card">
+          <% if recipe.image.attached? %>
+            <%= image_tag recipe.image.variant(resize_to_limit: [400, 300]), class: "recipe-card-image", loading: "lazy" %>
+          <% else %>
+            <div class="recipe-card-image"></div>
+          <% end %>
+          <div class="recipe-card-body">
+            <h3 class="recipe-card-title"><%= link_to recipe.title, recipe %></h3>
+            <p class="recipe-card-description"><%= truncate(recipe.description, length: 100) %></p>
+            <div class="flex gap-2">
+              <% if recipe.prep_time %>
+                <span>⏱️ <%= recipe.prep_time %>min</span>
+              <% end %>
+              <% if recipe.difficulty %>
+                <span>📊 <%= recipe.difficulty.capitalize %></span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    <div class="mt-4 text-center">
+      <%= paginate @public_recipes %>
+    </div>
+  <% else %>
+    <div class="card text-center">
+      <p>No public recipes yet.</p>
+    </div>
+  <% end %>
+</div>
