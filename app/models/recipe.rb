@@ -29,9 +29,11 @@ class Recipe < ApplicationRecord
   scope :by_cuisine, ->(cuisine) { where(cuisine_type: cuisine) }
   scope :by_dietary_tag, ->(tag) { where("FIND_IN_SET(?, dietary_tags) > 0", tag) }
   scope :by_max_time, ->(minutes) { where("(COALESCE(prep_time, 0) + COALESCE(cook_time, 0)) <= ?", minutes) }
+  MIN_SEARCH_LENGTH = 3
+
   scope :full_text_search, ->(query) { where("MATCH(title, description) AGAINST(? IN BOOLEAN MODE)", query) }
   scope :search, ->(query) do
-    if query.length >= 3
+    if query.length >= MIN_SEARCH_LENGTH
       full_text_search(query)
     else
       where("title LIKE ? OR description LIKE ?", "%#{query}%", "%#{query}%")

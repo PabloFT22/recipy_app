@@ -73,7 +73,7 @@ class NutritionFetchService
   end
 
   def estimate_grams(quantity, unit)
-    return 0 unless quantity&.positive?
+    return 0 unless quantity && quantity.positive?
 
     conversions = {
       'cup' => 240, 'cups' => 240,

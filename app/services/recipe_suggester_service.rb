@@ -16,6 +16,8 @@ class RecipeSuggesterService
 
       match_count = (recipe_ingredient_ids & pantry_ingredient_ids).size
       total = recipe_ingredient_ids.size
+      next if total.zero?
+
       percentage = (match_count.to_f / total * 100).round
 
       { recipe: recipe, match_count: match_count, total_ingredients: total, match_percentage: percentage }

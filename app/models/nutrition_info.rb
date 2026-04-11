@@ -3,7 +3,7 @@ class NutritionInfo < ApplicationRecord
 
   def per_serving(servings_count = nil)
     servings_count ||= recipe.servings
-    return self unless servings_count && recipe.servings && recipe.servings > 0
+    return self unless servings_count && servings_count > 0 && recipe.servings && recipe.servings > 0
 
     ratio = recipe.servings.to_f / servings_count
     OpenStruct.new(

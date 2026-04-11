@@ -34,7 +34,7 @@ export default class extends Controller {
     })
 
     const total = this.stepsCountValue
-    const percent = total > 1 ? (index / (total - 1)) * 100 : 100
+    const percent = total > 0 ? ((index + 1) / total) * 100 : 100
 
     if (this.hasProgressBarTarget) {
       this.progressBarTarget.style.width = `${percent}%`

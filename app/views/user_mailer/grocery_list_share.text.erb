@@ -5,7 +5,7 @@
 <% @items_by_category.each do |category, items| %>
 <%= category.upcase %>
 <% items.each do |item| %>
-  - <%= item.display_quantity %> <%= item.unit %> <%= item.ingredient.name %>
+  - <%= [item.display_quantity, item.unit].compact.join(' ') %> <%= item.ingredient.name %>
 <% end %>
 <% end %>
 

@@ -67,7 +67,7 @@
           <div class="flex items-center gap-2">
             <div class="star-rating-display">
               <% 5.times do |i| %>
-                <span class="star <%= i < @recipe.average_rating.to_f.round ? 'filled' : '' %>">★</span>
+                <span class="star <%= i < @recipe.average_rating.to_f.floor ? 'filled' : '' %>">★</span>
               <% end %>
             </div>
             <strong><%= number_with_precision(@recipe.average_rating, precision: 1) %></strong>

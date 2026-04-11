@@ -8,7 +8,12 @@ class RecipeScraperService
   
   def scrape
     return nil unless url.present?
-    
+
+    unless valid_url?(url)
+      @errors << "Invalid URL: must be a public http(s) URL"
+      return nil
+    end
+
     begin
       response = HTTParty.get(url, timeout: 10)
       
@@ -34,7 +39,14 @@ class RecipeScraperService
   end
   
   private
-  
+
+  def valid_url?(url)
+    uri = URI.parse(url)
+    uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
+  rescue URI::InvalidURIError
+    false
+  end
+
   def extract_json_ld(doc)
     json_ld_scripts = doc.css('script[type="application/ld+json"]')
     
