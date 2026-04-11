@@ -141,12 +141,12 @@
   </div>
 
   <%# Nutrition Info %>
-  <% if @recipe.nutrition_info %>
+  <% if @recipe.nutrition_info && @recipe.servings.to_i > 0 %>
     <div class="card mb-4">
       <details>
         <summary><strong>Nutrition Information</strong> (per serving)</summary>
         <div class="grid grid-3 mt-3">
-          <% ni = @recipe.nutrition_info.per_serving %>
+          <% ni = @recipe.nutrition_info.per_serving(@recipe.servings) %>
           <div class="text-center"><strong><%= ni.calories.to_f.round %></strong><br><small>Calories</small></div>
           <div class="text-center"><strong><%= ni.protein_g.to_f.round(1) %>g</strong><br><small>Protein</small></div>
           <div class="text-center"><strong><%= ni.carbs_g.to_f.round(1) %>g</strong><br><small>Carbs</small></div>

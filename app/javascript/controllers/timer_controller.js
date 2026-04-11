@@ -92,8 +92,21 @@ export default class extends Controller {
   }
 
   ring() {
-    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    if (typeof Notification === 'undefined') {
+      alert('Timer finished!')
+      return
+    }
+
+    if (Notification.permission === 'granted') {
       new Notification('Timer Done!', { body: 'Your cooking timer has finished.' })
+    } else if (Notification.permission !== 'denied') {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          new Notification('Timer Done!', { body: 'Your cooking timer has finished.' })
+        } else {
+          alert('Timer finished!')
+        }
+      })
     } else {
       alert('Timer finished!')
     }
