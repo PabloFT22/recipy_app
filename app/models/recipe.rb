@@ -9,6 +9,8 @@ class Recipe < ApplicationRecord
   has_many :recipe_collections, through: :recipe_collection_memberships
   has_many :meal_plan_recipes, dependent: :destroy
   has_many :meal_plans, through: :meal_plan_recipes
+  has_many :recipe_tags, dependent: :destroy
+  has_many :tags, through: :recipe_tags
   has_one_attached :image
   
   validates :title, presence: true
@@ -25,6 +27,7 @@ class Recipe < ApplicationRecord
   scope :search, ->(query) do
     where("title LIKE ? OR description LIKE ?", "%#{query}%", "%#{query}%")
   end
+  scope :by_tag, ->(tag_id) { joins(:tags).where(tags: { id: tag_id }) }
   
   def total_time
     return nil unless prep_time && cook_time

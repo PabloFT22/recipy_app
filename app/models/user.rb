@@ -3,6 +3,7 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
   
   has_many :recipes, dependent: :destroy
+  has_many :tags, dependent: :destroy
   has_many :grocery_lists, dependent: :destroy
   has_many :recipe_collections, dependent: :destroy
   has_many :meal_plans, dependent: :destroy

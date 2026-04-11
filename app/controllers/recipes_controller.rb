@@ -6,9 +6,9 @@ class RecipesController < ApplicationController
   
   def index
     if user_signed_in?
-      @recipes = current_user.recipes.recent.page(params[:page])
+      @recipes = current_user.recipes.includes(:tags).recent.page(params[:page])
     else
-      @recipes = Recipe.public_recipes.recent.page(params[:page])
+      @recipes = Recipe.public_recipes.includes(:tags).recent.page(params[:page])
     end
     
     if params[:search].present?
@@ -18,12 +18,21 @@ class RecipesController < ApplicationController
     if params[:difficulty].present?
       @recipes = @recipes.by_difficulty(params[:difficulty])
     end
+
+    if params[:tag].present?
+      @recipes = @recipes.by_tag(params[:tag])
+    end
+
+    if user_signed_in?
+      @user_tags = current_user.tags.with_recipe_count.alphabetical.select { |t| t.recipe_count.to_i > 0 }
+    end
   end
   
   def show
     unless @recipe.is_public || (user_signed_in? && @recipe.user == current_user)
       redirect_to recipes_path, alert: "Recipe not found or is private"
     end
+    @recipe_tags = @recipe.tags
   end
   
   def new
@@ -32,10 +41,12 @@ class RecipesController < ApplicationController
   
   def create
     ingredients_rows = params[:recipe].delete(:ingredients_rows)
+    tag_names = params[:recipe].delete(:tag_names)
     @recipe = current_user.recipes.build(recipe_params)
     
     if @recipe.save
       save_structured_ingredients(ingredients_rows) if ingredients_rows.present?
+      sync_tags(tag_names) if tag_names.present?
       redirect_to @recipe, notice: 'Recipe was successfully created.'
     else
       render :new, status: :unprocessable_entity
@@ -47,13 +58,16 @@ class RecipesController < ApplicationController
   
   def update
     ingredients_rows = params[:recipe].delete(:ingredients_rows)
+    tag_names = params[:recipe].delete(:tag_names)
     
     if @recipe.update(recipe_params)
       if ingredients_rows.present?
         @recipe.recipe_ingredients.destroy_all
         save_structured_ingredients(ingredients_rows)
       end
-      
+
+      sync_tags(tag_names)
+
       redirect_to @recipe, notice: 'Recipe was successfully updated.'
     else
       render :edit, status: :unprocessable_entity
@@ -118,6 +132,10 @@ class RecipesController < ApplicationController
         if recipe_data[:ingredients].present?
           ingredients_text = recipe_data[:ingredients].join("\n")
           parse_and_add_ingredients(ingredients_text)
+        end
+
+        if recipe_data[:tags].present?
+          sync_tags(recipe_data[:tags].join(', '))
         end
 
         redirect_to @recipe, notice: "Recipe imported successfully!"
@@ -288,5 +306,15 @@ class RecipesController < ApplicationController
     )
   rescue StandardError => e
     Rails.logger.warn("Failed to attach image from #{image_url}: #{e.message}")
+  end
+
+  def sync_tags(tag_names_string)
+    tag_names = tag_names_string.to_s.split(',').map(&:strip).reject(&:blank?).map(&:downcase).uniq
+
+    new_tags = tag_names.map do |name|
+      current_user.tags.find_or_create_by(name: name)
+    end.select(&:persisted?)
+
+    @recipe.tags = new_tags
   end
 end

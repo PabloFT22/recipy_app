@@ -229,7 +229,8 @@ class RecipeScraperService
             servings: parse_servings(recipe['recipeYield']),
             instructions: extract_instructions(recipe['recipeInstructions']),
             ingredients: recipe['recipeIngredient'] || [],
-            image_url: extract_image_url(recipe['image'])
+            image_url: extract_image_url(recipe['image']),
+            tags: extract_tags_from_json_ld(recipe)
           }
         end
       rescue JSON::ParserError
@@ -278,7 +279,8 @@ class RecipeScraperService
       description: extract_description(doc),
       image_url: extract_og_image(doc),
       ingredients: extract_ingredients_from_selectors(doc),
-      instructions: extract_instructions_from_selectors(doc)
+      instructions: extract_instructions_from_selectors(doc),
+      tags: []
     }
   end
   
@@ -388,5 +390,30 @@ class RecipeScraperService
     end
     
     nil
+  end
+
+  def extract_tags_from_json_ld(recipe)
+    raw_tags = []
+
+    # keywords can be a comma-separated string or an array
+    if recipe['keywords'].present?
+      if recipe['keywords'].is_a?(Array)
+        raw_tags.concat(recipe['keywords'])
+      else
+        raw_tags.concat(recipe['keywords'].to_s.split(','))
+      end
+    end
+
+    # recipeCategory can be a string or array
+    if recipe['recipeCategory'].present?
+      raw_tags.concat(Array(recipe['recipeCategory']))
+    end
+
+    # recipeCuisine can be a string or array
+    if recipe['recipeCuisine'].present?
+      raw_tags.concat(Array(recipe['recipeCuisine']))
+    end
+
+    raw_tags.map { |t| t.to_s.strip.downcase }.reject(&:blank?).uniq
   end
 end

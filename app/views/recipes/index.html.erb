@@ -11,10 +11,25 @@
     <div class="flex gap-2">
       <%= f.text_field :search, value: params[:search], placeholder: "Search recipes...", class: "form-control" %>
       <%= f.select :difficulty, options_for_select([['All Difficulties', ''], ['Easy', 'easy'], ['Medium', 'medium'], ['Hard', 'hard']], params[:difficulty]), {}, class: "form-control" %>
+      <% if params[:tag].present? %>
+        <%= f.hidden_field :tag, value: params[:tag] %>
+      <% end %>
       <%= f.submit "Search", class: "btn" %>
     </div>
   <% end %>
 </div>
+
+<% if user_signed_in? && @user_tags.present? %>
+  <div class="tag-filter-bar mb-4">
+    <%= link_to "All", recipes_path(search: params[:search], difficulty: params[:difficulty]),
+        class: "tag-badge #{params[:tag].blank? ? 'tag-badge-active' : ''}" %>
+    <% @user_tags.each do |tag| %>
+      <%= link_to "#{tag.name} (#{tag.recipe_count})",
+          recipes_path(tag: tag.id, search: params[:search], difficulty: params[:difficulty]),
+          class: "tag-badge #{params[:tag].to_s == tag.id.to_s ? 'tag-badge-active' : ''}" %>
+    <% end %>
+  </div>
+<% end %>
 
 <% if @recipes.any? %>
   <div class="grid grid-3">
@@ -28,6 +43,13 @@
         <div class="recipe-card-body">
           <h3 class="recipe-card-title"><%= link_to recipe.title, recipe %></h3>
           <p class="recipe-card-description"><%= truncate(recipe.description, length: 100) %></p>
+          <% if recipe.tags.any? %>
+            <div class="recipe-card-tags mb-2">
+              <% recipe.tags.each do |tag| %>
+                <span class="tag-badge tag-badge-small"><%= tag.name %></span>
+              <% end %>
+            </div>
+          <% end %>
           <div class="flex gap-2 mb-2">
             <% if recipe.prep_time %>
               <span>⏱️ <%= recipe.prep_time %>min</span>

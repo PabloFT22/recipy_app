@@ -3488,3 +3488,154 @@ footer {
     display: flex !important;
   }
 }
+
+/* =============================================================
+   TAG SYSTEM
+   ============================================================= */
+
+/* Tag badge — used on show page, index cards, and filter bar */
+.tag-badge {
+  display: inline-block;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: var(--color-bg-subtle);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.tag-badge:hover {
+  background: var(--color-border-light);
+  color: var(--color-primary-dark);
+  text-decoration: none;
+}
+
+.tag-badge-active {
+  background: var(--color-gradient);
+  color: #fff;
+  border-color: transparent;
+}
+
+.tag-badge-active:hover {
+  background: var(--color-gradient-hover);
+  color: #fff;
+}
+
+.tag-badge-small {
+  padding: 2px var(--space-xs);
+  font-size: 0.72rem;
+  cursor: default;
+}
+
+/* Tag filter bar on index */
+.tag-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: var(--space-xs);
+}
+
+/* Recipe card tags row */
+.recipe-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* Tag input wrapper (form) */
+.tag-input-wrapper {
+  position: relative;
+}
+
+.tag-input-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+
+.tag-input-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 0.85rem;
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  line-height: 1.4;
+}
+
+.tag-input-pill .tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin-left: 2px;
+  font-size: 0.7rem;
+  line-height: 1;
+  background: transparent;
+  color: var(--color-text-muted);
+  border: none;
+  border-radius: var(--radius-round);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tag-input-pill .tag-remove:hover {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+/* Tag suggestions dropdown */
+.tag-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-elevated);
+  z-index: 100;
+}
+
+.tag-suggestion-item {
+  padding: var(--space-sm) var(--space-base);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.tag-suggestion-item:hover {
+  background: var(--color-bg-subtle);
+}
+
+/* Responsive: mobile scroll for filter bar */
+@media (max-width: 768px) {
+  .tag-filter-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .tag-filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+}

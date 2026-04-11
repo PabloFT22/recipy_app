@@ -12,6 +12,8 @@ Rails.application.routes.draw do
       post :import_from_url
     end
   end
+
+  get 'tags/search', to: 'tags#search', as: :tags_search
   
   resources :grocery_lists do
     member do

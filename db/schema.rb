@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_05_182536) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_07_000002) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -134,6 +134,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_05_182536) do
     t.index ["recipe_id"], name: "index_recipe_ingredients_on_recipe_id"
   end
 
+  create_table "recipe_tags", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "recipe_id", null: false
+    t.bigint "tag_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["recipe_id", "tag_id"], name: "index_recipe_tags_on_recipe_id_and_tag_id", unique: true
+    t.index ["recipe_id"], name: "index_recipe_tags_on_recipe_id"
+    t.index ["tag_id"], name: "index_recipe_tags_on_tag_id"
+  end
+
   create_table "recipes", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "title", null: false
@@ -152,6 +162,15 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_05_182536) do
     t.index ["slug"], name: "index_recipes_on_slug", unique: true
     t.index ["user_id", "created_at"], name: "index_recipes_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_recipes_on_user_id"
+  end
+
+  create_table "tags", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name", "user_id"], name: "index_tags_on_name_and_user_id", unique: true
+    t.index ["user_id"], name: "index_tags_on_user_id"
   end
 
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -181,5 +200,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_05_182536) do
   add_foreign_key "recipe_collections", "users"
   add_foreign_key "recipe_ingredients", "ingredients"
   add_foreign_key "recipe_ingredients", "recipes"
+  add_foreign_key "recipe_tags", "recipes"
+  add_foreign_key "recipe_tags", "tags"
   add_foreign_key "recipes", "users"
+  add_foreign_key "tags", "users"
 end

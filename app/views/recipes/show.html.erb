@@ -16,6 +16,12 @@
             </span>
           <% end %>
 
+          <% if @recipe_tags.any? %>
+            <% @recipe_tags.each do |tag| %>
+              <%= link_to tag.name, recipes_path(tag: tag.id), class: "tag-badge" %>
+            <% end %>
+          <% end %>
+
           <% if @recipe.servings.present? %>
             <span class="meta-item">
               👥 <%= @recipe.servings %> servings

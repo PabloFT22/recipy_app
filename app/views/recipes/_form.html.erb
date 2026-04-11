@@ -77,6 +77,40 @@
       </div>
     </div>
 
+    <!-- Tags Card -->
+    <div class="form-card" data-recipe-form-target="card" data-card="tags">
+      <div class="card-header" data-action="click->recipe-form#toggleCard">
+        <div class="card-title">
+          <span class="card-icon">🏷️</span>
+          <h3>Tags</h3>
+          <span class="card-status">Optional</span>
+        </div>
+        <button type="button" class="expand-btn" data-recipe-form-target="tagsToggle">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <div class="card-body collapsed" data-recipe-form-target="tagsBody">
+        <div class="form-group" data-controller="tag-input">
+          <label>Recipe Tags</label>
+          <p class="helper-text">Type a tag and press Enter or comma to add. Click ✕ to remove.</p>
+          <div class="tag-input-wrapper">
+            <div class="tag-input-pills" data-tag-input-target="tagList"></div>
+            <input type="text"
+                   placeholder="e.g., vegetarian, quick, italian"
+                   class="form-input"
+                   data-tag-input-target="input"
+                   data-action="input->tag-input#suggest keydown->tag-input#handleKeydown"
+                   autocomplete="off">
+            <div class="tag-suggestions" data-tag-input-target="suggestions" style="display: none;"></div>
+          </div>
+          <input type="hidden" name="recipe[tag_names]" data-tag-input-target="hiddenField" value="<%= recipe.tags.pluck(:name).join(', ') %>">
+        </div>
+      </div>
+    </div>
+
     <!-- Timing Card -->
     <div class="form-card" data-recipe-form-target="card" data-card="timing">
       <div class="card-header" data-action="click->recipe-form#toggleCard">
