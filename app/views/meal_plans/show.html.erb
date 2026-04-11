@@ -10,10 +10,15 @@
           <span>🍽️ <%= @meal_plan.total_recipes %> <%= 'recipe'.pluralize(@meal_plan.total_recipes) %></span>
           <span class="separator">•</span>
           <span><%= pluralize((@meal_plan.end_date - @meal_plan.start_date).to_i + 1, 'day') %></span>
+          <% if @meal_plan.is_template %>
+            <span class="separator">•</span>
+            <span class="badge">Template</span>
+          <% end %>
         </div>
       </div>
       <div class="mp-show-actions">
         <%= link_to "✏️ Edit", edit_meal_plan_path(@meal_plan), class: "btn btn-secondary" %>
+        <%= link_to "📅 Export iCal", export_ical_meal_plan_path(@meal_plan), class: "btn btn-secondary" %>
         <%= link_to "🛒 Generate Grocery List", generate_grocery_list_meal_plan_path(@meal_plan),
             data: { turbo_method: :post, turbo_confirm: "Generate a grocery list from this meal plan?" },
             class: "btn btn-success" %>

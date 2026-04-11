@@ -74,6 +74,28 @@
             <span>Make this recipe public</span>
           <% end %>
         </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <%= form.label :cuisine_type, "Cuisine Type" %>
+            <%= form.text_field :cuisine_type, 
+                placeholder: "Italian, Mexican, etc.",
+                class: "form-input" %>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Dietary Tags</label>
+          <div class="flex gap-2" style="flex-wrap: wrap;">
+            <% %w[vegetarian vegan gluten-free dairy-free nut-free].each do |tag| %>
+              <label class="checkbox-label">
+                <input type="checkbox" name="recipe[dietary_tags_array][]" value="<%= tag %>"
+                       <%= recipe.dietary_tags&.include?(tag) ? 'checked' : '' %>>
+                <%= tag %>
+              </label>
+            <% end %>
+          </div>
+        </div>
       </div>
     </div>
 
