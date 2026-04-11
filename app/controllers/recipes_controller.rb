@@ -1,6 +1,6 @@
 class RecipesController < ApplicationController
   skip_before_action :authenticate_user!, only: [:index, :show, :cook]
-  before_action :set_recipe, only: [:show, :edit, :update, :destroy, :duplicate, :add_to_collection, :cook]
+  before_action :set_recipe, only: [:show, :edit, :update, :destroy, :duplicate, :add_to_collection, :cook, :like, :unlike]
   before_action :authorize_recipe, only: [:edit, :update, :destroy]
 
   def index
@@ -161,6 +161,21 @@ class RecipesController < ApplicationController
     @steps = @recipe.parse_instructions_into_steps
   end
 
+  def like
+    authenticate_user!
+    unless @recipe.liked_by?(current_user)
+      current_user.likes.create!(recipe: @recipe)
+    end
+    redirect_to @recipe
+  end
+
+  def unlike
+    authenticate_user!
+    like = current_user.likes.find_by(recipe: @recipe)
+    like&.destroy
+    redirect_to @recipe
+  end
+
   private
 
   def set_recipe
@@ -174,7 +189,7 @@ class RecipesController < ApplicationController
   end
 
   def recipe_params
-    params.require(:recipe).permit(
+    permitted = params.require(:recipe).permit(
       :title,
       :description,
       :servings,
@@ -186,8 +201,14 @@ class RecipesController < ApplicationController
       :is_public,
       :image,
       :cuisine_type,
-      :dietary_tags
+      :dietary_tags,
+      dietary_tags_array: []
     )
+    # Convert dietary_tags_array checkboxes into comma-separated string
+    if permitted[:dietary_tags_array]
+      permitted[:dietary_tags] = permitted.delete(:dietary_tags_array).reject(&:blank?).join(',')
+    end
+    permitted
   end
 
   def parse_and_add_ingredients(ingredients_text)

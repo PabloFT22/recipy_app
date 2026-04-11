@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :authenticate_user!, only: [:edit, :update]
+  before_action :authenticate_user!, only: [:edit, :update, :follow, :unfollow]
   before_action :set_user
 
   def show
@@ -20,6 +20,19 @@ class UsersController < ApplicationController
     else
       render :edit, status: :unprocessable_entity
     end
+  end
+
+  def follow
+    unless current_user.following?(@user) || current_user == @user
+      current_user.follows_as_follower.create!(following: @user)
+    end
+    redirect_to @user
+  end
+
+  def unfollow
+    follow = current_user.follows_as_follower.find_by(following: @user)
+    follow&.destroy
+    redirect_to @user
   end
 
   private

@@ -66,10 +66,12 @@ class MealPlansController < ApplicationController
     cal.append_custom_property("X-WR-CALNAME", @meal_plan.name)
 
     @meal_plan.meal_plan_recipes.includes(:recipe).each do |mpr|
+      next unless mpr.scheduled_for.present?
+
       event = Icalendar::Event.new
       event.dtstart = Icalendar::Values::Date.new(mpr.scheduled_for.strftime('%Y%m%d'))
       event.dtend = Icalendar::Values::Date.new(mpr.scheduled_for.strftime('%Y%m%d'))
-      event.summary = "#{mpr.meal_type.capitalize}: #{mpr.recipe.title}"
+      event.summary = [mpr.meal_type&.capitalize, mpr.recipe.title].compact.join(': ')
       event.description = mpr.recipe.description
       cal.add_event(event)
     end

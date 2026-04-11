@@ -24,9 +24,6 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :follows, only: [:create, :destroy]
-  resources :likes, only: [:create, :destroy]
-
   resources :grocery_lists do
     member do
       post :complete

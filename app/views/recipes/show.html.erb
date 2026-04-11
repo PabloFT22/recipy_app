@@ -80,11 +80,11 @@
       <% if user_signed_in? %>
         <%= turbo_frame_tag "like_button_#{@recipe.id}" do %>
           <% if @recipe.liked_by?(current_user) %>
-            <%= link_to unlike_recipe_path(@recipe), data: { turbo_method: :delete }, class: "btn btn-secondary" %>
-              ❤️ Liked (<%= @recipe.likes.count %>)
-            <% else %>
-            <%= link_to like_recipe_path(@recipe), data: { turbo_method: :post }, class: "btn" %>
-              🤍 Like (<%= @recipe.likes.count %>)
+            <%= link_to "❤️ Liked (#{@recipe.likes.count})", unlike_recipe_path(@recipe),
+                data: { turbo_method: :delete }, class: "btn btn-secondary" %>
+          <% else %>
+            <%= link_to "🤍 Like (#{@recipe.likes.count})", like_recipe_path(@recipe),
+                data: { turbo_method: :post }, class: "btn" %>
           <% end %>
         <% end %>
       <% end %>
@@ -146,7 +146,7 @@
       <details>
         <summary><strong>Nutrition Information</strong> (per serving)</summary>
         <div class="grid grid-3 mt-3">
-          <% ni = @recipe.nutrition_info.per_serving(@recipe.servings) %>
+          <% ni = @recipe.nutrition_info.per_serving(1) %>
           <div class="text-center"><strong><%= ni.calories.to_f.round %></strong><br><small>Calories</small></div>
           <div class="text-center"><strong><%= ni.protein_g.to_f.round(1) %>g</strong><br><small>Protein</small></div>
           <div class="text-center"><strong><%= ni.carbs_g.to_f.round(1) %>g</strong><br><small>Carbs</small></div>

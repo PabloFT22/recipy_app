@@ -36,7 +36,7 @@
           <% if day_recipes %>
             <% day_recipes[1].each do |mpr| %>
               <div style="background: #f0f8f0; border-radius: 4px; padding: 0.3rem; margin-bottom: 0.3rem; font-size: 0.8rem;">
-                <strong><%= mpr.meal_type.capitalize %></strong><br>
+                <strong><%= mpr.meal_type&.capitalize %></strong><br>
                 <%= link_to truncate(mpr.recipe.title, length: 25), mpr.recipe %>
               </div>
             <% end %>
@@ -59,7 +59,7 @@
           <% recipes.each do |mpr| %>
             <div class="recipe-card">
               <div class="recipe-card-body">
-                <span class="badge"><%= mpr.meal_type.capitalize %></span>
+                <span class="badge"><%= mpr.meal_type&.capitalize %></span>
                 <h4 class="recipe-card-title mt-1"><%= link_to mpr.recipe.title, mpr.recipe %></h4>
                 <p class="text-muted"><%= mpr.servings %> servings</p>
               </div>
