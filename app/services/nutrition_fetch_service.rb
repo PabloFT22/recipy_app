@@ -1,14 +1,16 @@
 class NutritionFetchService
   USDA_API_URL = "https://api.nal.usda.gov/fdc/v1/foods/search".freeze
 
+  # USDA FoodData Central nutrient IDs
+  # See: https://fdc.nal.usda.gov/food-details/746775/nutrients
   NUTRIENT_IDS = {
-    calories: 1008,
-    protein_g: 1003,
-    carbs_g: 1005,
-    fat_g: 1004,
-    fiber_g: 1079,
-    sugar_g: 2000,
-    sodium_mg: 1093
+    calories: 1008,   # Energy (kcal)
+    protein_g: 1003,  # Protein (g)
+    carbs_g: 1005,    # Carbohydrate, by difference (g)
+    fat_g: 1004,      # Total lipid/fat (g)
+    fiber_g: 1079,    # Fiber, total dietary (g)
+    sugar_g: 2000,    # Sugars, total (g)
+    sodium_mg: 1093   # Sodium, Na (mg)
   }.freeze
 
   def initialize(recipe)

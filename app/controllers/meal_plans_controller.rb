@@ -69,8 +69,9 @@ class MealPlansController < ApplicationController
       next unless mpr.scheduled_for.present?
 
       event = Icalendar::Event.new
-      event.dtstart = Icalendar::Values::Date.new(mpr.scheduled_for.strftime('%Y%m%d'))
-      event.dtend = Icalendar::Values::Date.new(mpr.scheduled_for.strftime('%Y%m%d'))
+      ical_date = Icalendar::Values::Date.new(mpr.scheduled_for.strftime('%Y%m%d'))
+      event.dtstart = ical_date
+      event.dtend = ical_date
       event.summary = [mpr.meal_type&.capitalize, mpr.recipe.title].compact.join(': ')
       event.description = mpr.recipe.description
       cal.add_event(event)

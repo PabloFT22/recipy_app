@@ -23,7 +23,7 @@ export default class extends Controller {
   }
 
   start() {
-    if (this.remaining === 0 && this.totalSeconds === 0) return
+    if (!this.totalSeconds || this.totalSeconds === 0) return
     if (this.remaining === 0) this.remaining = this.totalSeconds
 
     this.running = true
