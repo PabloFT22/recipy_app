@@ -1,0 +1,47 @@
+<div class="auth-shell auth-shell--wide">
+  <div class="auth-card">
+    <div class="auth-head auth-head--left">
+      <h1 class="auth-title">Account settings</h1>
+      <p class="auth-subtitle">Signed in as <%= resource.email %>.</p>
+    </div>
+
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put, class: "auth-form" }) do |f| %>
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div class="form-group">
+        <%= f.label :email, class: "form-label" %>
+        <%= f.email_field :email, autocomplete: "email", class: "form-input" %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :password, "New password", class: "form-label" %>
+        <%= f.password_field :password, autocomplete: "new-password", class: "form-input" %>
+        <p class="form-hint">Leave blank to keep your current password.</p>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :password_confirmation, "Confirm new password", class: "form-label" %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-input" %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :current_password, class: "form-label" %>
+        <%= f.password_field :current_password, autocomplete: "current-password", class: "form-input" %>
+        <p class="form-hint">We need your current password to confirm the change.</p>
+      </div>
+
+      <%= f.submit "Save changes", class: "btn btn-large" %>
+    <% end %>
+  </div>
+
+  <div class="auth-card auth-card--danger">
+    <h2 class="auth-title auth-title--sm">Delete account</h2>
+    <p class="auth-subtitle">
+      This removes your recipes, meal plans, and lists for good. It can't be undone.
+    </p>
+    <%= button_to "Delete my account", registration_path(resource_name),
+                  method: :delete,
+                  class: "btn btn-danger",
+                  form: { data: { turbo_confirm: "Delete your account and everything in it? This cannot be undone." } } %>
+  </div>
+</div>

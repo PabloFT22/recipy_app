@@ -1,16 +1,21 @@
 <div class="rc-container">
-  <div class="flex justify-between items-center mb-4">
-    <h1>📚 My Collections</h1>
-    <%= link_to "➕ New Collection", new_recipe_collection_path, class: "btn btn-success" %>
-  </div>
+  <%= render "shared/page_header",
+        title: "Collections",
+        eyebrow: "Cookbook",
+        lead: "Group recipes however you like — weeknights, holidays, things worth repeating.",
+        actions: capture {
+          concat(link_to(new_recipe_collection_path, class: "btn") { safe_join([icon(:plus, size: 16), "New Collection"]) })
+        } %>
 
   <% if @collections.any? %>
-    <div class="grid grid-3">
+    <div class="rc-grid">
       <% @collections.each do |collection| %>
-        <div class="rc-card">
+        <article class="rc-card <%= 'rc-card--stacked' if collection.recipe_count > 1 %>">
           <div class="rc-card-header">
             <h3 class="rc-card-title"><%= link_to collection.name, collection %></h3>
-            <span class="rc-recipe-count">🍽️ <%= collection.recipe_count %></span>
+            <span class="rc-recipe-count">
+              <%= icon(:plate, size: 13) %><%= collection.recipe_count %>
+            </span>
           </div>
 
           <div class="rc-card-body">
@@ -18,12 +23,16 @@
               <p class="rc-card-description"><%= truncate(collection.description, length: 80) %></p>
             <% end %>
 
+            <%# The thumbnail strip is the visual hook — give it room. %>
             <div class="rc-thumb-strip">
               <% collection.recipes.limit(3).each do |recipe| %>
                 <% if recipe.image.attached? %>
-                  <%= image_tag recipe.image, class: "rc-thumb" %>
+                  <%= image_tag recipe.image,
+                        class: "rc-thumb",
+                        loading: "lazy",
+                        alt: "Photo of #{recipe.title}" %>
                 <% else %>
-                  <div class="rc-thumb rc-thumb--placeholder">🍽️</div>
+                  <div class="rc-thumb rc-thumb--placeholder"><%= icon(:pot, size: 20) %></div>
                 <% end %>
               <% end %>
               <% if collection.recipe_count == 0 %>
@@ -32,30 +41,35 @@
             </div>
 
             <div class="rc-card-meta">
-              <span>📅 Created <%= time_ago_in_words(collection.created_at) %> ago</span>
+              <span class="icon-label">
+                <%= icon(:calendar, size: 13) %>Created <%= time_ago_in_words(collection.created_at) %> ago
+              </span>
             </div>
           </div>
 
           <div class="rc-card-actions">
-            <%= link_to "View", collection, class: "btn" %>
-            <%= link_to "Edit", edit_recipe_collection_path(collection), class: "btn btn-secondary" %>
-            <%= link_to "Delete", collection, data: { turbo_method: :delete, turbo_confirm: "Delete this collection and remove all recipes from it?" }, class: "btn btn-danger" %>
+            <%= link_to "View", collection, class: "btn btn-small" %>
+            <%= link_to "Edit", edit_recipe_collection_path(collection), class: "btn btn-small btn-secondary" %>
+            <%= link_to recipe_collection_path(collection),
+                  data: { turbo_method: :delete, turbo_confirm: "Delete “#{collection.name}” and remove all recipes from it?" },
+                  class: "btn btn-small btn-plain btn-plain--danger",
+                  "aria-label": "Delete #{collection.name}" do %>
+              <%= icon(:trash, size: 15) %>
+            <% end %>
           </div>
-        </div>
+        </article>
       <% end %>
     </div>
 
-    <div class="mt-4 text-center">
+    <div class="mt-4 text-center pagination-wrap">
       <%= paginate @collections %>
     </div>
   <% else %>
-    <div class="card text-center">
-      <div class="empty-state">
-        <span class="empty-icon">📚</span>
-        <h3>No collections yet</h3>
-        <p>Organize your recipes into collections!</p>
-        <%= link_to "Create Your First Collection", new_recipe_collection_path, class: "btn btn-success mt-2" %>
-      </div>
-    </div>
+    <%= render "shared/empty_state",
+          icon_name: :books,
+          title: "No collections yet",
+          text: "Collections are folders for your recipes — a place for weeknight dinners, the Christmas menu, or everything you make with a lemon.",
+          action_label: "Create Your First Collection",
+          action_path: new_recipe_collection_path %>
   <% end %>
 </div>

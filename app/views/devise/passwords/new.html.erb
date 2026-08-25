@@ -1,0 +1,22 @@
+<div class="auth-shell">
+  <div class="auth-card">
+    <div class="auth-head">
+      <span class="icon-plate icon-plate--lg icon-plate--info"><%= icon(:lock, size: 24) %></span>
+      <h1 class="auth-title">Reset your password</h1>
+      <p class="auth-subtitle">We'll email you a link to set a new one.</p>
+    </div>
+
+    <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post, class: "auth-form" }) do |f| %>
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div class="form-group">
+        <%= f.label :email, class: "form-label" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-input", placeholder: "you@example.com" %>
+      </div>
+
+      <%= f.submit "Send reset link", class: "btn btn-block btn-large" %>
+    <% end %>
+
+    <%= render "devise/shared/links" %>
+  </div>
+</div>

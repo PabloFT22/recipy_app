@@ -1,13 +1,13 @@
 <div class="recipe-form-container">
   <div class="recipe-form-header">
-    <h1><%= collection.new_record? ? '📚 Create New Collection' : '✏️ Edit Collection' %></h1>
+    <h1><%= collection.new_record? ? 'Create New Collection' : 'Edit Collection' %></h1>
     <p class="subtitle"><%= collection.new_record? ? 'Organize your favorite recipes' : 'Update your collection details' %></p>
   </div>
 
   <%= form_with(model: collection, class: "recipe-form") do |form| %>
     <% if collection.errors.any? %>
-      <div class="alert alert-error">
-        <h3><%= pluralize(collection.errors.count, "error") %> prevented this collection from being saved:</h3>
+      <div class="alert-error" role="alert">
+        <h3 class="icon-label"><%= icon(:warning, size: 16) %><%= pluralize(collection.errors.count, "error") %> prevented this collection from being saved:</h3>
         <ul>
           <% collection.errors.full_messages.each do |message| %>
             <li><%= message %></li>
@@ -19,7 +19,7 @@
     <div class="form-card">
       <div class="card-header">
         <div class="card-title">
-          <span class="card-icon">📋</span>
+          <span class="icon-plate icon-plate--sm"><%= icon(:books, size: 17) %></span>
           <h3>Collection Details</h3>
         </div>
       </div>
@@ -44,7 +44,7 @@
     </div>
 
     <div class="form-actions mt-3">
-      <%= form.submit collection.new_record? ? "Create Collection" : "Update Collection", class: "btn btn-success" %>
+      <%= form.submit collection.new_record? ? "Create Collection" : "Update Collection", class: "btn btn-large" %>
       <%= link_to "Cancel", recipe_collections_path, class: "btn btn-secondary" %>
     </div>
   <% end %>

@@ -6,7 +6,7 @@
           data: { turbo_method: :patch },
           class: "gl-checkbox" do %>
         <span class="gl-checkbox-box <%= 'gl-checkbox-box--checked' if item.checked %>">
-          <% if item.checked %>✓<% end %>
+          <%= icon(:check, size: 15) %>
         </span>
       <% end %>
     </div>
@@ -25,24 +25,28 @@
 
     <div class="gl-item-actions">
       <% if item.on_hand %>
-        <%= link_to "🏠 On Hand",
-            toggle_on_hand_grocery_list_grocery_list_item_path(grocery_list, item),
-            data: { turbo_method: :patch },
-            class: "gl-on-hand-badge gl-on-hand-badge--active" %>
+        <%= link_to toggle_on_hand_grocery_list_grocery_list_item_path(grocery_list, item),
+              data: { turbo_method: :patch },
+              class: "gl-on-hand-badge gl-on-hand-badge--active",
+              title: "Already at home — tap to move back onto the list" do %>
+          <%= icon(:home, size: 14) %>On Hand
+        <% end %>
       <% else %>
-        <%= link_to "🏠",
-            toggle_on_hand_grocery_list_grocery_list_item_path(grocery_list, item),
-            data: { turbo_method: :patch },
-            class: "gl-on-hand-badge",
-            title: "Mark as on hand" %>
+        <%= link_to toggle_on_hand_grocery_list_grocery_list_item_path(grocery_list, item),
+              data: { turbo_method: :patch },
+              class: "gl-on-hand-badge",
+              title: "Mark as on hand" do %>
+          <%= icon(:home, size: 14, title: "Mark #{item.display_name} as on hand") %>
+        <% end %>
       <% end %>
 
       <% if grocery_list.status == 'active' %>
-        <%= link_to "🗑️",
-            grocery_list_grocery_list_item_path(grocery_list, item),
-            data: { turbo_method: :delete, turbo_confirm: "Remove this item?" },
-            class: "gl-item-delete",
-            title: "Remove item" %>
+        <%= link_to grocery_list_grocery_list_item_path(grocery_list, item),
+              data: { turbo_method: :delete, turbo_confirm: "Remove this item?" },
+              class: "gl-item-delete",
+              title: "Remove item" do %>
+          <%= icon(:trash, size: 15, title: "Remove #{item.display_name}") %>
+        <% end %>
       <% end %>
     </div>
   </div>

@@ -1,95 +1,227 @@
 <% if user_signed_in? %>
-  <div class="text-center mb-4">
-    <h1>Welcome back to Recipy!</h1>
-    <p class="mt-2">Manage your recipes, plan meals, and generate grocery lists.</p>
-  </div>
+  <header class="dash-head">
+    <p class="section-eyebrow">
+      <%= Date.current.strftime("%A, %-d %B") %>
+    </p>
+    <h1 class="dash-greeting">Welcome back to <span class="dash-greeting-mark">Recipy</span></h1>
+    <p class="page-lead">Pick up where you left off, or start something new.</p>
+  </header>
 
-  <div class="grid grid-2 mb-4">
-    <div class="card">
-      <h2 class="card-title">Quick Actions</h2>
-      <%= link_to "Add New Recipe", new_recipe_path, class: "btn mb-2" %>
-      <%= link_to "Create Meal Plan", new_meal_plan_path, class: "btn btn-success mb-2" %>
-      <%= link_to "New Grocery List", new_grocery_list_path, class: "btn btn-secondary" %>
-    </div>
-
-    <% if @active_meal_plan %>
-      <div class="card">
-        <h2 class="card-title">Active Meal Plan</h2>
-        <h3><%= @active_meal_plan.name %></h3>
-        <p><%= @active_meal_plan.start_date.strftime('%B %d') %> - <%= @active_meal_plan.end_date.strftime('%B %d, %Y') %></p>
-        <p><%= @active_meal_plan.total_recipes %> recipes planned</p>
-        <%= link_to "View Meal Plan", @active_meal_plan, class: "btn mt-2" %>
-      </div>
+  <%# Action tiles — one tappable surface per thing you can start. %>
+  <nav class="action-tiles" aria-label="Quick actions">
+    <%= link_to new_recipe_path, class: "action-tile" do %>
+      <span class="icon-plate icon-plate--lg"><%= icon(:note, size: 24) %></span>
+      <span class="action-tile-text">
+        <span class="action-tile-title">New Recipe</span>
+        <span class="action-tile-sub">Write one from scratch</span>
+      </span>
     <% end %>
-  </div>
 
-  <% if @active_grocery_lists.any? %>
-    <div class="card mb-4">
-      <h2 class="card-title">Active Grocery Lists</h2>
-      <% @active_grocery_lists.each do |list| %>
-        <div class="mb-3">
-          <div class="flex justify-between items-center">
-            <div>
-              <h3><%= link_to list.name, list %></h3>
-              <p><%= list.progress_percentage %>% complete (<%= list.checked_items %>/<%= list.total_items %> items)</p>
+    <%= link_to import_recipes_path, class: "action-tile" do %>
+      <span class="icon-plate icon-plate--lg icon-plate--info"><%= icon(:link, size: 24) %></span>
+      <span class="action-tile-text">
+        <span class="action-tile-title">Import</span>
+        <span class="action-tile-sub">Paste a recipe URL</span>
+      </span>
+    <% end %>
+
+    <%= link_to new_meal_plan_path, class: "action-tile" do %>
+      <span class="icon-plate icon-plate--lg icon-plate--clay"><%= icon(:calendar, size: 24) %></span>
+      <span class="action-tile-text">
+        <span class="action-tile-title">Plan Meals</span>
+        <span class="action-tile-sub">Fill out your week</span>
+      </span>
+    <% end %>
+
+    <%= link_to new_grocery_list_path, class: "action-tile" do %>
+      <span class="icon-plate icon-plate--lg icon-plate--warning"><%= icon(:cart, size: 24) %></span>
+      <span class="action-tile-text">
+        <span class="action-tile-title">Grocery List</span>
+        <span class="action-tile-sub">Start a new shop</span>
+      </span>
+    <% end %>
+  </nav>
+
+  <%# This Week — the meal plan and lists in play right now. %>
+  <% if @active_meal_plan || @active_grocery_lists.any? %>
+    <section class="this-week" aria-labelledby="this-week-heading">
+      <div class="section-head">
+        <h2 class="section-title" id="this-week-heading">This Week</h2>
+      </div>
+
+      <div class="this-week-grid">
+        <% if @active_meal_plan %>
+          <article class="week-plan">
+            <div class="week-plan-head">
+              <span class="icon-plate"><%= icon(:calendar, size: 20) %></span>
+              <div>
+                <p class="section-eyebrow">Active meal plan</p>
+                <h3 class="week-plan-title"><%= link_to @active_meal_plan.name, @active_meal_plan %></h3>
+              </div>
             </div>
-            <%= link_to "View List", list, class: "btn" %>
-          </div>
-        </div>
-      <% end %>
-    </div>
+
+            <p class="week-plan-dates">
+              <%= @active_meal_plan.start_date.strftime('%b %-d') %> –
+              <%= @active_meal_plan.end_date.strftime('%b %-d, %Y') %>
+              <span aria-hidden="true">·</span>
+              <%= pluralize(@active_meal_plan.total_recipes, 'recipe') %> planned
+            </p>
+
+            <%# Mini timeline of the plan's days, today marked. %>
+            <ol class="week-strip">
+              <% (@active_meal_plan.start_date..@active_meal_plan.end_date).first(7).each do |day| %>
+                <% count = @active_meal_plan.meal_plan_recipes.select { |mpr| mpr.scheduled_for == day }.size %>
+                <li class="week-strip-day <%= 'week-strip-day--today' if day == Date.current %>">
+                  <span class="week-strip-name"><%= day.strftime('%a') %></span>
+                  <span class="week-strip-num"><%= day.strftime('%-d') %></span>
+                  <span class="week-strip-dots" aria-label="<%= pluralize(count, 'meal') %>">
+                    <% [count, 3].min.times do %><span class="week-strip-dot"></span><% end %>
+                  </span>
+                </li>
+              <% end %>
+            </ol>
+
+            <%= link_to @active_meal_plan, class: "section-link" do %>
+              Open meal plan <%= icon(:chevron_right, size: 15) %>
+            <% end %>
+          </article>
+        <% end %>
+
+        <% if @active_grocery_lists.any? %>
+          <article class="week-lists">
+            <div class="week-plan-head">
+              <span class="icon-plate icon-plate--warning"><%= icon(:cart, size: 20) %></span>
+              <div>
+                <p class="section-eyebrow">Shopping</p>
+                <h3 class="week-plan-title">Active grocery lists</h3>
+              </div>
+            </div>
+
+            <ul class="week-list-items">
+              <% @active_grocery_lists.each do |list| %>
+                <li class="week-list-item">
+                  <div class="week-list-text">
+                    <%= link_to list.name, list, class: "week-list-name" %>
+                    <span class="week-list-meta">
+                      <%= list.checked_items %>/<%= list.total_items %> items
+                    </span>
+                  </div>
+                  <div class="week-list-progress"
+                       role="progressbar"
+                       aria-valuenow="<%= list.progress_percentage %>"
+                       aria-valuemin="0"
+                       aria-valuemax="100"
+                       aria-label="<%= list.name %> progress">
+                    <span class="week-list-progress-fill" style="width: <%= list.progress_percentage %>%"></span>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+
+            <%= link_to grocery_lists_path, class: "section-link" do %>
+              All grocery lists <%= icon(:chevron_right, size: 15) %>
+            <% end %>
+          </article>
+        <% end %>
+      </div>
+    </section>
   <% end %>
 
-  <% if @recent_recipes.any? %>
-    <h2 class="mb-3">Recent Recipes</h2>
-    <div class="grid grid-3">
-      <% @recent_recipes.each do |recipe| %>
-        <div class="recipe-card">
-          <% if recipe.image.attached? %>
-            <%= image_tag recipe.image, class: "recipe-card-image" %>
-          <% else %>
-            <div class="recipe-card-image"></div>
-          <% end %>
-          <div class="recipe-card-body">
-            <h3 class="recipe-card-title"><%= link_to recipe.title, recipe %></h3>
-            <p class="recipe-card-description"><%= truncate(recipe.description, length: 100) %></p>
-            <div class="flex gap-2">
-              <% if recipe.prep_time %>
-                <span>⏱️ <%= recipe.prep_time %> min</span>
-              <% end %>
-              <% if recipe.servings %>
-                <span>🍽️ <%= recipe.servings %> servings</span>
-              <% end %>
-            </div>
-          </div>
-        </div>
+  <%# Recent recipes — the visual payoff of the page. %>
+  <section aria-labelledby="recent-heading">
+    <div class="section-head">
+      <h2 class="section-title" id="recent-heading">Recent Recipes</h2>
+      <%= link_to recipes_path, class: "section-link" do %>
+        View all <%= icon(:chevron_right, size: 15) %>
       <% end %>
     </div>
-  <% end %>
+
+    <% if @recent_recipes.any? %>
+      <div class="grid grid-3">
+        <% @recent_recipes.each do |recipe| %>
+          <%= render "shared/recipe_card", recipe: recipe %>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render "shared/empty_state",
+            compact: true,
+            icon_name: :book,
+            title: "No recipes yet",
+            text: "Your saved recipes will show up here.",
+            action_label: "Add your first recipe",
+            action_path: new_recipe_path %>
+    <% end %>
+  </section>
 
 <% else %>
-  <div class="text-center">
-    <h1 class="mb-3">Welcome to Recipy</h1>
-    <p class="mb-4" style="font-size: 1.25rem;">Your personal recipe manager with meal planning and grocery list generation.</p>
-    
-    <div class="grid grid-3 mb-4">
-      <div class="card">
-        <h3>📖 Manage Recipes</h3>
-        <p>Store all your favorite recipes in one place. Import from URLs or paste ingredients.</p>
-      </div>
-      <div class="card">
-        <h3>📅 Plan Meals</h3>
-        <p>Create weekly meal plans and automatically generate grocery lists.</p>
-      </div>
-      <div class="card">
-        <h3>🛒 Smart Shopping</h3>
-        <p>Intelligent grocery lists that combine ingredients and organize by category.</p>
+  <%# ── Signed-out landing ─────────────────────────────── %>
+  <section class="hero">
+    <div class="hero-text">
+      <p class="section-eyebrow">Recipes · Meal plans · Groceries</p>
+      <h1 class="hero-title">Everything you cook,<br>in one warm place.</h1>
+      <p class="hero-lead">
+        Save recipes from anywhere, plan your week, and walk into the shop with a
+        list that already knows what you need.
+      </p>
+      <div class="hero-actions">
+        <%= link_to new_user_registration_path, class: "btn btn-large" do %>
+          Get started — it's free <%= icon(:chevron_right, size: 16) %>
+        <% end %>
+        <%= link_to "Sign in", new_user_session_path, class: "btn btn-large btn-secondary" %>
       </div>
     </div>
 
-    <div class="mt-4">
-      <%= link_to "Get Started - Sign Up", new_user_registration_path, class: "btn" %>
-      <%= link_to "Sign In", new_user_session_path, class: "btn btn-secondary" %>
+    <%# Decorative preview of the product, built from the same components. %>
+    <div class="hero-visual" aria-hidden="true">
+      <div class="hero-card hero-card--back">
+        <span class="icon-plate icon-plate--clay"><%= icon(:calendar, size: 20) %></span>
+        <div class="hero-card-lines"><span></span><span></span></div>
+      </div>
+      <div class="hero-card hero-card--mid">
+        <span class="icon-plate icon-plate--warning"><%= icon(:cart, size: 20) %></span>
+        <div class="hero-card-lines"><span></span><span></span><span></span></div>
+      </div>
+      <div class="hero-card hero-card--front">
+        <span class="icon-plate"><%= icon(:pot, size: 20) %></span>
+        <div class="hero-card-lines"><span></span><span></span></div>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <section class="value-props" aria-labelledby="value-heading">
+    <h2 class="visually-hidden" id="value-heading">What Recipy does</h2>
+
+    <article class="value-prop">
+      <span class="icon-plate icon-plate--lg"><%= icon(:book, size: 24) %></span>
+      <h3 class="value-prop-title">Keep every recipe</h3>
+      <p class="value-prop-text">
+        Write your own or paste a link — Recipy reads the page and pulls out the
+        ingredients, times, and steps for you.
+      </p>
+    </article>
+
+    <article class="value-prop">
+      <span class="icon-plate icon-plate--lg icon-plate--clay"><%= icon(:calendar, size: 24) %></span>
+      <h3 class="value-prop-title">Plan the week</h3>
+      <p class="value-prop-text">
+        Drop recipes onto days, set the servings, and see the whole week at a
+        glance before you shop.
+      </p>
+    </article>
+
+    <article class="value-prop">
+      <span class="icon-plate icon-plate--lg icon-plate--warning"><%= icon(:cart, size: 24) %></span>
+      <h3 class="value-prop-title">Shop without thinking</h3>
+      <p class="value-prop-text">
+        Lists build themselves from your plan — quantities added up, duplicates
+        merged, sorted by aisle.
+      </p>
+    </article>
+  </section>
+
+  <section class="cta-band">
+    <h2 class="cta-title">Ready to tidy up your cooking?</h2>
+    <p class="cta-text">Set up your cookbook in a couple of minutes.</p>
+    <%= link_to "Create your account", new_user_registration_path, class: "btn btn-large" %>
+  </section>
 <% end %>

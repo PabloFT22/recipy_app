@@ -39,11 +39,12 @@ A comprehensive Ruby on Rails application for managing recipes, planning meals, 
 
 - **Framework**: Ruby on Rails 7.1.5
 - **Ruby Version**: 2.7.4
-- **Database**: PostgreSQL
+- **Database**: MySQL 8 (mysql2)
 - **Authentication**: Devise
 - **Image Processing**: Active Storage + ImageMagick/libvips
 - **Background Jobs**: Sidekiq (for future async tasks)
-- **Frontend**: Hotwire (Turbo + Stimulus)
+- **Frontend**: Hotwire (Turbo + Stimulus), Importmap, Sprockets
+- **Styling**: Vanilla CSS with design tokens in `app/assets/stylesheets/application.css`
 - **HTTP Client**: HTTParty (for recipe scraping)
 - **Pagination**: Kaminari
 - **URL Slugs**: FriendlyId
@@ -66,7 +67,7 @@ A comprehensive Ruby on Rails application for managing recipes, planning meals, 
 
 ### Prerequisites
 - Ruby 2.7.4
-- PostgreSQL
+- MySQL 8
 - ImageMagick or libvips (for image processing)
 
 ### Setup
@@ -84,12 +85,12 @@ A comprehensive Ruby on Rails application for managing recipes, planning meals, 
 
 3. **Set up database**
    ```bash
-   # Start PostgreSQL
-   brew services start postgresql@14
-   
+   # Start MySQL
+   brew services start mysql
+
    # Create and migrate database
-   rails db:create
-   rails db:migrate
+   bin/rails db:create
+   bin/rails db:migrate
    ```
 
 4. **Start the server**
@@ -171,7 +172,7 @@ Ingredient normalization:
 Create a `.env` file for sensitive data:
 
 ```env
-DATABASE_URL=postgresql://localhost/recipy_app_development
+DATABASE_URL=mysql2://root@localhost/recipy_app_development
 SECRET_KEY_BASE=your_secret_key
 ```
 
@@ -192,9 +193,9 @@ Active Storage is configured for local storage in development. For production:
    heroku create recipy-app
    ```
 
-2. **Add PostgreSQL**
+2. **Add a MySQL add-on** (e.g. JawsDB or ClearDB)
    ```bash
-   heroku addons:create heroku-postgresql:mini
+   heroku addons:create jawsdb:kitefin
    ```
 
 3. **Set environment variables**
@@ -219,7 +220,7 @@ A Dockerfile is included for containerized deployment:
 
 ```bash
 docker build -t recipy-app .
-docker run -p 3000:3000 -e DATABASE_URL=<postgres-url> recipy-app
+docker run -p 3000:3000 -e DATABASE_URL=<mysql-url> recipy-app
 ```
 
 ### Environment-Specific Configuration
@@ -282,7 +283,7 @@ For issues or questions:
 
 Built with:
 - Ruby on Rails
-- PostgreSQL
+- MySQL
 - Devise
 - Hotwire
 - HTTParty & Nokogiri

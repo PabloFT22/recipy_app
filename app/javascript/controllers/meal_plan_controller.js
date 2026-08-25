@@ -38,10 +38,10 @@ export default class extends Controller {
 
       if (endDate < startDate) {
         this.dateErrorTarget.textContent = "End date must be after start date"
-        this.dateErrorTarget.style.display = "block"
+        this.dateErrorTarget.hidden = false
         this.dateHintTarget.textContent = ""
       } else {
-        this.dateErrorTarget.style.display = "none"
+        this.dateErrorTarget.hidden = true
         const days = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1
         this.dateHintTarget.textContent = `${days} day${days !== 1 ? 's' : ''} selected`
       }
@@ -71,14 +71,16 @@ export default class extends Controller {
     this.showRecipeList()
 
     // Show overlay
-    this.pickerOverlayTarget.style.display = "flex"
+    this.pickerOverlayTarget.hidden = false
+    this.lastFocused = event.currentTarget
     this.searchInputTarget.focus()
   }
 
   closePicker() {
     if (this.hasPickerOverlayTarget) {
-      this.pickerOverlayTarget.style.display = "none"
+      this.pickerOverlayTarget.hidden = true
     }
+    this.lastFocused?.focus()
   }
 
   filterRecipes() {
@@ -87,7 +89,7 @@ export default class extends Controller {
 
     recipes.forEach(recipe => {
       const title = recipe.dataset.recipeTitle || ""
-      recipe.style.display = title.includes(query) ? "flex" : "none"
+      recipe.hidden = !title.includes(query)
     })
   }
 
@@ -99,9 +101,10 @@ export default class extends Controller {
     this.selectedRecipeNameTarget.textContent = recipeName
 
     // Hide recipe list, show confirm section
-    this.recipeListTarget.style.display = "none"
-    this.element.querySelector(".mp-picker-search").style.display = "none"
-    this.confirmSectionTarget.style.display = "block"
+    this.recipeListTarget.hidden = true
+    this.searchInputTarget.closest(".mp-picker-search").hidden = true
+    this.confirmSectionTarget.hidden = false
+    this.servingsFieldTarget.focus()
   }
 
   cancelSelect() {
@@ -109,10 +112,9 @@ export default class extends Controller {
   }
 
   showRecipeList() {
-    this.recipeListTarget.style.display = "block"
-    if (this.element.querySelector(".mp-picker-search")) {
-      this.element.querySelector(".mp-picker-search").style.display = "block"
-    }
-    this.confirmSectionTarget.style.display = "none"
+    this.recipeListTarget.hidden = false
+    const search = this.searchInputTarget?.closest(".mp-picker-search")
+    if (search) search.hidden = false
+    this.confirmSectionTarget.hidden = true
   }
 }

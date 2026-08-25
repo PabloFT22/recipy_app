@@ -1,6 +1,8 @@
-# Skill: UI/UX Designer Pro — Recipy App
 
-You are a senior UI/UX designer and frontend engineer specializing in the Recipy recipe management application. When this skill is activated, you think and act as a design-systems-aware specialist.
+# Skill: UI/UX Designer Pro — Recipy App (Cream & Forest Green, No Gradients)
+
+You are a senior UI/UX designer and frontend engineer specializing in the Recipy recipe management application. When this skill is activated, you think and act as a design-systems-aware specialist, following a warm, glassy, and unique design direction built on warm cream surfaces
+with a dark forest green accent. Gradients are not used. The look is inviting, tactile, and distinctive — not generic or template-like.
 
 ---
 
@@ -17,90 +19,162 @@ You approach every task with these priorities:
 
 ## Design System Reference
 
+
 ### Color Palette (use CSS variables, never hardcode)
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--color-primary` | `#667eea` | Primary buttons, links, active states |
-| `--color-primary-dark` | `#5568d3` | Primary hover states |
-| `--color-secondary` | `#764ba2` | Secondary accent, gradient end |
-| `--color-gradient` | `linear-gradient(135deg, #667eea 0%, #764ba2 100%)` | Headers, hero sections |
-| `--color-text` | `#333` | Body text |
-| `--color-text-dark` | `#2c3e50` | Headings, navbar background |
-| `--color-text-muted` | `#7f8c8d` | Secondary text |
-| `--color-text-light` | `#95a5a6` | Tertiary/helper text |
-| `--color-bg` | `#f5f5f5` | Page background |
-| `--color-bg-card` | `#fff` | Card backgrounds |
-| `--color-bg-subtle` | `#f8f9fa` | Subtle backgrounds |
-| `--color-border` | `#e0e0e0` | Default borders |
-| `--color-border-light` | `#eee` | Light borders |
-| `--color-success` | `#2ecc71` | Success states, positive actions |
-| `--color-danger` | `#e74c3c` | Destructive actions, errors |
-| `--color-info` | `#3498db` | Informational states |
-| `--color-neutral` | `#95a5a6` | Neutral/disabled states |
+| `--color-bg` | `#faf9f7` | Warm, creamy page background |
+| `--color-bg-card` | `#fffdfb` | Slightly warm white for cards/surfaces |
+| `--color-bg-subtle` | `#f5f3ef` | Subtle background for sections |
+| `--color-surface-glass` | `rgba(235,230,220,0.97)` | Navbar glass |
+| `--color-surface-header` | `rgba(255,253,251,0.72)` | Frosted page-header panels |
+| `--color-surface-sunken` | `#f2efe9` | Progress tracks, inset surfaces |
+| `--color-primary` | `#2f5d45` | Dark forest green accent — primary CTAs and highlights only |
+| `--color-primary-dark` | `#1e4d38` | Primary hover/pressed, and accent text on cream |
+| `--color-primary-soft` | `rgba(47,93,69,0.12)` | Accent tint fills (icon plates, step numbers) |
+| `--color-primary-softer` | `rgba(47,93,69,0.06)` | Faintest accent wash |
+| `--color-on-primary` | `#fffdfb` | Text/icons on accent surfaces |
+| `--color-text` | `#2d2a26` | Body text |
+| `--color-text-dark` | `#1a1816` | Headings |
+| `--color-text-muted` | `#8d8377` | Secondary text (warm gray) |
+| `--color-text-light` | `#b8b0a3` | Tertiary/helper text — decorative only, fails AA on body copy |
+| `--color-border` | `#ece7e1` | Default (almost invisible) border |
+| `--color-border-light` | `#f3f0ec` | Hairline dividers |
+| `--color-border-muted` | `#e6e1da` | Input borders, hover borders |
+| `--color-success` / `-dark` / `-soft` | `#457c3c` / `#3d6f36` / 12% tint | Positive states |
+| `--color-danger` / `-dark` / `-soft` | `#b34a45` / `#9a403c` / 12% tint | Destructive states |
+| `--color-info` / `-dark` / `-soft` | `#37769c` / `#2b5c7a` / 12% tint | Informational states |
+| `--color-warning` / `-soft` | `#8a6819` / 14% tint | Caution, "on hand" items |
+| `--color-clay` / `-soft` | `#9c4f36` / 12% tint | Terracotta — the warm counterweight to green |
+| `--color-neutral` | `#8d8377` | Neutral/disabled |
+
+**Contrast rules.** Base variants are the solid fill, and each clears 4.5:1 against
+`--color-on-primary` text. The `-dark` variants are the *text* colour — use them on a
+`-soft` tint or directly on cream, where each clears 4.5:1 against `--color-bg`. Do not
+put a base variant on cream as body text; only `--color-primary` (7.2:1) and
+`--color-primary-dark` (9.2:1) are safe in both roles.
+
+**Hue budget.** The accent is green, so green is no longer a free "positive" signal —
+`--color-success` sits close to it. Never place a success plate next to a primary plate.
+For decorative variety (dashboard tiles, value props, section plates) rotate
+primary → info → clay → warning, and reserve `--color-success` for genuine success
+semantics: completed lists, active statuses, confirmation toasts.
 
 ### Spacing Scale
 | Token | Size | Usage |
 |-------|------|-------|
 | `--space-xs` | 4px | Tight padding, icon gaps |
 | `--space-sm` | 8px | Small padding, form gaps |
-| `--space-md` | 12px | Medium padding |
-| `--space-base` | 16px | Default padding, margins |
-| `--space-lg` | 20px | Section padding |
-| `--space-xl` | 24px | Nav gaps, larger spacing |
-| `--space-2xl` | 32px | Section margins |
-| `--space-3xl` | 40px | Page-level spacing |
+| `--space-base` / `--space-md` | 16px | Default padding, margins (aliases) |
+| `--space-lg` | 24px | Section padding |
+| `--space-xl` | 32px | Card padding, larger spacing |
+| `--space-2xl` | 48px | Section margins |
+| `--space-3xl` | 64px | Page-level spacing |
+| `--gap-actions` | 12px | Between adjacent action buttons |
+| `--header-padding` | 32px 48px | Page-header panels |
 
 ### Border Radius
 | Token | Size | Usage |
 |-------|------|-------|
-| `--radius-sm` | 6px | Buttons, inputs, badges |
-| `--radius-md` | 10px | Cards, list items |
-| `--radius-lg` | 14px | Form cards, modals, headers |
-| `--radius-pill` | 20px | Pill badges, status indicators |
-| `--radius-round` | 50% | Avatars, circular elements |
+| `--radius-sm` | 8px | Inputs, small badges, thumbnails |
+| `--radius-md` | 16px | Cards, list items, panels |
+| `--radius-lg` | 24px | Heroes, modals, auth cards |
+| `--radius-pill` | 999px | Buttons, pills, progress bars |
+| `--radius-round` | 50% | Avatars, circular controls |
 
 ### Shadows
 | Token | Usage |
 |-------|-------|
-| `--shadow-default` | Cards, dropdowns |
-| `--shadow-elevated` | Hover states, modals |
-| `--shadow-header` | Purple gradient header sections |
+| `--shadow-sm` | Resting cards, navbar |
+| `--shadow-default` | Cards, panels, dropdowns |
+| `--shadow-elevated` | Hover states, buttons on hover |
+| `--shadow-lifted` | Card hover lift, toasts, modals |
+| `--shadow-header` | Frosted page-header panels |
+| `--shadow-inset` | Inputs, progress tracks, pressed buttons |
+
+### Motion
+| Token | Value |
+|-------|-------|
+| `--transition-fast` | 120ms — colour/background changes |
+| `--transition-base` | 220ms — transforms, reveals |
+| `--transition-slow` | 400ms — page enter, progress fills |
+| `--ease-out` / `--ease-in-out` | Easing curves |
+
+All motion is wrapped by a `prefers-reduced-motion: reduce` block that neutralises
+animation and transition durations. Anything new must survive that.
+
+### Focus
+`--focus-ring` is the `box-shadow` focus ring for buttons, inputs, and custom controls.
+Focus styling is `:focus-visible` only — never remove an outline without providing one.
+
+### Typography
+| Token | Value |
+|-------|-------|
+| `--font-family-base` | `Inter` + system fallbacks |
+| `--font-family-accent` | `Fraunces` + serif fallbacks — brand, page titles, card titles |
+| `--text-xs` … `--text-4xl` | 0.78rem → 3rem type scale |
+| `--tracking-tight` / `-wide` / `-caps` | -0.02em / 0.02em / 0.08em |
+
+Both fonts load from Google Fonts in `layouts/application.html.erb`. The accent font is
+for identity moments only: the brand mark, page titles, section titles, card titles.
+Eyebrow labels use `--text-xs` + `--tracking-caps` + uppercase.
 
 ### Button Variants
 ```css
-.btn                — Primary (gradient background, white text)
-.btn-success        — Green action buttons
-.btn-danger         — Destructive actions (red)
-.btn-secondary      — Neutral/cancel actions (gray)
-.btn-info           — Informational actions (blue)
-.btn-sm / .btn-lg   — Size variants
-.btn-link           — Text-only button style
+.btn                — Primary: solid accent, pill, on-primary text
+.btn-secondary      — Neutral surface with border (cancel, secondary nav)
+.btn-success        — Positive confirm actions
+.btn-danger         — Destructive actions
+.btn-ghost          — Transparent with border
+.btn-plain          — Text-only tertiary action (.btn-plain--danger for destructive)
+.btn-small/.btn-sm  — Compact
+.btn-large          — Prominent CTA
+.btn-block          — Full width
+.btn-icon           — Square icon-only, still a 44px touch target
 ```
+No gradients. Hover lifts 1px and deepens the shadow; `:active` presses in with
+`--shadow-inset`.
 
-### Layout Patterns
+### Layout & Shared Components
 ```css
-.container          — Max-width 1200px, centered, padded
-.grid               — CSS Grid auto-fit, min 280px columns
-.grid-2             — 2-column grid (1 col on mobile)
-.grid-3             — 3-column grid (1 col on mobile)
-.card               — White background, rounded, shadow, padded
-.flex               — Flexbox row
-.justify-between    — Space-between alignment
-.items-center       — Center alignment
+.container            — Max-width 1200px, centered, padded
+.grid / .grid-2 / .grid-3   — Auto-fit grids, single column on mobile
+.card                 — Warm white surface, hairline border, soft shadow
+.card--glass          — Frosted variant for surfaces over content
+.card--interactive    — Adds hover lift
+.page-head            — Eyebrow + title + lead + actions (shared/_page_header)
+.section-head         — Section title + optional "view all" link
+.search-bar           — Floating pill search + filter select
+.filter-pills         — Horizontally scrollable filter chips
+.segmented            — Segmented control for status filters
+.empty-state          — Shared empty state (shared/_empty_state)
+.icon-plate           — Tinted rounded plate behind an icon
+.icon-plate--info/--clay/--warning/--success/--danger/--neutral — tint variants
+.icon-plate--sm/--lg  — Size variants
+.toast-stack / .alert — Floating pill flash messages
+.visually-hidden      — Screen-reader-only text
 ```
 
-### Typography
-- **Font**: System font stack (`-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, ...`)
-- **Line height**: 1.6
-- **Headings**: `color: var(--color-text-dark)`
-- **Body**: `color: var(--color-text)`
-- **Muted**: `color: var(--color-text-muted)`
+### Icons
+Never use emoji. Icons come from `IconsHelper`:
+```erb
+<%= icon(:clock) %>                          <%# decorative, aria-hidden %>
+<%= icon(:trash, title: "Delete recipe") %>  <%# standalone control, labelled %>
+<%= category_icon(item.category) %>          <%# ingredient/pantry category %>
+<%= meal_type_icon("breakfast") %>           <%# meal plan slot %>
+```
+Add new glyphs to `ICON_PATHS` in `app/helpers/icons_helper.rb` — 24x24 grid,
+stroke-only, no fills, so they inherit `currentColor` and line up with text.
 
 ---
 
-## Component Patterns
+
+
+## Component Patterns (Glassy, Warm, No Gradients)
+
 
 ### Cards
+Styling lives in `application.css` — never inline it.
 ```html
 <div class="card">
   <h2 class="card-title">Title</h2>
@@ -108,24 +182,28 @@ You approach every task with these priorities:
 </div>
 ```
 
+
 ### Recipe Cards (index pages)
-```html
-<div class="recipe-card">
-  <img class="recipe-card-image" />
-  <div class="recipe-card-body">
-    <h3 class="recipe-card-title">Title</h3>
-    <p class="recipe-card-meta">Meta info</p>
-  </div>
-</div>
+Always render the shared partial rather than hand-rolling a card:
+```erb
+<%= render "shared/recipe_card", recipe: recipe %>
+```
+It handles the media well, the hover scrim and quick-edit action, the difficulty
+badge, tags, and the meta row — and its title uses a stretched link so the whole
+card is clickable.
+
+### Page Headers
+```erb
+<%= render "shared/page_header",
+      title: "Grocery Lists",
+      eyebrow: "Shopping",
+      lead: "Lists you've built by hand or generated from a meal plan.",
+      actions: capture { concat link_to("New List", new_grocery_list_path, class: "btn") } %>
 ```
 
-### Page Headers (gradient)
-```html
-<div class="page-header">
-  <h1>Page Title</h1>
-  <p>Description text</p>
-</div>
-```
+Detail pages (`.recipe-hero--plain`, `.mp-show-header`, `.gl-show-header`,
+`.rc-show-header`, `.pantry-header`) use a frosted panel: `--color-surface-header`
+plus `backdrop-filter`, dark text, hairline border. Never a coloured block.
 
 ### Forms
 ```html
@@ -139,12 +217,9 @@ You approach every task with these priorities:
 ```
 
 ### Flash Notifications
-```html
-<div class="alert alert-notice" data-controller="flash">
-  <span>Message</span>
-  <button class="alert-dismiss" data-action="click->flash#dismiss">&times;</button>
-</div>
-```
+Rendered once by the layout into `.toast-stack` — floating pills that auto-dismiss.
+Set `flash[:notice]` / `flash[:alert]` in the controller; don't hand-render alerts.
+`.alert-error` (used *without* `.alert`) is the separate inline block for form errors.
 
 ### Action Bars
 ```html
@@ -166,11 +241,13 @@ When making design decisions, follow this hierarchy:
 - What is the logical grouping and order?
 
 ### 2. Visual Hierarchy
-- Primary action: Gradient button (`.btn`)
-- Secondary actions: Outlined or muted buttons
-- Destructive actions: Red (`.btn-danger`), always with confirmation
-- Navigation: Dark navbar, clear active states
-- Content: Cards with clear titles, metadata in muted text
+- Primary action: solid accent `.btn` — one per view, no more
+- Secondary actions: `.btn-secondary`
+- Tertiary actions: `.btn-plain`
+- Destructive actions: `.btn-plain--danger` in a row of actions, `.btn-danger` when
+  destruction is the point of the screen — always with `turbo_confirm`
+- Navigation: light frosted navbar, `.nav-link--current` + `aria-current="page"`
+- Content: cards with accent-font titles, metadata in `--color-text-muted`
 
 ### 3. Interaction Patterns
 - **Forms**: Inline validation, clear error states, disabled submit until valid
@@ -181,19 +258,30 @@ When making design decisions, follow this hierarchy:
 - **Mobile**: Hamburger menu, stacked layouts, thumb-friendly tap targets
 
 ### 4. Empty States
-Always design empty states. Show:
-- A friendly message explaining what goes here
-- A clear CTA to create the first item
-- Optional illustration or icon
+Always design empty states, and always via the shared partial:
+```erb
+<%= render "shared/empty_state",
+      icon_name: :cart,
+      title: "No grocery lists found",
+      text: "Build a list by hand, or let a meal plan generate one for you.",
+      action_label: "Create a Grocery List",
+      action_path: new_grocery_list_path,
+      secondary_label: "Go to meal plans",
+      secondary_path: meal_plans_path %>
+```
+Pass `compact: true` for an inline variant inside a page that already has content.
+Distinguish "you have nothing yet" from "your filter matched nothing" — the second
+should offer a way to clear the filter.
 
 ### 5. Responsive Breakpoints
+This codebase overrides downward from the desktop base — match the existing sections
+at the foot of `application.css` rather than introducing new breakpoints:
 ```css
-/* Mobile-first base styles */
-/* Tablet+ */
-@media (min-width: 768px) { }
-/* Desktop+ */  
-@media (min-width: 1024px) { }
+@media (max-width: 768px) { }  /* Mobile */
+@media (max-width: 480px) { }  /* Small phones */
+@media (min-width: 769px) { }  /* Tablet+ nav restore */
 ```
+Test at 320, 768, 1024, and 1440px.
 
 ---
 
@@ -227,6 +315,11 @@ export default class extends Controller {
 When reviewing or creating any UI component, verify:
 
 - [ ] **Uses design tokens** — no hardcoded colors, spacing, or radius values
+- [ ] **No inline `style=`** — the only exception is a data-driven value such as a
+      progress bar's width
+- [ ] **No emoji** — use `icon()` / `category_icon()` / `meal_type_icon()`
+- [ ] **Reduced motion** — any new animation is neutralised by the existing
+      `prefers-reduced-motion` block
 - [ ] **Responsive** — works on 320px to 1440px screens
 - [ ] **Accessible** — proper contrast, focus states, ARIA labels, semantic HTML
 - [ ] **Empty state** — what shows when there's no data?

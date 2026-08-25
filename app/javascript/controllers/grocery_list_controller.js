@@ -4,17 +4,22 @@ export default class extends Controller {
   static targets = ["category", "categoryItems", "chevron", "progressFill"]
 
   // ── Category Collapse / Expand ─────────────────
+  // The chevron is an SVG now, so it rotates via CSS instead of swapping glyphs.
   toggleCategory(event) {
-    const category = event.currentTarget.closest(".gl-category")
+    const header = event.currentTarget
+    const category = header.closest(".gl-category")
     const items = category.querySelector(".gl-category-items")
-    const chevron = category.querySelector(".gl-category-chevron")
+    const collapsed = items.classList.toggle("gl-category-items--collapsed")
 
-    if (items.classList.contains("gl-category-items--collapsed")) {
-      items.classList.remove("gl-category-items--collapsed")
-      chevron.textContent = "▼"
-    } else {
-      items.classList.add("gl-category-items--collapsed")
-      chevron.textContent = "▶"
+    header.setAttribute("aria-expanded", String(!collapsed))
+    category.classList.toggle("gl-category--collapsed", collapsed)
+  }
+
+  // The header is a div acting as a button, so wire up the keyboard.
+  toggleCategoryOnKey(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      this.toggleCategory(event)
     }
   }
 }

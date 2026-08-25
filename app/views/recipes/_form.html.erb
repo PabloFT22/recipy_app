@@ -6,8 +6,8 @@
 
   <%= form_with(model: recipe, class: "recipe-form", data: { controller: "recipe-form" }) do |form| %>
     <% if recipe.errors.any? %>
-      <div class="alert alert-error">
-        <h3><%= pluralize(recipe.errors.count, "error") %> prevented this recipe from being saved:</h3>
+      <div class="alert-error" role="alert">
+        <h3 class="icon-label"><%= icon(:warning, size: 16) %><%= pluralize(recipe.errors.count, "error") %> prevented this recipe from being saved:</h3>
         <ul>
           <% recipe.errors.full_messages.each do |message| %>
             <li><%= message %></li>
@@ -20,18 +20,21 @@
     <div class="form-card" data-recipe-form-target="card" data-card="basic">
       <div class="card-header" data-action="click->recipe-form#toggleCard">
         <div class="card-title">
-          <span class="card-icon">📝</span>
+          <span class="icon-plate icon-plate--sm"><%= icon(:note, size: 17) %></span>
           <h3>Basic Information</h3>
           <span class="card-status" data-recipe-form-target="basicStatus">Required</span>
         </div>
-        <button type="button" class="expand-btn" data-recipe-form-target="basicToggle">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+        <button type="button"
+                class="expand-btn"
+                data-recipe-form-target="basicToggle"
+                aria-expanded="true"
+                aria-controls="card-body-basic"
+                aria-label="Toggle section">
+          <%= icon(:chevron_down, size: 20) %>
         </button>
       </div>
       
-      <div class="card-body" data-recipe-form-target="basicBody">
+      <div class="card-body" data-recipe-form-target="basicBody" id="card-body-basic">
         <div class="form-group">
           <%= form.label :title, "Recipe Name *" %>
           <%= form.text_field :title, 
@@ -81,30 +84,34 @@
     <div class="form-card" data-recipe-form-target="card" data-card="tags">
       <div class="card-header" data-action="click->recipe-form#toggleCard">
         <div class="card-title">
-          <span class="card-icon">🏷️</span>
+          <span class="icon-plate icon-plate--sm"><%= icon(:tag, size: 17) %></span>
           <h3>Tags</h3>
           <span class="card-status">Optional</span>
         </div>
-        <button type="button" class="expand-btn" data-recipe-form-target="tagsToggle">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+        <button type="button"
+                class="expand-btn"
+                data-recipe-form-target="tagsToggle"
+                aria-expanded="false"
+                aria-controls="card-body-tags"
+                aria-label="Toggle section">
+          <%= icon(:chevron_down, size: 20) %>
         </button>
       </div>
 
-      <div class="card-body collapsed" data-recipe-form-target="tagsBody">
+      <div class="card-body collapsed" data-recipe-form-target="tagsBody" id="card-body-tags">
         <div class="form-group" data-controller="tag-input">
-          <label>Recipe Tags</label>
-          <p class="helper-text">Type a tag and press Enter or comma to add. Click ✕ to remove.</p>
+          <label for="tag-input-field">Recipe Tags</label>
+          <p class="helper-text">Type a tag and press Enter or comma to add. Click the cross to remove.</p>
           <div class="tag-input-wrapper">
             <div class="tag-input-pills" data-tag-input-target="tagList"></div>
             <input type="text"
+                   id="tag-input-field"
                    placeholder="e.g., vegetarian, quick, italian"
                    class="form-input"
                    data-tag-input-target="input"
                    data-action="input->tag-input#suggest keydown->tag-input#handleKeydown"
                    autocomplete="off">
-            <div class="tag-suggestions" data-tag-input-target="suggestions" style="display: none;"></div>
+            <div class="tag-suggestions" data-tag-input-target="suggestions" hidden></div>
           </div>
           <input type="hidden" name="recipe[tag_names]" data-tag-input-target="hiddenField" value="<%= recipe.tags.pluck(:name).join(', ') %>">
         </div>
@@ -115,18 +122,21 @@
     <div class="form-card" data-recipe-form-target="card" data-card="timing">
       <div class="card-header" data-action="click->recipe-form#toggleCard">
         <div class="card-title">
-          <span class="card-icon">⏱️</span>
+          <span class="icon-plate icon-plate--sm"><%= icon(:clock, size: 17) %></span>
           <h3>Cooking Time</h3>
           <span class="card-status">Optional</span>
         </div>
-        <button type="button" class="expand-btn" data-recipe-form-target="timingToggle">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+        <button type="button"
+                class="expand-btn"
+                data-recipe-form-target="timingToggle"
+                aria-expanded="false"
+                aria-controls="card-body-timing"
+                aria-label="Toggle section">
+          <%= icon(:chevron_down, size: 20) %>
         </button>
       </div>
       
-      <div class="card-body collapsed" data-recipe-form-target="timingBody">
+      <div class="card-body collapsed" data-recipe-form-target="timingBody" id="card-body-timing">
         <div class="form-row">
           <div class="form-group">
             <%= form.label :prep_time, "Prep Time (minutes)" %>
@@ -155,26 +165,30 @@
     <div class="form-card" data-recipe-form-target="card" data-card="ingredients">
       <div class="card-header" data-action="click->recipe-form#toggleCard">
         <div class="card-title">
-          <span class="card-icon">🥘</span>
+          <span class="icon-plate icon-plate--sm"><%= icon(:pot, size: 17) %></span>
           <h3>Ingredients</h3>
           <span class="card-status" data-recipe-form-target="ingredientsStatus">Required</span>
         </div>
-        <button type="button" class="expand-btn" data-recipe-form-target="ingredientsToggle">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+        <button type="button"
+                class="expand-btn"
+                data-recipe-form-target="ingredientsToggle"
+                aria-expanded="false"
+                aria-controls="card-body-ingredients"
+                aria-label="Toggle section">
+          <%= icon(:chevron_down, size: 20) %>
         </button>
       </div>
       
-      <div class="card-body collapsed" data-recipe-form-target="ingredientsBody">
+      <div class="card-body collapsed" data-recipe-form-target="ingredientsBody" id="card-body-ingredients">
         <!-- Quick Add: Free-text area -->
         <div class="quick-add-section" data-recipe-form-target="quickAddSection">
           <div class="form-group">
-            <label class="quick-add-label">
-              ⚡ Quick Add
+            <label class="quick-add-label" for="quick-add-ingredients">
+              <span class="icon-label"><%= icon(:bolt, size: 16) %>Quick Add</span>
               <span class="helper-text-inline">Paste or type ingredients, one per line</span>
             </label>
-            <textarea 
+            <textarea
+              id="quick-add-ingredients"
               rows="5"
               placeholder="2 cups all-purpose flour&#10;1 cup butter, softened&#10;3 large eggs&#10;1 teaspoon vanilla extract"
               class="form-input ingredients-textarea"
@@ -184,7 +198,7 @@
           <button type="button" 
                   class="btn btn-primary btn-parse"
                   data-action="click->recipe-form#parseIngredients">
-            🔍 Parse Ingredients
+            <%= icon(:search, size: 16) %>Parse Ingredients
           </button>
         </div>
 
@@ -256,7 +270,7 @@
                        value="<%= ri.notes %>"
                        placeholder="optional"
                        class="form-input col-notes">
-                <button type="button" class="btn-remove-row" data-action="click->recipe-form#removeIngredientRow" title="Remove">✕</button>
+                <button type="button" class="btn-remove-row" data-action="click->recipe-form#removeIngredientRow" aria-label="Remove ingredient"><%= icon(:close, size: 15) %></button>
               </div>
             <% end %>
           <% end %>
@@ -265,7 +279,7 @@
         <button type="button" 
                 class="btn btn-ghost btn-add-row"
                 data-action="click->recipe-form#addIngredientRow">
-          + Add Ingredient
+          <%= icon(:plus, size: 16) %>Add Ingredient
         </button>
 
         <div class="ingredient-count" data-recipe-form-target="ingredientCount">
@@ -278,18 +292,21 @@
     <div class="form-card" data-recipe-form-target="card" data-card="instructions">
       <div class="card-header" data-action="click->recipe-form#toggleCard">
         <div class="card-title">
-          <span class="card-icon">👨‍🍳</span>
+          <span class="icon-plate icon-plate--sm"><%= icon(:chef, size: 17) %></span>
           <h3>Instructions</h3>
           <span class="card-status" data-recipe-form-target="instructionsStatus">Required</span>
         </div>
-        <button type="button" class="expand-btn" data-recipe-form-target="instructionsToggle">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+        <button type="button"
+                class="expand-btn"
+                data-recipe-form-target="instructionsToggle"
+                aria-expanded="false"
+                aria-controls="card-body-instructions"
+                aria-label="Toggle section">
+          <%= icon(:chevron_down, size: 20) %>
         </button>
       </div>
       
-      <div class="card-body collapsed" data-recipe-form-target="instructionsBody">
+      <div class="card-body collapsed" data-recipe-form-target="instructionsBody" id="card-body-instructions">
         <div class="form-group">
           <%= form.label :instructions, "Cooking Steps" %>
           <p class="helper-text">
@@ -309,7 +326,7 @@
           <p class="helper-text">0 steps</p>
         </div>
         
-        <div class="instruction-preview" data-recipe-form-target="instructionPreview" style="display: none;">
+        <div class="instruction-preview" data-recipe-form-target="instructionPreview" hidden>
           <h4>Preview:</h4>
           <div class="preview-steps" data-recipe-form-target="instructionPreviewContent"></div>
         </div>
@@ -320,23 +337,26 @@
     <div class="form-card" data-recipe-form-target="card" data-card="photo">
       <div class="card-header" data-action="click->recipe-form#toggleCard">
         <div class="card-title">
-          <span class="card-icon">📸</span>
+          <span class="icon-plate icon-plate--sm"><%= icon(:camera, size: 17) %></span>
           <h3>Photo</h3>
           <span class="card-status">Optional</span>
         </div>
-        <button type="button" class="expand-btn" data-recipe-form-target="photoToggle">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+        <button type="button"
+                class="expand-btn"
+                data-recipe-form-target="photoToggle"
+                aria-expanded="false"
+                aria-controls="card-body-photo"
+                aria-label="Toggle section">
+          <%= icon(:chevron_down, size: 20) %>
         </button>
       </div>
       
-      <div class="card-body collapsed" data-recipe-form-target="photoBody">
+      <div class="card-body collapsed" data-recipe-form-target="photoBody" id="card-body-photo">
         <div class="form-group">
           <%= form.label :image, "Upload a photo of your dish" %>
           <% if recipe.image.attached? %>
-            <div style="margin-bottom: 16px;">
-              <%= image_tag recipe.image, style: "max-width: 300px; border-radius: 8px;" %>
+            <div class="current-image">
+              <%= image_tag recipe.image, class: "current-image-thumb", alt: "Current photo of #{recipe.title}" %>
               <p class="helper-text">Upload a new image to replace this one</p>
             </div>
           <% end %>
@@ -346,11 +366,7 @@
                 class: "file-input",
                 data: { action: "change->recipe-form#previewImage" } %>
             <div class="file-upload-display" data-recipe-form-target="imagePreview">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                <polyline points="21 15 16 10 5 21"></polyline>
-              </svg>
+              <%= icon(:camera, size: 40) %>
               <p>Click to upload or drag and drop</p>
               <p class="text-muted">PNG, JPG, GIF up to 10MB</p>
             </div>
@@ -363,18 +379,21 @@
     <div class="form-card" data-recipe-form-target="card" data-card="source">
       <div class="card-header" data-action="click->recipe-form#toggleCard">
         <div class="card-title">
-          <span class="card-icon">🔗</span>
+          <span class="icon-plate icon-plate--sm"><%= icon(:link, size: 17) %></span>
           <h3>Source</h3>
           <span class="card-status">Optional</span>
         </div>
-        <button type="button" class="expand-btn" data-recipe-form-target="sourceToggle">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+        <button type="button"
+                class="expand-btn"
+                data-recipe-form-target="sourceToggle"
+                aria-expanded="false"
+                aria-controls="card-body-source"
+                aria-label="Toggle section">
+          <%= icon(:chevron_down, size: 20) %>
         </button>
       </div>
       
-      <div class="card-body collapsed" data-recipe-form-target="sourceBody">
+      <div class="card-body collapsed" data-recipe-form-target="sourceBody" id="card-body-source">
         <div class="form-group">
           <%= form.label :source_url, "Original Recipe URL" %>
           <%= form.text_field :source_url,
@@ -387,7 +406,7 @@
 
     <!-- Action Buttons -->
     <div class="form-actions">
-      <%= form.submit button_text, class: "btn btn-primary btn-large" %>
+      <%= form.submit button_text, class: "btn btn-large" %>
       <%= link_to "Cancel", recipe.new_record? ? recipes_path : recipe_path(recipe), class: "btn btn-secondary" %>
       <% if recipe.new_record? %>
         <button type="button" class="btn btn-ghost" data-action="click->recipe-form#manualSaveDraft">

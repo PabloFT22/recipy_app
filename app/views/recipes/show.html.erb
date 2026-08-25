@@ -1,104 +1,96 @@
-<div class="recipe-show-container">
-  <!-- Recipe Header -->
-  <div class="recipe-header">
-    <div class="recipe-header-content">
-      <div class="recipe-title-section">
-        <h1 class="recipe-title"><%= @recipe.title %></h1>
-        
-        <% if @recipe.description.present? %>
-          <p class="recipe-description"><%= @recipe.description %></p>
-        <% end %>
+<% owner = user_signed_in? && @recipe.user == current_user %>
 
-        <div class="recipe-meta">
-          <% if @recipe.difficulty.present? %>
-            <span class="meta-badge difficulty-<%= @recipe.difficulty %>">
-              <%= @recipe.difficulty.titleize %>
-            </span>
-          <% end %>
-
-          <% if @recipe_tags.any? %>
-            <% @recipe_tags.each do |tag| %>
-              <%= link_to tag.name, recipes_path(tag: tag.id), class: "tag-badge" %>
-            <% end %>
-          <% end %>
-
-          <% if @recipe.servings.present? %>
-            <span class="meta-item">
-              👥 <%= @recipe.servings %> servings
-            </span>
-          <% end %>
-
-          <% if @recipe.prep_time.present? %>
-            <span class="meta-item">
-              ⏱️ Prep: <%= @recipe.prep_time %> min
-            </span>
-          <% end %>
-
-          <% if @recipe.cook_time.present? %>
-            <span class="meta-item">
-              🔥 Cook: <%= @recipe.cook_time %> min
-            </span>
-          <% end %>
-
-          <% if @recipe.total_time %>
-            <span class="meta-item total-time">
-              ⏰ Total: <%= @recipe.total_time %> min
-            </span>
-          <% end %>
-        </div>
-
-        <div class="recipe-author">
-          <span>By <%= @recipe.user.email.split('@').first.titleize %></span>
-          <span class="separator">•</span>
-          <span><%= time_ago_in_words(@recipe.created_at) %> ago</span>
-          <% unless @recipe.is_public %>
-            <span class="separator">•</span>
-            <span class="private-badge">🔒 Private</span>
-          <% end %>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <% if user_signed_in? && @recipe.user == current_user %>
-        <div class="recipe-actions">
-          <%= link_to "✏️ Edit", edit_recipe_path(@recipe), class: "btn btn-secondary" %>
-          <%= link_to "🗑️ Delete", recipe_path(@recipe), 
-              data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete this recipe?" },
-              class: "btn btn-danger" %>
-        </div>
-      <% end %>
-    </div>
-  </div>
-
-  <div class="recipe-content">
-    <!-- Recipe Image -->
+<article class="recipe-show-container">
+  <%# Hero — full-bleed photo with the title over it when there's an image. %>
+  <header class="recipe-hero <%= @recipe.image.attached? ? 'recipe-hero--image' : 'recipe-hero--plain' %>">
     <% if @recipe.image.attached? %>
-      <div class="recipe-image-container">
-        <%= image_tag @recipe.image, alt: @recipe.title, class: "recipe-image" %>
-      </div>
+      <%= image_tag @recipe.image, class: "recipe-hero-image", alt: "Photo of #{@recipe.title}" %>
+      <div class="recipe-hero-scrim" aria-hidden="true"></div>
     <% end %>
 
+    <div class="recipe-hero-body">
+      <% if @recipe.difficulty.present? || @recipe_tags.any? %>
+        <div class="recipe-hero-tags">
+          <% if @recipe.difficulty.present? %>
+            <span class="meta-badge difficulty-<%= @recipe.difficulty %>">
+              <%= icon(:chart, size: 14) %><%= @recipe.difficulty.titleize %>
+            </span>
+          <% end %>
+          <% @recipe_tags.each do |tag| %>
+            <%= link_to tag.name, recipes_path(tag: tag.id), class: "tag-badge" %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <h1 class="recipe-title"><%= @recipe.title %></h1>
+
+      <% if @recipe.description.present? %>
+        <p class="recipe-description"><%= @recipe.description %></p>
+      <% end %>
+
+      <p class="recipe-author">
+        <span>By <%= @recipe.user.email.split('@').first.titleize %></span>
+        <span class="separator" aria-hidden="true">•</span>
+        <span><%= time_ago_in_words(@recipe.created_at) %> ago</span>
+        <% unless @recipe.is_public %>
+          <span class="separator" aria-hidden="true">•</span>
+          <span class="private-badge icon-label"><%= icon(:lock, size: 13) %>Private</span>
+        <% end %>
+      </p>
+    </div>
+  </header>
+
+  <%# Meta strip — one clean row, dividers instead of scattered badges. %>
+  <dl class="recipe-stats">
+    <% if @recipe.servings.present? %>
+      <div class="recipe-stat">
+        <dt class="recipe-stat-label"><%= icon(:users, size: 15) %>Serves</dt>
+        <dd class="recipe-stat-value"><%= @recipe.servings %></dd>
+      </div>
+    <% end %>
+    <% if @recipe.prep_time.present? %>
+      <div class="recipe-stat">
+        <dt class="recipe-stat-label"><%= icon(:clock, size: 15) %>Prep</dt>
+        <dd class="recipe-stat-value"><%= @recipe.prep_time %> min</dd>
+      </div>
+    <% end %>
+    <% if @recipe.cook_time.present? %>
+      <div class="recipe-stat">
+        <dt class="recipe-stat-label"><%= icon(:flame, size: 15) %>Cook</dt>
+        <dd class="recipe-stat-value"><%= @recipe.cook_time %> min</dd>
+      </div>
+    <% end %>
+    <% if @recipe.total_time %>
+      <div class="recipe-stat recipe-stat--total">
+        <dt class="recipe-stat-label"><%= icon(:alarm, size: 15) %>Total</dt>
+        <dd class="recipe-stat-value"><%= @recipe.total_time %> min</dd>
+      </div>
+    <% end %>
+  </dl>
+
+  <div class="recipe-content">
     <div class="recipe-details">
-      <!-- Ingredients Section -->
-      <div class="recipe-section">
-        <div class="section-header">
-          <h2 class="section-title">
-            <span class="section-icon">🥘</span>
+      <%# ── Ingredients ─────────────────────────────── %>
+      <section class="recipe-section" aria-labelledby="ingredients-heading">
+        <div class="recipe-section-head">
+          <h2 class="recipe-section-title" id="ingredients-heading">
+            <span class="icon-plate icon-plate--sm"><%= icon(:pot, size: 18) %></span>
             Ingredients
           </h2>
-          <% if user_signed_in? %>
-            <button class="btn btn-small btn-ghost" onclick="alert('Add to grocery list feature coming soon!')">
-              🛒 Add to List
-            </button>
+          <% if @recipe.recipe_ingredients.any? %>
+            <span class="recipe-section-count">
+              <%= pluralize(@recipe.recipe_ingredients.size, 'item') %>
+            </span>
           <% end %>
         </div>
 
         <% if @recipe.recipe_ingredients.any? %>
-          <div class="ingredients-list">
+          <ul class="ingredients-list">
             <% @recipe.recipe_ingredients.includes(:ingredient).each do |recipe_ingredient| %>
-              <div class="ingredient-item">
+              <li class="ingredient-item">
                 <label class="ingredient-checkbox">
                   <input type="checkbox">
+                  <span class="ingredient-tick" aria-hidden="true"><%= icon(:check, size: 13) %></span>
                   <span class="ingredient-text">
                     <span class="ingredient-quantity">
                       <%= display_quantity(recipe_ingredient.quantity) %>
@@ -110,107 +102,141 @@
                     <% end %>
                   </span>
                 </label>
-              </div>
+              </li>
             <% end %>
-          </div>
+          </ul>
         <% else %>
-          <p class="empty-state">No ingredients added yet.</p>
+          <%= render "shared/empty_state",
+                compact: true,
+                icon_name: :cat_produce,
+                title: "No ingredients yet",
+                text: owner ? "Edit this recipe to add its ingredients." : "This recipe hasn't listed its ingredients." %>
         <% end %>
-      </div>
+      </section>
 
-      <!-- Instructions Section -->
-      <div class="recipe-section">
-        <div class="section-header">
-          <h2 class="section-title">
-            <span class="section-icon">👨‍🍳</span>
+      <%# ── Instructions ────────────────────────────── %>
+      <section class="recipe-section" aria-labelledby="instructions-heading">
+        <div class="recipe-section-head">
+          <h2 class="recipe-section-title" id="instructions-heading">
+            <span class="icon-plate icon-plate--sm"><%= icon(:chef, size: 18) %></span>
             Instructions
           </h2>
         </div>
 
         <% if @recipe.instructions.present? %>
-          <div class="instructions-list">
-            <%
-              # Normalize line endings and split by blank lines
-              normalized = @recipe.instructions.gsub(/\r\n/, "\n")
-              steps = normalized.split(/\n\n+/).reject(&:blank?)
-            %>
+          <%
+            # Normalize line endings and split by blank lines
+            normalized = @recipe.instructions.gsub(/\r\n/, "\n")
+            steps = normalized.split(/\n\n+/).reject(&:blank?)
+          %>
+          <ol class="instructions-list">
             <% steps.each_with_index do |step, index| %>
-              <% 
+              <%
                 # Remove any manual numbering like "1.", "2)", "Step 1:", etc.
                 cleaned_step = step.gsub(/^\d+[\.\)]\s*|^Step\s+\d+:?\s*/i, '').strip
               %>
-              <div class="instruction-step">
-                <div class="step-number"><%= index + 1 %></div>
+              <li class="instruction-step">
+                <span class="step-number" aria-hidden="true"><%= index + 1 %></span>
                 <div class="step-text"><%= simple_format(cleaned_step) %></div>
-              </div>
+              </li>
             <% end %>
-          </div>
+          </ol>
         <% else %>
-          <p class="empty-state">No instructions added yet.</p>
+          <%= render "shared/empty_state",
+                compact: true,
+                icon_name: :note,
+                title: "No instructions yet",
+                text: owner ? "Edit this recipe to write out the steps." : "This recipe hasn't listed its steps." %>
         <% end %>
-      </div>
+      </section>
 
-      <!-- Source Section -->
+      <%# ── Source ──────────────────────────────────── %>
       <% if @recipe.source_url.present? %>
-        <div class="recipe-section">
-          <div class="section-header">
-            <h2 class="section-title">
-              <span class="section-icon">🔗</span>
+        <section class="recipe-section" aria-labelledby="source-heading">
+          <div class="recipe-section-head">
+            <h2 class="recipe-section-title" id="source-heading">
+              <span class="icon-plate icon-plate--sm icon-plate--neutral"><%= icon(:link, size: 18) %></span>
               Source
             </h2>
           </div>
           <div class="source-link">
             <%= link_to @recipe.source_url, @recipe.source_url, target: "_blank", rel: "noopener" %>
           </div>
-        </div>
-      <% end %>
-
-      <!-- Additional Actions -->
-      <% if user_signed_in? %>
-        <div class="recipe-section">
-          <div class="quick-actions">
-            <%= link_to "📋 Duplicate Recipe", duplicate_recipe_path(@recipe), 
-                data: { turbo_method: :post }, 
-                class: "btn btn-secondary" %>
-            
-            <button class="btn btn-secondary" onclick="window.print()">
-              🖨️ Print Recipe
-            </button>
-            
-            <button class="btn btn-secondary" onclick="navigator.share ? navigator.share({title: '<%= j(@recipe.title) %>', url: window.location.href}) : alert('Share via: ' + window.location.href)">
-              📤 Share
-            </button>
-
-            <div class="collection-picker-wrapper" data-controller="collection-picker">
-              <button class="btn btn-secondary" data-action="click->collection-picker#toggle" type="button">
-                📂 Add to Collection
-              </button>
-              <div class="collection-picker-dropdown" data-collection-picker-target="dropdown" style="display: none;">
-                <% if current_user.recipe_collections.any? %>
-                  <% current_user.recipe_collections.each do |coll| %>
-                    <div class="collection-picker-item">
-                      <%= form_with url: add_to_collection_recipe_path(@recipe), method: :post, local: true do |f| %>
-                        <%= f.hidden_field :collection_id, value: coll.id %>
-                        <%= f.submit coll.name, class: "collection-picker-option" %>
-                      <% end %>
-                    </div>
-                  <% end %>
-                <% else %>
-                  <div class="collection-picker-empty">
-                    <p>No collections yet.</p>
-                    <%= link_to "Create one", new_recipe_collection_path %>
-                  </div>
-                <% end %>
-              </div>
-            </div>
-          </div>
-        </div>
+        </section>
       <% end %>
     </div>
   </div>
 
-  <!-- Back Link -->
-  <div class="back-link">
-    <%= link_to "← Back to Recipes", recipes_path, class: "link-secondary" %>
+  <%# Action bar — floats at the foot of the page, sticky on mobile. %>
+  <div class="recipe-actionbar">
+    <div class="recipe-actionbar-primary">
+      <% if owner %>
+        <%= link_to edit_recipe_path(@recipe), class: "btn" do %>
+          <%= icon(:pencil, size: 16) %>Edit
+        <% end %>
+      <% end %>
+
+      <% if user_signed_in? %>
+        <div class="collection-picker-wrapper" data-controller="collection-picker">
+          <button class="btn btn-secondary"
+                  data-action="click->collection-picker#toggle"
+                  type="button"
+                  aria-expanded="false"
+                  aria-haspopup="true">
+            <%= icon(:folder, size: 16) %>Add to Collection
+          </button>
+          <div class="collection-picker-dropdown" data-collection-picker-target="dropdown" hidden>
+            <% if current_user.recipe_collections.any? %>
+              <% current_user.recipe_collections.each do |coll| %>
+                <div class="collection-picker-item">
+                  <%= form_with url: add_to_collection_recipe_path(@recipe), method: :post, local: true do |f| %>
+                    <%= f.hidden_field :collection_id, value: coll.id %>
+                    <%= f.submit coll.name, class: "collection-picker-option" %>
+                  <% end %>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="collection-picker-empty">
+                <p>No collections yet.</p>
+                <%= link_to "Create one", new_recipe_collection_path %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <%= link_to duplicate_recipe_path(@recipe),
+              data: { turbo_method: :post },
+              class: "btn btn-secondary" do %>
+          <%= icon(:copy, size: 16) %>Duplicate
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="recipe-actionbar-secondary" data-controller="recipe-share">
+      <button class="btn btn-plain" type="button" data-action="click->recipe-share#print">
+        <%= icon(:printer, size: 16) %>Print
+      </button>
+
+      <button class="btn btn-plain"
+              type="button"
+              data-action="click->recipe-share#share"
+              data-recipe-share-title-value="<%= @recipe.title %>">
+        <%= icon(:share, size: 16) %>Share
+      </button>
+
+      <% if owner %>
+        <%= link_to recipe_path(@recipe),
+              data: { turbo_method: :delete, turbo_confirm: "Delete “#{@recipe.title}”? This cannot be undone." },
+              class: "btn btn-plain btn-plain--danger" do %>
+          <%= icon(:trash, size: 16) %>Delete
+        <% end %>
+      <% end %>
+    </div>
   </div>
-</div>
+
+  <div class="back-link">
+    <%= link_to recipes_path, class: "link-secondary icon-label" do %>
+      <%= icon(:arrow_left, size: 15) %>Back to Recipes
+    <% end %>
+  </div>
+</article>
