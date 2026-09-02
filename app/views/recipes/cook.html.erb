@@ -1,31 +1,33 @@
 <div class="cooking-mode-page" data-controller="cooking-mode" data-cooking-mode-steps-count-value="<%= @steps.length %>">
-  <div class="cooking-header flex justify-between items-center mb-4">
+  <div class="cooking-header">
     <div class="flex items-center gap-2">
-      <%= link_to "← Exit", @recipe, class: "btn btn-secondary" %>
-      <h1 style="font-size: 1.5rem; margin: 0;"><%= @recipe.title %></h1>
+      <%= link_to @recipe, class: "btn btn-secondary" do %>
+        <%= icon(:arrow_left, size: 16) %>Exit
+      <% end %>
+      <h1><%= @recipe.title %></h1>
     </div>
-    <div class="flex gap-2">
+    <div class="flex gap-2 items-center flex-wrap">
       <button class="btn btn-secondary" data-action="click->cooking-mode#toggleLargeText">
-        🔤 Large Text
+        <%= icon(:search, size: 16) %>Large Text
       </button>
-      <div data-controller="timer" class="flex items-center gap-2">
-        <span data-timer-target="display">00:00</span>
+      <div data-controller="timer" class="cook-timer">
+        <span class="cook-timer-display" data-timer-target="display">00:00</span>
         <button class="btn btn-secondary btn-sm" data-action="click->timer#toggle">Start Timer</button>
         <button class="btn btn-secondary btn-sm" data-action="click->timer#reset">Reset</button>
       </div>
     </div>
   </div>
 
-  <div class="cooking-layout" style="display: grid; grid-template-columns: 1fr 3fr; gap: 2rem;">
+  <div class="cooking-layout">
     <%# Ingredients Sidebar %>
-    <div class="card" style="height: fit-content; position: sticky; top: 1rem;">
+    <div class="card cook-ingredients">
       <h3>Ingredients</h3>
       <% @recipe.recipe_ingredients.includes(:ingredient).each_with_index do |ri, idx| %>
-        <div class="ingredient-check-item flex items-center gap-2 mb-2"
+        <div class="ingredient-check-item"
              data-cooking-mode-target="ingredientItem"
              data-action="click->cooking-mode#toggleIngredient">
           <input type="checkbox" id="ing_<%= idx %>">
-          <label for="ing_<%= idx %>" style="cursor: pointer;">
+          <label for="ing_<%= idx %>">
             <strong><%= ri.display_quantity %> <%= ri.unit %></strong>
             <%= ri.ingredient.name %>
           </label>
@@ -37,9 +39,8 @@
     <div class="steps-area">
       <%# Progress bar %>
       <div class="mb-4">
-        <div style="background: #ecf0f1; border-radius: 4px; height: 8px;">
-          <div data-cooking-mode-target="progressBar"
-               style="background: #27ae60; height: 8px; border-radius: 4px; transition: width 0.3s; width: 0%;"></div>
+        <div class="cook-progress">
+          <div class="cook-progress-fill" data-cooking-mode-target="progressBar"></div>
         </div>
         <small class="text-muted">
           Step <span data-cooking-mode-target="currentStepNumber">1</span> of <%= @steps.length %>
@@ -53,12 +54,8 @@
                data-cooking-mode-target="step"
                data-step-index="<%= idx %>"
                style="<%= idx > 0 ? 'display: none;' : '' %>">
-            <div class="step-number mb-2">
-              <span style="background: #2c3e50; color: white; border-radius: 50%; width: 2rem; height: 2rem; display: inline-flex; align-items: center; justify-content: center; font-weight: bold;">
-                <%= idx + 1 %>
-              </span>
-            </div>
-            <p class="step-text" data-cooking-mode-target="stepText" style="font-size: 1.25rem; line-height: 1.8;">
+            <span class="step-number"><%= idx + 1 %></span>
+            <p class="cook-step-text" data-cooking-mode-target="stepText">
               <%= step %>
             </p>
 
@@ -68,7 +65,7 @@
                 <button class="btn btn-secondary btn-sm"
                         data-action="click->timer#startFromStep"
                         data-timer-text="<%= step %>">
-                  ⏱️ Start Timer for this step
+                  <%= icon(:alarm, size: 15) %>Start timer for this step
                 </button>
               </div>
             <% end %>
@@ -82,13 +79,13 @@
                 data-cooking-mode-target="prevBtn"
                 data-action="click->cooking-mode#previous"
                 disabled>
-          ← Previous
+          Previous
         </button>
         <button class="btn"
                 data-cooking-mode-target="nextBtn"
                 data-action="click->cooking-mode#next"
                 <%= @steps.length <= 1 ? 'disabled' : '' %>>
-          Next →
+          Next
         </button>
       </div>
 
@@ -96,7 +93,7 @@
         <div class="card text-center">
           <p>No step-by-step instructions available.</p>
           <% if @recipe.instructions.present? %>
-            <div style="text-align: left;">
+            <div class="text-left">
               <%= simple_format(@recipe.instructions) %>
             </div>
           <% end %>
