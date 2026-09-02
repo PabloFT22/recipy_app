@@ -5,6 +5,8 @@ require 'ipaddr'
 class RecipeScraperService
   attr_reader :url, :errors
 
+  MAX_REDIRECTS = 5
+
   BROWSER_HEADERS = {
     "User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "Accept" => "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -64,7 +66,18 @@ class RecipeScraperService
 
   # SSRF protection: resolve the hostname and reject private/reserved IPs
   def safe_url?
-    host = URI.parse(url).host
+    safe_target?(url)
+  end
+
+  # True when `candidate` is an http(s) URL whose host resolves entirely to
+  # public addresses. Every redirect hop is re-checked with this: validating
+  # only the URL the user typed is not enough, because a public page can
+  # redirect to 169.254.169.254 (cloud metadata) or into a private network.
+  def safe_target?(candidate)
+    uri = URI.parse(candidate.to_s)
+    return false unless uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
+
+    host = uri.host
     return false if host.blank?
 
     addrs = Resolv.getaddresses(host)
@@ -78,9 +91,30 @@ class RecipeScraperService
     false
   end
 
-  # Fast path: plain HTTP request
+  # Fast path: plain HTTP request.
+  #
+  # Redirects are followed manually rather than by HTTParty, so that every hop
+  # goes through safe_target? — otherwise the SSRF guard only covers the first
+  # request and any public URL could bounce us into a private address.
   def fetch_with_httparty
-    response = HTTParty.get(url, headers: BROWSER_HEADERS, timeout: 15, follow_redirects: true)
+    target = url
+    response = nil
+
+    MAX_REDIRECTS.times do
+      response = HTTParty.get(target, headers: BROWSER_HEADERS, timeout: 15, follow_redirects: false)
+      break unless response.code.between?(300, 399) && response.headers["location"].present?
+
+      target = URI.join(target, response.headers["location"]).to_s
+      unless safe_target?(target)
+        @errors << "Redirect to a disallowed address was blocked"
+        return nil
+      end
+    end
+
+    if response.code.between?(300, 399)
+      @errors << "Too many redirects"
+      return nil
+    end
 
     if response.success?
       return response.body
