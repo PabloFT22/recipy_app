@@ -77,9 +77,6 @@ gem "tzinfo-data", platforms: %i[ mswin mswin64 mingw x64_mingw jruby ]
 # iCal export for meal plans
 gem "icalendar"
 
-# Rate limiting
-gem "rack-attack"
-
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
