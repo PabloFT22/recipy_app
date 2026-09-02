@@ -4,13 +4,14 @@
 Recipy is a recipe management Rails application. Users can save, organize, and plan meals from their recipe collection. The app supports importing recipes from URLs, organizing them into collections, creating meal plans, and generating grocery lists.
 
 ## Tech Stack
-- **Framework**: Ruby on Rails 7.1 (Ruby 2.7.4)
-- **Database**: MySQL (mysql2 gem)
+- **Framework**: Ruby on Rails 7.1 (Ruby 3.3.6)
+- **Database**: PostgreSQL (pg gem)
 - **Frontend**: Hotwire (Turbo + Stimulus), Importmap, Sprockets
 - **Styling**: Vanilla CSS with CSS custom properties (design tokens) — NO Tailwind, NO Sass
 - **Authentication**: Devise
 - **Background Jobs**: Sidekiq
-- **Key Gems**: friendly_id (slugs), kaminari (pagination), httparty + nokogiri (scraping), image_processing (photos), ruby-measurement (ingredient parsing)
+- **Key Gems**: friendly_id (slugs), kaminari (pagination), httparty + nokogiri (scraping), image_processing (photos), ruby-measurement (ingredient parsing), rack-attack (rate limiting), aws-sdk-s3 (production uploads)
+- **Hosting**: Fly.io — see `DEPLOYING.md`
 
 ## Key Commands
 - **Start server**: `bin/rails server`
@@ -19,6 +20,7 @@ Recipy is a recipe management Rails application. Users can save, organize, and p
 - **Run migrations**: `bin/rails db:migrate`
 - **Rails console**: `bin/rails console`
 - **Routes**: `bin/rails routes`
+- **Deploy**: `fly deploy` (see `DEPLOYING.md` for first-time setup)
 
 ## Architecture Rules
 - All models inherit from `ApplicationRecord`
@@ -30,6 +32,12 @@ Recipy is a recipe management Rails application. Users can save, organize, and p
 - Follow Rails conventions: fat models, skinny controllers
 - Use service objects for complex business logic (`app/services/`)
 - Tests go in `spec/` (RSpec) with factories in `spec/factories/`
+- Never write a bare SQL `LIKE` for search — it is case-sensitive on Postgres.
+  Use Arel's `matches`, which emits `ILIKE`, and pass the term through
+  `sanitize_sql_like` so `%` and `_` stay literal
+- Any controller action that accepts an id from the client must re-scope it to
+  `current_user` (or explicitly allow public records). See
+  `spec/requests/authorization_spec.rb`
 
 ## Frontend / UI Rules
 - All styles live in `app/assets/stylesheets/application.css` — single file, design-token-driven
@@ -56,6 +64,15 @@ spec/
   requests/       — Request specs
   services/       — Service specs
 ```
+
+## Security
+- Rate limiting lives in `config/initializers/rack_attack.rb`
+- The recipe importer fetches user-supplied URLs, so `RecipeScraperService`
+  validates every redirect hop against private/reserved IP ranges — do not
+  re-enable HTTParty's `follow_redirects`
+- CSP is in `config/initializers/content_security_policy.rb`, report-only
+  until `CSP_ENFORCE=true`
+- Production secrets are Fly secrets; `config/master.key` is gitignored
 
 ## Skills
 Claude Code skills are defined in `.claude/skills/`. Load the relevant skill when working on UI/UX, design, or frontend tasks.

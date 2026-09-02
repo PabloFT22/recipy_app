@@ -38,8 +38,8 @@ A comprehensive Ruby on Rails application for managing recipes, planning meals, 
 ## Tech Stack
 
 - **Framework**: Ruby on Rails 7.1.5
-- **Ruby Version**: 2.7.4
-- **Database**: MySQL 8 (mysql2)
+- **Ruby Version**: 3.3.6
+- **Database**: PostgreSQL (pg)
 - **Authentication**: Devise
 - **Image Processing**: Active Storage + ImageMagick/libvips
 - **Background Jobs**: Sidekiq (for future async tasks)
@@ -66,8 +66,8 @@ A comprehensive Ruby on Rails application for managing recipes, planning meals, 
 ## Installation
 
 ### Prerequisites
-- Ruby 2.7.4
-- MySQL 8
+- Ruby 3.3.6
+- PostgreSQL 14+
 - ImageMagick or libvips (for image processing)
 
 ### Setup
@@ -85,8 +85,8 @@ A comprehensive Ruby on Rails application for managing recipes, planning meals, 
 
 3. **Set up database**
    ```bash
-   # Start MySQL
-   brew services start mysql
+   # Start PostgreSQL
+   brew services start postgresql@14
 
    # Create and migrate database
    bin/rails db:create
@@ -172,7 +172,7 @@ Ingredient normalization:
 Create a `.env` file for sensitive data:
 
 ```env
-DATABASE_URL=mysql2://root@localhost/recipy_app_development
+DATABASE_URL=postgres://localhost/recipy_app_development
 SECRET_KEY_BASE=your_secret_key
 ```
 
@@ -186,6 +186,15 @@ Active Storage is configured for local storage in development. For production:
 
 ## Deployment
 
+### Fly.io (recommended)
+
+See **[DEPLOYING.md](DEPLOYING.md)** for the full walkthrough — Postgres,
+object storage for photos, email, secrets and backups.
+
+```bash
+fly deploy
+```
+
 ### Heroku Deployment
 
 1. **Create Heroku app**
@@ -193,9 +202,9 @@ Active Storage is configured for local storage in development. For production:
    heroku create recipy-app
    ```
 
-2. **Add a MySQL add-on** (e.g. JawsDB or ClearDB)
+2. **Add PostgreSQL**
    ```bash
-   heroku addons:create jawsdb:kitefin
+   heroku addons:create heroku-postgresql:essential-0
    ```
 
 3. **Set environment variables**
@@ -220,7 +229,7 @@ A Dockerfile is included for containerized deployment:
 
 ```bash
 docker build -t recipy-app .
-docker run -p 3000:3000 -e DATABASE_URL=<mysql-url> recipy-app
+docker run -p 3000:3000 -e DATABASE_URL=<postgres-url> recipy-app
 ```
 
 ### Environment-Specific Configuration
@@ -283,7 +292,7 @@ For issues or questions:
 
 Built with:
 - Ruby on Rails
-- MySQL
+- PostgreSQL
 - Devise
 - Hotwire
 - HTTParty & Nokogiri

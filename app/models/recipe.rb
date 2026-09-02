@@ -23,9 +23,13 @@ class Recipe < ApplicationRecord
   scope :private_recipes, -> { where(is_public: false) }
   scope :by_difficulty, ->(difficulty) { where(difficulty: difficulty) }
   scope :recent, -> { order(created_at: :desc) }
-  scope :popular, -> { includes(:meal_plan_recipes).group(:id).order('COUNT(meal_plan_recipes.id) DESC') }
+  # Arel#matches is case-insensitive on every adapter Rails supports (it emits
+  # ILIKE on Postgres, LIKE on MySQL). A bare LIKE would be case-SENSITIVE on
+  # Postgres, so searching "chicken" would miss "Chicken Soup".
   scope :search, ->(query) do
-    where("title LIKE ? OR description LIKE ?", "%#{query}%", "%#{query}%")
+    term = "%#{sanitize_sql_like(query.to_s.strip)}%"
+    t = arel_table
+    where(t[:title].matches(term).or(t[:description].matches(term)))
   end
   scope :by_tag, ->(tag_id) { joins(:tags).where(tags: { id: tag_id }) }
   

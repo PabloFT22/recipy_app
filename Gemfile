@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby "2.7.4"
+ruby "3.3.6"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 7.1.5", ">= 7.1.5.2"
@@ -8,8 +8,8 @@ gem "rails", "~> 7.1.5", ">= 7.1.5.2"
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
 
-# Use mysql as the database for Active Record
-gem "mysql2", "~> 0.5"
+# Use PostgreSQL as the database for Active Record
+gem "pg", "~> 1.5"
 
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
@@ -65,6 +65,12 @@ gem "sidekiq"
 # Environment variables
 gem "dotenv-rails", groups: [:development, :test]
 
+# Throttling and blocklisting at the Rack layer (brute-force protection)
+gem "rack-attack"
+
+# S3-compatible object storage for Active Storage in production
+gem "aws-sdk-s3", require: false
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ mswin mswin64 mingw x64_mingw jruby ]
 
@@ -95,6 +101,6 @@ end
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
+  # Selenium 4.11+ resolves drivers itself; the old webdrivers gem is retired.
   gem "selenium-webdriver"
-  gem "webdrivers"
 end

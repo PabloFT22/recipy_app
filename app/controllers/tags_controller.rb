@@ -1,7 +1,7 @@
 class TagsController < ApplicationController
   def search
     tags = current_user.tags
-      .where("name LIKE ?", "%#{params[:q].to_s.strip.downcase}%")
+      .where(Tag.arel_table[:name].matches("%#{Tag.sanitize_sql_like(params[:q].to_s.strip.downcase)}%"))
       .alphabetical
       .limit(10)
 
