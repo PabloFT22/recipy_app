@@ -1,0 +1,4 @@
+<h1><%= @review.new_record? ? "Write a Review" : "Edit Review" %></h1>
+<div class="card">
+  <%= render "form", review: @review %>
+</div>

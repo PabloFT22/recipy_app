@@ -29,6 +29,41 @@
   <% end %>
 
   <%= f.submit "Search", class: "btn" %>
+
+  <details class="search-more" <%= "open" if params[:cuisine_type].present? || params[:max_time].present? || params[:dietary_tag].present? || params[:sort].present? %>>
+    <summary class="search-more-toggle">
+      <%= icon(:chevron_down, size: 15) %>More filters
+    </summary>
+
+    <div class="search-more-body">
+      <div class="search-more-row">
+        <%= f.text_field :cuisine_type, value: params[:cuisine_type],
+              placeholder: "Cuisine, e.g. Thai", class: "form-input",
+              "aria-label": "Filter by cuisine" %>
+        <%= f.number_field :max_time, value: params[:max_time], min: 1,
+              placeholder: "Max total minutes", class: "form-input",
+              "aria-label": "Maximum total time in minutes" %>
+        <%= f.select :sort,
+              options_for_select([["Newest first", "recent"], ["Highest rated", "rating"]], params[:sort]),
+              { include_blank: "Sort by…" },
+              class: "form-select", "aria-label": "Sort recipes" %>
+      </div>
+
+      <fieldset class="diet-filters">
+        <legend class="section-eyebrow">Dietary</legend>
+        <% %w[vegetarian vegan gluten-free dairy-free nut-free].each do |diet| %>
+          <label class="diet-chip">
+            <%= radio_button_tag :dietary_tag, diet, params[:dietary_tag] == diet %>
+            <span><%= diet.tr("-", " ") %></span>
+          </label>
+        <% end %>
+        <label class="diet-chip">
+          <%= radio_button_tag :dietary_tag, "", params[:dietary_tag].blank? %>
+          <span>Any</span>
+        </label>
+      </fieldset>
+    </div>
+  </details>
 <% end %>
 
 <% if user_signed_in? && @user_tags.present? %>
@@ -58,7 +93,7 @@
     <%= paginate @recipes %>
   </div>
 
-<% elsif params[:search].present? || params[:difficulty].present? || params[:tag].present? %>
+<% elsif params.values_at(:search, :difficulty, :tag, :cuisine_type, :dietary_tag, :max_time).any?(&:present?) %>
   <%= render "shared/empty_state",
         icon_name: :search,
         title: "Nothing matched that search",

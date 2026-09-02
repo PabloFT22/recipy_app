@@ -1128,6 +1128,7 @@ footer p { color: var(--color-text-muted); }
 .stack { display: flex; flex-direction: column; }
 .gap-1 { gap: var(--space-sm); }
 .gap-3 { gap: var(--space-lg); }
+.gap-4 { gap: var(--space-xl); }
 .flex-wrap { flex-wrap: wrap; }
 .items-start { align-items: flex-start; }
 
@@ -5377,6 +5378,429 @@ footer p { color: var(--color-text-muted); }
 }
 
 /* =============================================================
+   PHASE 2 — RATINGS & REVIEWS
+   ============================================================= */
+.rating-badge {
+  background: var(--color-warning-soft);
+  border-color: transparent;
+  color: var(--color-warning);
+}
+
+.rating-count { font-weight: 500; opacity: 0.8; }
+
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.review-card {
+  padding: var(--space-base);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.review-author { font-weight: 600; color: var(--color-text-dark); font-size: var(--text-sm); }
+.review-date { font-size: var(--text-xs); color: var(--color-text-muted); }
+.review-body { font-size: var(--text-sm); line-height: 1.6; color: var(--color-text); }
+
+.review-own {
+  margin-top: var(--space-lg);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.review-form-wrap {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.review-form-title {
+  font-family: var(--font-family-accent);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-dark);
+  margin-bottom: var(--space-md);
+}
+
+/* Star widget: radios styled as stars, so it stays keyboard-operable. */
+.star-rating-widget,
+.star-rating-display,
+.stars-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--color-warning);
+}
+
+.star-rating-widget input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.star-rating-widget label {
+  cursor: pointer;
+  color: var(--color-border-muted);
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  line-height: 1;
+}
+
+.star-rating-widget label:hover { transform: scale(1.12); }
+.star-rating-widget input:checked ~ label,
+.star-rating-widget label.on { color: var(--color-warning); }
+
+.star-rating-widget input:focus-visible + label {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.like-btn .icon { transition: transform var(--transition-fast); }
+.like-btn:hover .icon { transform: scale(1.15); }
+
+.like-btn--on {
+  background: var(--color-danger-soft);
+  border-color: transparent;
+  color: var(--color-danger-dark);
+}
+
+.like-btn--on .icon { fill: currentColor; }
+
+/* =============================================================
+   PHASE 2 — NUTRITION
+   ============================================================= */
+.nutrition-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 1px;
+  background: var(--color-border-light);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.nutrition-cell {
+  background: var(--color-bg-card);
+  padding: var(--space-md);
+  text-align: center;
+}
+
+.nutrition-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+
+.nutrition-value {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--color-text-dark);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.nutrition-unit {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-left: 1px;
+}
+
+.nutrition-note {
+  margin-top: var(--space-md);
+  font-size: var(--text-xs);
+  color: var(--color-text-light);
+  font-style: italic;
+}
+
+.diet-badge { text-transform: capitalize; }
+
+/* =============================================================
+   PHASE 2 — COOKING MODE
+   ============================================================= */
+/* Meant to be read at arm's length on a propped-up phone: bigger type,
+   higher contrast, nothing else on screen. */
+.cooking-mode-page {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.cooking-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-xl);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cooking-header h1 {
+  font-family: var(--font-family-accent);
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-tight);
+}
+
+.cooking-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  gap: var(--space-2xl);
+  align-items: start;
+}
+
+.cooking-layout .ingredients-list { position: sticky; top: var(--space-lg); }
+
+.ingredient-check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-md);
+  cursor: pointer;
+  min-height: var(--touch-min);
+  transition: background var(--transition-fast);
+}
+
+.ingredient-check-item:hover { background: var(--color-bg-subtle); }
+
+.ingredient-check-item input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  min-height: 0;
+  margin-top: 2px;
+  padding: 0;
+  box-shadow: none;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.ingredient-check-item input:checked + span {
+  color: var(--color-text-light);
+  text-decoration: line-through;
+}
+
+.steps-area { min-width: 0; }
+
+.cooking-step {
+  padding: var(--space-lg);
+  margin-bottom: var(--space-md);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-lg);
+  line-height: 1.7;
+}
+
+.cooking-step.active,
+.cooking-step[data-active="true"] {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-elevated), 0 0 0 4px var(--color-primary-softer);
+}
+
+/* =============================================================
+   PHASE 2 — PROFILES
+   ============================================================= */
+.profile-page { max-width: 900px; margin: 0 auto; }
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-round);
+  object-fit: cover;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-family-accent);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.recipe-author-link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration-color: var(--color-border-muted);
+}
+
+.recipe-author-link:hover { color: var(--color-primary-dark); }
+
+.recipe-hero--image .recipe-author-link { color: var(--color-on-dark); }
+
+/* =============================================================
+   PHASE 2 — PANTRY EXPIRY & PWA
+   ============================================================= */
+.expiring-panel {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-base);
+  padding: var(--space-base) var(--space-lg);
+  margin-bottom: var(--space-xl);
+  background: var(--color-warning-soft);
+  border: 1px solid rgba(138, 104, 25, 0.28);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+}
+
+.expiring-body { flex: 1; min-width: 0; }
+
+.expiring-title {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-dark);
+  margin-bottom: var(--space-xs);
+}
+
+.expiring-items {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.expiring-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  font-size: var(--text-sm);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: 2px var(--space-sm);
+}
+
+.expiring-name { color: var(--color-text-dark); }
+.expiring-date { color: var(--color-warning); font-weight: 600; font-size: var(--text-xs); }
+
+.install-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-base);
+  background: var(--color-text-dark);
+  color: var(--color-on-primary);
+  flex-wrap: wrap;
+}
+
+.install-banner-text { font-size: var(--text-sm); font-weight: 500; }
+.install-banner .btn-ghost { color: var(--color-on-primary); border-color: rgba(255, 253, 251, 0.4); }
+.install-banner .btn-ghost:hover { background: rgba(255, 253, 251, 0.14); color: var(--color-on-primary); }
+
+/* =============================================================
+   PHASE 2 — EXTENDED RECIPE FILTERS
+   ============================================================= */
+.search-more { width: 100%; margin-top: var(--space-sm); }
+
+.search-more-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  list-style: none;
+  padding: var(--space-xs) 0;
+}
+
+.search-more-toggle::-webkit-details-marker { display: none; }
+.search-more-toggle:hover { color: var(--color-text-dark); }
+.search-more-toggle .icon { transition: transform var(--transition-base); }
+.search-more[open] .search-more-toggle .icon { transform: rotate(180deg); }
+
+.search-more-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-base);
+  margin-top: var(--space-xs);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.search-more-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-sm);
+}
+
+.diet-filters {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.diet-filters legend { padding: 0; margin-right: var(--space-sm); }
+
+.diet-chip { position: relative; cursor: pointer; }
+
+.diet-chip input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.diet-chip span {
+  display: inline-block;
+  padding: 0.35rem 0.8rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  text-transform: capitalize;
+  transition: background var(--transition-fast), color var(--transition-fast),
+              border-color var(--transition-fast);
+}
+
+.diet-chip:hover span { color: var(--color-text-dark); }
+
+.diet-chip input:checked + span {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 600;
+}
+
+.diet-chip input:focus-visible + span {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .cooking-layout { grid-template-columns: 1fr; gap: var(--space-lg); }
+  .cooking-layout .ingredients-list { position: static; }
+  .cooking-step { font-size: var(--text-md); padding: var(--space-base); }
+  .expiring-panel { flex-direction: column; }
+  .nutrition-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* =============================================================
    TAG SYSTEM
    ============================================================= */
 
@@ -5537,3 +5961,86 @@ a.tag-badge:hover {
     display: none;
   }
 }
+
+/* Star Rating */
+.star {
+  color: #bdc3c7;
+  font-size: 1.2rem;
+}
+.star.filled, .star-btn.selected, .star-btn.hovered {
+  color: #f1c40f;
+}
+.star-btn {
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #bdc3c7;
+  transition: color 0.1s;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #ecf0f1;
+  color: #2c3e50;
+}
+.badge-easy { background: #d4edda; color: #155724; }
+.badge-medium { background: #fff3cd; color: #856404; }
+.badge-hard { background: #f8d7da; color: #721c24; }
+
+/* Buttons */
+.btn-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+.btn-danger { background-color: #e74c3c; color: white; border-color: #e74c3c; }
+.btn-danger:hover { background-color: #c0392b; }
+.btn-success { background-color: #27ae60; color: white; border-color: #27ae60; }
+.btn-success:hover { background-color: #219a52; }
+
+/* Ingredient list */
+.ingredient-list {
+  list-style: none;
+  padding: 0;
+}
+.ingredient-list li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+/* Cooking mode */
+.cooking-step {
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Review cards */
+.review-card { border-left: 4px solid #3498db; }
+
+/* Print styles */
+@media print {
+  .navbar, footer, .btn, .alert, .pagination, form, button,
+  [data-controller="pwa-install"] {
+    display: none !important;
+  }
+  body { font-size: 12pt; color: #000; }
+  .recipe-show { max-width: 100%; }
+  .card { border: 1px solid #ddd; break-inside: avoid; }
+  a { color: #000; text-decoration: none; }
+  .print-recipe-card { page-break-inside: avoid; }
+}
+
+/* Form helpers */
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+}
+.form-text { color: #6c757d; font-size: 0.85rem; }
+.text-muted { color: #6c757d; }
+.text-danger { color: #e74c3c; }
+.ml-auto { margin-left: auto; }

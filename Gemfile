@@ -27,7 +27,7 @@ gem "stimulus-rails"
 gem "jbuilder"
 
 # Use Redis adapter to run Action Cable in production
-# gem "redis", ">= 4.0.1"
+gem "redis", ">= 4.0.1"
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"
@@ -74,6 +74,12 @@ gem "aws-sdk-s3", require: false
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ mswin mswin64 mingw x64_mingw jruby ]
 
+# iCal export for meal plans
+gem "icalendar"
+
+# Rate limiting
+gem "rack-attack"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
@@ -85,6 +91,10 @@ group :development, :test do
   gem "rspec-rails"
   gem "factory_bot_rails"
   gem "faker"
+  # The Phase 2 model specs are written against shoulda-matchers
+  # (`have_many(...).dependent(:destroy)`), but the gem was never added, so
+  # every one of them errored. Adding it makes them actually run.
+  gem "shoulda-matchers", "~> 6.0"
 end
 
 group :development do

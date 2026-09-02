@@ -1,0 +1,11 @@
+Hello <%= @user.display_name %>!
+
+Here's your meal plan for today from "<%= @meal_plan.name %>":
+
+<% @today_recipes.each do |mpr| %>
+- <%= mpr.recipe.title %> (<%= mpr.meal_type %>)
+  Servings: <%= mpr.servings %>
+<% end %>
+
+Happy cooking!
+— The Recipy Team

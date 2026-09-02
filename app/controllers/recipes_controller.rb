@@ -1,61 +1,85 @@
 class RecipesController < ApplicationController
-  skip_before_action :authenticate_user!, only: [:index, :show]
-  before_action :set_recipe, only: [:show, :edit, :update, :destroy, :duplicate, :add_to_collection]
+  skip_before_action :authenticate_user!, only: [:index, :show, :cook]
+  before_action :set_recipe, only: [:show, :edit, :update, :destroy, :duplicate, :add_to_collection, :cook, :like, :unlike]
   before_action :authorize_recipe, only: [:edit, :update, :destroy]
   before_action :authorize_recipe_access, only: [:duplicate, :add_to_collection]
-  
+
   def index
     if user_signed_in?
-      @recipes = current_user.recipes.includes(:tags).recent.page(params[:page])
+      @recipes = current_user.recipes.includes(:tags).recent
     else
-      @recipes = Recipe.public_recipes.includes(:tags).recent.page(params[:page])
+      @recipes = Recipe.public_recipes.includes(:tags).recent
     end
-    
+
     if params[:search].present?
       @recipes = @recipes.search(params[:search])
     end
-    
+
     if params[:difficulty].present?
       @recipes = @recipes.by_difficulty(params[:difficulty])
     end
-
     if params[:tag].present?
       @recipes = @recipes.by_tag(params[:tag])
     end
+
+    if params[:cuisine_type].present?
+      @recipes = @recipes.by_cuisine(params[:cuisine_type])
+    end
+
+    if params[:dietary_tag].present?
+      @recipes = @recipes.by_dietary_tag(params[:dietary_tag])
+    end
+
+    if params[:max_time].present?
+      @recipes = @recipes.by_max_time(params[:max_time].to_i)
+    end
+
+    case params[:sort]
+    when 'rating'
+      @recipes = @recipes.by_rating
+    when 'recent'
+      @recipes = @recipes.recent
+    end
+
+    @recipes = @recipes.page(params[:page])
 
     if user_signed_in?
       @user_tags = current_user.tags.with_recipe_count.alphabetical.select { |t| t.recipe_count.to_i > 0 }
     end
   end
-  
+
   def show
     unless @recipe.is_public || (user_signed_in? && @recipe.user == current_user)
       redirect_to recipes_path, alert: "Recipe not found or is private"
+      return
     end
     @recipe_tags = @recipe.tags
+    @user_review = current_user.reviews.find_by(recipe: @recipe) if user_signed_in?
+    @reviews = @recipe.reviews.includes(:user).order(created_at: :desc)
   end
-  
+
   def new
     @recipe = current_user.recipes.build
   end
-  
+
   def create
     ingredients_rows = params[:recipe].delete(:ingredients_rows)
     tag_names = params[:recipe].delete(:tag_names)
     @recipe = current_user.recipes.build(recipe_params)
-    
+
     if @recipe.save
       save_structured_ingredients(ingredients_rows) if ingredients_rows.present?
       sync_tags(tag_names) if tag_names.present?
+
       redirect_to @recipe, notice: 'Recipe was successfully created.'
     else
       render :new, status: :unprocessable_entity
     end
   end
-  
+
   def edit
   end
-  
+
   def update
     ingredients_rows = params[:recipe].delete(:ingredients_rows)
     tag_names = params[:recipe].delete(:tag_names)
@@ -73,12 +97,12 @@ class RecipesController < ApplicationController
       render :edit, status: :unprocessable_entity
     end
   end
-  
+
   def destroy
     @recipe.destroy
     redirect_to recipes_url, notice: 'Recipe was successfully deleted.'
   end
-  
+
   def import
   end
 
@@ -145,13 +169,13 @@ class RecipesController < ApplicationController
       end
     end
   end
-  
+
   def duplicate
     new_recipe = @recipe.dup
     new_recipe.title = "#{@recipe.title} (Copy)"
     new_recipe.user = current_user
     new_recipe.slug = nil
-    
+
     if new_recipe.save
       @recipe.recipe_ingredients.each do |ri|
         new_recipe.recipe_ingredients.create(
@@ -161,26 +185,49 @@ class RecipesController < ApplicationController
           notes: ri.notes
         )
       end
-      
+
       redirect_to new_recipe, notice: 'Recipe duplicated successfully.'
     else
       redirect_to @recipe, alert: 'Failed to duplicate recipe.'
     end
   end
-  
+
   def add_to_collection
     collection = current_user.recipe_collections.find(params[:collection_id])
     collection.add_recipe(@recipe)
-    
+
     redirect_to @recipe, notice: 'Recipe added to collection.'
   end
-  
+
+  def cook
+    unless @recipe.is_public || (user_signed_in? && @recipe.user == current_user)
+      redirect_to recipes_path, alert: "Recipe not found or is private"
+      return
+    end
+    @steps = @recipe.parse_instructions_into_steps
+  end
+
+  def like
+    authenticate_user!
+    unless @recipe.liked_by?(current_user)
+      current_user.likes.create!(recipe: @recipe)
+    end
+    redirect_to @recipe
+  end
+
+  def unlike
+    authenticate_user!
+    like = current_user.likes.find_by(recipe: @recipe)
+    like&.destroy
+    redirect_to @recipe
+  end
+
   private
-  
+
   def set_recipe
     @recipe = Recipe.friendly.find(params[:id])
   end
-  
+
   def authorize_recipe
     unless @recipe.user == current_user
       redirect_to recipes_path, alert: "You are not authorized to modify this recipe"
@@ -193,9 +240,9 @@ class RecipesController < ApplicationController
       redirect_to recipes_path, alert: "Recipe not found or is private"
     end
   end
-  
+
   def recipe_params
-    params.require(:recipe).permit(
+    permitted = params.require(:recipe).permit(
       :title,
       :description,
       :servings,
@@ -205,27 +252,35 @@ class RecipesController < ApplicationController
       :source_url,
       :difficulty,
       :is_public,
-      :image
+      :image,
+      :cuisine_type,
+      :dietary_tags,
+      dietary_tags_array: []
     )
+    # Convert dietary_tags_array checkboxes into comma-separated string
+    if permitted[:dietary_tags_array]
+      permitted[:dietary_tags] = permitted.delete(:dietary_tags_array).reject(&:blank?).join(',')
+    end
+    permitted
   end
-  
+
   def save_structured_ingredients(rows)
     rows.each do |row|
       next if row[:name].blank?
-      
+
       finder = IngredientFinderService.new(row[:name].strip)
       ingredient = finder.find_or_create
-      
+
       unit = row[:unit].presence
       notes = row[:notes].presence
       quantity = row[:quantity].present? ? row[:quantity].to_f : nil
-      
+
       # Validate unit — if not recognized, move to notes
       if unit.present? && !RecipeIngredient::UNITS.include?(unit)
         notes = [unit, notes].compact.join(', ')
         unit = nil
       end
-      
+
       @recipe.recipe_ingredients.create(
         ingredient: ingredient,
         quantity: quantity,
@@ -234,22 +289,22 @@ class RecipesController < ApplicationController
       )
     end
   end
-  
+
   def parse_and_add_ingredients(ingredients_text)
     parser = RecipeParserService.new(ingredients_text)
     parsed_ingredients = parser.parse
-    
+
     parsed_ingredients.each do |ingredient_data|
       next if ingredient_data[:ingredient_name].blank?
 
       finder = IngredientFinderService.new(ingredient_data[:ingredient_name])
       ingredient = finder.find_or_create
       next unless ingredient&.persisted?
-      
+
       # If unit is not recognized, store it as nil and move the unit text to notes
       unit = ingredient_data[:unit]
       notes = ingredient_data[:notes]
-      
+
       unless unit.blank? || RecipeIngredient::UNITS.include?(unit)
         notes = [unit, notes].compact.join(', ')
         unit = nil

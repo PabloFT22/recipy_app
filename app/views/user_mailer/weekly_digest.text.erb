@@ -1,0 +1,9 @@
+Your Weekly Recipe Digest
+
+Hello <%= @user.display_name %>! Here are new recipes from people you follow:
+
+<% @recipes.each do |recipe| %>
+- <%= recipe.title %> by <%= recipe.user.display_name %>
+<% end %>
+
+— The Recipy Team

@@ -97,6 +97,36 @@ RSpec.describe "Page rendering", type: :request do
       expect(response.body).to include("nav-link--current")
     end
 
+    it "renders the Phase 2 pages" do
+      get cook_recipe_path(recipe)
+      expect(response).to have_http_status(:success)
+
+      get user_path(user)
+      expect(response).to have_http_status(:success)
+
+      get pantry_items_path
+      expect(response).to have_http_status(:success)
+
+      get suggest_pantry_items_path
+      expect(response).to have_http_status(:success)
+
+      get export_ical_meal_plan_path(meal_plan)
+      expect(response).to have_http_status(:success)
+    end
+
+    it "renders a recipe that has a review, a like and nutrition" do
+      create(:review, user: user, recipe: recipe, rating: 4, body: "Solid midweek dinner")
+      Like.create!(user: user, recipe: recipe)
+      NutritionInfo.create!(recipe: recipe, calories: 520, protein_g: 30, carbs_g: 44,
+                            fat_g: 22, fiber_g: 6, sodium_mg: 800, per_servings: 4)
+
+      get recipe_path(recipe.reload)
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("Solid midweek dinner")
+      expect(response.body).to include("Nutrition")
+    end
+
     it "renders icons as inline SVG rather than emoji" do
       get root_path
       expect(response.body).to include('class="icon icon-')

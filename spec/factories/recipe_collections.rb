@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :recipe_collection do
     association :user
-    sequence(:name) { |n| "Collection #{n}" }
-    description { "A recipe collection" }
+    name { Faker::Lorem.words(number: 3).map(&:capitalize).join(' ') }
+    description { Faker::Lorem.sentence }
   end
 end

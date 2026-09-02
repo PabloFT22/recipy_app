@@ -9,18 +9,32 @@
     <% end %>
 
     <div class="recipe-hero-body">
-      <% if @recipe.difficulty.present? || @recipe_tags.any? %>
-        <div class="recipe-hero-tags">
-          <% if @recipe.difficulty.present? %>
-            <span class="meta-badge difficulty-<%= @recipe.difficulty %>">
-              <%= icon(:chart, size: 14) %><%= @recipe.difficulty.titleize %>
-            </span>
-          <% end %>
-          <% @recipe_tags.each do |tag| %>
-            <%= link_to tag.name, recipes_path(tag: tag.id), class: "tag-badge" %>
-          <% end %>
-        </div>
-      <% end %>
+      <div class="recipe-hero-tags">
+        <% if @recipe.reviews_count.to_i > 0 %>
+          <span class="meta-badge rating-badge">
+            <%= icon(:star, size: 14) %><%= number_with_precision(@recipe.average_rating, precision: 1) %>
+            <span class="rating-count">(<%= @recipe.reviews_count %>)</span>
+          </span>
+        <% end %>
+
+        <% if @recipe.difficulty.present? %>
+          <span class="meta-badge difficulty-<%= @recipe.difficulty %>">
+            <%= icon(:chart, size: 14) %><%= @recipe.difficulty.titleize %>
+          </span>
+        <% end %>
+
+        <% if @recipe.cuisine_type.present? %>
+          <span class="meta-badge"><%= icon(:globe, size: 14) %><%= @recipe.cuisine_type %></span>
+        <% end %>
+
+        <% @recipe.dietary_tags.to_s.split(",").map(&:strip).reject(&:blank?).each do |diet| %>
+          <span class="meta-badge diet-badge"><%= icon(:cat_produce, size: 13) %><%= diet.tr("-", " ") %></span>
+        <% end %>
+
+        <% @recipe_tags.each do |tag| %>
+          <%= link_to tag.name, recipes_path(tag: tag.id), class: "tag-badge" %>
+        <% end %>
+      </div>
 
       <h1 class="recipe-title"><%= @recipe.title %></h1>
 
@@ -29,7 +43,7 @@
       <% end %>
 
       <p class="recipe-author">
-        <span>By <%= @recipe.user.email.split('@').first.titleize %></span>
+        <span>By <%= link_to @recipe.user.display_name, user_path(@recipe.user), class: "recipe-author-link" %></span>
         <span class="separator" aria-hidden="true">•</span>
         <span><%= time_ago_in_words(@recipe.created_at) %> ago</span>
         <% unless @recipe.is_public %>
@@ -150,6 +164,38 @@
         <% end %>
       </section>
 
+      <%# ── Nutrition ───────────────────────────────── %>
+      <% if @recipe.nutrition_info && @recipe.servings.to_i > 0 %>
+        <section class="recipe-section" aria-labelledby="nutrition-heading">
+          <div class="recipe-section-head">
+            <h2 class="recipe-section-title" id="nutrition-heading">
+              <span class="icon-plate icon-plate--sm icon-plate--info"><%= icon(:chart, size: 18) %></span>
+              Nutrition
+            </h2>
+            <span class="recipe-section-count">per serving</span>
+          </div>
+
+          <% ni = @recipe.nutrition_info.per_serving(1) %>
+          <dl class="nutrition-grid">
+            <% [["Calories", ni.calories.to_f.round, ""],
+                ["Protein", ni.protein_g.to_f.round(1), "g"],
+                ["Carbs", ni.carbs_g.to_f.round(1), "g"],
+                ["Fat", ni.fat_g.to_f.round(1), "g"],
+                ["Fibre", ni.fiber_g.to_f.round(1), "g"],
+                ["Sodium", ni.sodium_mg.to_f.round, "mg"]].each do |label, value, unit| %>
+              <div class="nutrition-cell">
+                <dt class="nutrition-label"><%= label %></dt>
+                <dd class="nutrition-value"><%= value %><span class="nutrition-unit"><%= unit %></span></dd>
+              </div>
+            <% end %>
+          </dl>
+
+          <p class="nutrition-note">
+            Estimated automatically from the ingredient list — treat it as a guide, not a label.
+          </p>
+        </section>
+      <% end %>
+
       <%# ── Source ──────────────────────────────────── %>
       <% if @recipe.source_url.present? %>
         <section class="recipe-section" aria-labelledby="source-heading">
@@ -164,12 +210,74 @@
           </div>
         </section>
       <% end %>
+      <%# ── Reviews ─────────────────────────────────── %>
+      <section class="recipe-section" id="reviews" aria-labelledby="reviews-heading">
+        <div class="recipe-section-head">
+          <h2 class="recipe-section-title" id="reviews-heading">
+            <span class="icon-plate icon-plate--sm"><%= icon(:star, size: 18) %></span>
+            Reviews
+          </h2>
+          <% if @recipe.reviews_count.to_i > 0 %>
+            <span class="recipe-section-count">
+              <%= number_with_precision(@recipe.average_rating, precision: 1) %> average ·
+              <%= pluralize(@recipe.reviews_count, "review") %>
+            </span>
+          <% end %>
+        </div>
+
+        <% if @reviews.present? && @reviews.any? %>
+          <div class="review-list">
+            <% @reviews.each do |review| %>
+              <%= render "reviews/review", review: review %>
+            <% end %>
+          </div>
+        <% else %>
+          <%= render "shared/empty_state",
+                compact: true,
+                icon_name: :star,
+                title: "No reviews yet",
+                text: "Cooked this? Say how it went." %>
+        <% end %>
+
+        <% if user_signed_in? %>
+          <% if @user_review %>
+            <p class="review-own">
+              You have reviewed this recipe.
+              <%= link_to "Edit your review", edit_recipe_review_path(@recipe, @user_review) %>
+            </p>
+          <% else %>
+            <div class="review-form-wrap">
+              <h3 class="review-form-title">Leave a review</h3>
+              <%= render "reviews/form", review: Review.new %>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="review-own">
+            <%= link_to "Sign in", new_user_session_path %> to leave a review.
+          </p>
+        <% end %>
+      </section>
     </div>
   </div>
 
   <%# Action bar — floats at the foot of the page, sticky on mobile. %>
   <div class="recipe-actionbar">
     <div class="recipe-actionbar-primary">
+      <%= link_to cook_recipe_path(@recipe), class: "btn" do %>
+        <%= icon(:chef, size: 16) %>Cook Mode
+      <% end %>
+
+      <% if user_signed_in? %>
+        <%= turbo_frame_tag "like_button_#{@recipe.id}" do %>
+          <% liked = @recipe.liked_by?(current_user) %>
+          <%= link_to (liked ? unlike_recipe_path(@recipe) : like_recipe_path(@recipe)),
+                data: { turbo_method: (liked ? :delete : :post) },
+                class: "btn btn-secondary like-btn #{'like-btn--on' if liked}" do %>
+            <%= icon(:heart, size: 16) %><%= @recipe.likes.count %>
+          <% end %>
+        <% end %>
+      <% end %>
+
       <% if owner %>
         <%= link_to edit_recipe_path(@recipe), class: "btn" do %>
           <%= icon(:pencil, size: 16) %>Edit

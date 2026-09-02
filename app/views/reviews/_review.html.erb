@@ -1,0 +1,26 @@
+<div class="review-card card mb-3" id="<%= dom_id(review) %>">
+  <div class="flex justify-between items-center mb-2">
+    <div class="flex items-center gap-2">
+      <strong><%= review.user.display_name %></strong>
+      <div class="star-rating-display">
+        <% 5.times do |i| %>
+          <span class="<%= i < review.rating ? 'star filled' : 'star' %>">★</span>
+        <% end %>
+      </div>
+    </div>
+    <small class="text-muted"><%= time_ago_in_words(review.created_at) %> ago</small>
+  </div>
+
+  <% if review.body.present? %>
+    <p><%= review.body %></p>
+  <% end %>
+
+  <% if user_signed_in? && review.user == current_user %>
+    <div class="flex gap-2 mt-2">
+      <%= link_to "Edit", edit_recipe_review_path(@recipe, review), class: "btn btn-secondary btn-sm" %>
+      <%= link_to "Delete", recipe_review_path(@recipe, review),
+                  data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
+                  class: "btn btn-danger btn-sm" %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,67 @@
+<div class="flex justify-between items-center mb-4">
+  <h1>My Pantry</h1>
+  <div class="flex gap-2">
+    <%= link_to "🍽️ Recipe Suggestions", suggest_pantry_items_path, class: "btn btn-secondary" %>
+  </div>
+</div>
+
+<% if @expiring_soon.any? %>
+  <div class="alert alert-alert mb-4">
+    <strong>⚠️ Expiring Soon:</strong>
+    <% @expiring_soon.each do |item| %>
+      <span><%= item.ingredient.name %> (<%= item.expiration_date.strftime('%b %d') %>)</span>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="grid grid-2 mb-4">
+  <div class="card">
+    <h2>Add Item</h2>
+    <%= render "form" %>
+  </div>
+</div>
+
+<% if @items_by_category.any? %>
+  <% @items_by_category.each do |category, items| %>
+    <div class="card mb-3">
+      <h3 class="mb-3"><%= category.capitalize %></h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="border-bottom: 1px solid #ecf0f1;">
+            <th style="text-align: left; padding: 0.5rem;">Ingredient</th>
+            <th style="text-align: left; padding: 0.5rem;">Quantity</th>
+            <th style="text-align: left; padding: 0.5rem;">Unit</th>
+            <th style="text-align: left; padding: 0.5rem;">Expires</th>
+            <th style="text-align: left; padding: 0.5rem;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% items.each do |item| %>
+            <tr style="border-bottom: 1px solid #f5f5f5; <%= item.expiring? ? 'background: #fff9e6;' : '' %>">
+              <td style="padding: 0.5rem;"><%= item.ingredient.name %></td>
+              <td style="padding: 0.5rem;"><%= item.quantity %></td>
+              <td style="padding: 0.5rem;"><%= item.unit %></td>
+              <td style="padding: 0.5rem;">
+                <% if item.expiration_date %>
+                  <span class="<%= item.expired? ? 'text-danger' : '' %>">
+                    <%= item.expiration_date.strftime('%b %d, %Y') %>
+                    <%= '(expired)' if item.expired? %>
+                  </span>
+                <% end %>
+              </td>
+              <td style="padding: 0.5rem;">
+                <%= link_to "Remove", pantry_item_path(item),
+                    data: { turbo_method: :delete, turbo_confirm: "Remove from pantry?" },
+                    class: "btn btn-danger btn-sm" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+<% else %>
+  <div class="card text-center">
+    <p>Your pantry is empty. Add some ingredients to get started!</p>
+  </div>
+<% end %>

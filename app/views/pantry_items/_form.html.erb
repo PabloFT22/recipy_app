@@ -1,0 +1,25 @@
+<%= form_with url: pantry_items_path, method: :post, local: true do |f| %>
+  <div class="form-group mb-2">
+    <label>Ingredient Name</label>
+    <input type="text" name="pantry_item[ingredient_name]" class="form-control" placeholder="e.g., garlic" required>
+  </div>
+  <div class="grid grid-3">
+    <div class="form-group mb-2">
+      <%= label_tag :quantity %>
+      <input type="number" name="pantry_item[quantity]" class="form-control" step="0.01" min="0" placeholder="2">
+    </div>
+    <div class="form-group mb-2">
+      <%= label_tag :unit %>
+      <input type="text" name="pantry_item[unit]" class="form-control" placeholder="cups">
+    </div>
+    <div class="form-group mb-2">
+      <%= label_tag :expiration_date, "Expiry Date" %>
+      <input type="date" name="pantry_item[expiration_date]" class="form-control">
+    </div>
+  </div>
+  <div class="form-group mb-2">
+    <%= label_tag :notes, "Notes (optional)" %>
+    <input type="text" name="pantry_item[notes]" class="form-control" placeholder="Brand, notes...">
+  </div>
+  <button type="submit" class="btn">Add to Pantry</button>
+<% end %>

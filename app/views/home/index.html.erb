@@ -7,6 +7,25 @@
     <p class="page-lead">Pick up where you left off, or start something new.</p>
   </header>
 
+  <%# Pantry items about to expire — surfaced above the fold so it is actionable. %>
+  <% if defined?(@expiring_soon_items) && @expiring_soon_items.any? %>
+    <section class="expiring-panel" aria-labelledby="expiring-heading">
+      <span class="icon-plate icon-plate--warning"><%= icon(:warning, size: 20) %></span>
+      <div class="expiring-body">
+        <h2 class="expiring-title" id="expiring-heading">Use these up soon</h2>
+        <ul class="expiring-items">
+          <% @expiring_soon_items.each do |item| %>
+            <li class="expiring-item">
+              <span class="expiring-name"><%= item.ingredient.name %></span>
+              <span class="expiring-date"><%= item.expiration_date.strftime("%-d %b") %></span>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+      <%= link_to "View pantry", pantry_items_path, class: "btn btn-small btn-secondary" %>
+    </section>
+  <% end %>
+
   <%# Action tiles — one tappable surface per thing you can start. %>
   <nav class="action-tiles" aria-label="Quick actions">
     <%= link_to new_recipe_path, class: "action-tile" do %>

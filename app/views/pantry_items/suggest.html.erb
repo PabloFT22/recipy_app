@@ -1,0 +1,35 @@
+<div class="mb-3">
+  <%= link_to "← Back to Pantry", pantry_items_path %>
+</div>
+
+<h1>Recipe Suggestions</h1>
+<p class="text-muted mb-4">Based on what's in your pantry, here are recipes you can make:</p>
+
+<% if @suggestions.any? %>
+  <div class="grid grid-3">
+    <% @suggestions.each do |suggestion| %>
+      <div class="recipe-card">
+        <% recipe = suggestion[:recipe] %>
+        <% if recipe.image.attached? %>
+          <%= image_tag recipe.image.variant(resize_to_limit: [400, 300]), class: "recipe-card-image", loading: "lazy" %>
+        <% else %>
+          <div class="recipe-card-image"></div>
+        <% end %>
+        <div class="recipe-card-body">
+          <h3 class="recipe-card-title"><%= link_to recipe.title, recipe %></h3>
+          <div class="mb-2">
+            <div style="background: #ecf0f1; border-radius: 4px; height: 8px; margin-bottom: 4px;">
+              <div style="background: #27ae60; height: 8px; border-radius: 4px; width: <%= suggestion[:match_percentage] %>%;"></div>
+            </div>
+            <small><%= suggestion[:match_count] %>/<%= suggestion[:total_ingredients] %> ingredients available (<%= suggestion[:match_percentage] %>%)</small>
+          </div>
+          <%= link_to "View Recipe", recipe, class: "btn" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="card text-center">
+    <p>No suggestions available. Add more items to your pantry!</p>
+  </div>
+<% end %>
