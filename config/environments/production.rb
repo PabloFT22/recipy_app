@@ -37,7 +37,11 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = "X-Accel-Redirect" # for NGINX
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  # Object storage. The container filesystem is ephemeral, so uploads written
+  # to disk vanish on every deploy — :s3 (see config/storage.yml) is required
+  # in production. It falls back to :local only so the image can still boot
+  # with storage unconfigured, which you should never do with real users.
+  config.active_storage.service = ENV["AWS_BUCKET"].present? ? :s3 : :local
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
@@ -87,11 +91,45 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # ── Host authorization ───────────────────────────────────────────
+  # Blocks Host-header spoofing and DNS rebinding. APP_HOST is your own
+  # domain; the fly.dev subdomain stays allowed so the app is reachable
+  # before DNS is pointed at it.
+  config.hosts << ENV["APP_HOST"] if ENV["APP_HOST"].present?
+  config.hosts << /.*\.fly\.dev\z/
+  # The platform health check hits /up without a public Host header.
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  # ── Mail ─────────────────────────────────────────────────────────
+  # Password resets are the only mail this app sends, and they are useless
+  # if the links in them point at the wrong host.
+  mailer_host = ENV.fetch("APP_HOST", "localhost:3000")
+  config.action_mailer.default_url_options = { host: mailer_host, protocol: "https" }
+  config.action_mailer.asset_host = "https://#{mailer_host}"
+
+  # Raise rather than silently swallow delivery failures, so a broken SMTP
+  # config surfaces in the error tracker instead of stranding users who are
+  # waiting on a reset email.
+  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address:              ENV.fetch("SMTP_ADDRESS", "smtp.resend.com"),
+    port:                 ENV.fetch("SMTP_PORT", 587).to_i,
+    user_name:            ENV["SMTP_USERNAME"],
+    password:             ENV["SMTP_PASSWORD"],
+    authentication:       :plain,
+    enable_starttls_auto: true
+  }
+
+  # ── Transport security ───────────────────────────────────────────
+  # force_ssl (above) redirects http→https and marks cookies secure. This
+  # pins HSTS to a year across subdomains.
+  config.ssl_options = {
+    hsts: { expires: 1.year, subdomains: true, preload: false }
+  }
+
+  # Fly terminates TLS at its edge and forwards over plain HTTP, so Rails has
+  # to be told the original request was secure — otherwise force_ssl sees http
+  # and redirect-loops.
+  config.assume_ssl = true
 end

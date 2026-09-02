@@ -1,0 +1,59 @@
+# Fly.io deployment config.
+#
+# `app` must be globally unique across all of Fly — if `fly launch` says the
+# name is taken, change it here and re-run. `primary_region` should be the
+# datacenter nearest you and your users; `fly platform regions` lists them
+# (mad = Madrid, lhr = London, cdg = Paris, iad = Virginia).
+app = "recipy-app"
+primary_region = "mad"
+console_command = "/rails/bin/rails console"
+
+[build]
+  dockerfile = "Dockerfile"
+
+# Runs once per deploy, before the new machines take traffic. If a migration
+# fails the deploy is aborted and the old version keeps serving.
+[deploy]
+  release_command = "bin/rails db:migrate"
+
+[env]
+  RAILS_ENV = "production"
+  # Log to stdout so `fly logs` shows everything.
+  RAILS_LOG_TO_STDOUT = "true"
+  RAILS_SERVE_STATIC_FILES = "true"
+  # One Puma worker with 5 threads fits comfortably in 512MB.
+  WEB_CONCURRENCY = "1"
+  RAILS_MAX_THREADS = "5"
+  # Object storage region. Tigris ignores it; R2 wants "auto".
+  AWS_REGION = "auto"
+  # Content Security Policy starts in report-only. Flip to "true" once you have
+  # watched the browser console for violations on the deployed site.
+  CSP_ENFORCE = "false"
+
+[http_service]
+  internal_port = 3000
+  # Redundant with Rails' force_ssl, but stops plain HTTP at the edge.
+  force_https = true
+  # Scale to zero when idle: the app costs nothing while nobody is using it.
+  # The first request after a sleep takes a few seconds to wake.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 200
+    soft_limit = 150
+
+  # Fly stops sending traffic to a machine that fails this.
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/up"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
