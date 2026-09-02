@@ -146,7 +146,32 @@ fly secrets set APP_HOST=recipy.app
 That last step matters — `APP_HOST` drives Host authorization and the links
 inside password-reset emails.
 
-## 10. Error monitoring
+## 10. Optional: nutrition lookup
+
+The nutrition panel on a recipe stays hidden until this is set —
+`NutritionFetchService` returns `nil` without a key, silently. Free from
+<https://fdc.nal.usda.gov/api-key-signup.html>:
+
+```bash
+fly secrets set USDA_API_KEY=your_key_here
+```
+
+## 11. Background jobs — what actually runs
+
+Worth knowing before you wonder why emails never arrive:
+
+- **No `queue_adapter` is configured**, so Active Job uses `:async` — an
+  in-process thread pool. Nutrition fetches and `deliver_later` mail work
+  with no Redis and no worker, which is why this deploy costs nothing extra.
+  The trade-off is that queued jobs are **lost on restart or redeploy**. Fine
+  at this scale; revisit if it starts mattering.
+- **`WeeklyDigestJob` and `DailyMealPlanReminderJob` never fire on their own.**
+  There is no scheduler — no sidekiq-cron, nothing in `config/sidekiq.yml`.
+  They exist and work when invoked, but nothing invokes them. To turn them on
+  you need either a Fly scheduled machine or sidekiq-cron plus Redis. Until
+  then, treat the digest and reminder emails as not shipped.
+
+## 12. Error monitoring
 
 You will otherwise find out about 500s from users. [Sentry](https://sentry.io)
 is free at this scale:
