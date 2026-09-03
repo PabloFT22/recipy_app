@@ -38,3 +38,6 @@
 # Ignore development documentation and process notes
 /.dev-docs/
 .github/
+
+# Database dumps from DEPLOYING.md step 8 — never commit these.
+*.dump

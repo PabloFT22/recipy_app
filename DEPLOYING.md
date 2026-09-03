@@ -139,15 +139,38 @@ fly ssh console -C "/rails/bin/rails console"   # production console
 with automatic backups. Daily snapshots exist but are volume-level and easy to
 misread as a backup strategy. Set up a real dump:
 
+Fly's Postgres image listens on TCP only (port 5433 for Postgres itself),
+and the one role whose password is in the machine's `PGPASSFILE` is `repmgr`,
+a superuser. So dump inside the machine, then pull the file down:
+
 ```bash
-# Verify you can take one at all:
-fly postgres connect --app recipy-db
-fly ssh console --app recipy-db -C "pg_dump -Fc recipy_app" > backup.dump
+fly ssh console --app recipy-db
+# at the machine prompt:
+pg_dump -Fc -h localhost -p 5433 -U repmgr recipy_app > /tmp/backup.dump && ls -la /tmp/backup.dump; exit
+# back on your Mac (fails if backup.dump already exists — move it first):
+fly ssh sftp get /tmp/backup.dump ./backup.dump --app recipy-db
 ```
 
-Then automate it (a scheduled machine, or a nightly `pg_dump` to object
-storage). **Restore one into a scratch database before you trust it** — case
-M6 in the walkthrough kit. An untested backup is not a backup.
+`*.dump` is gitignored. Your Homebrew `pg_restore` is version 14 and cannot
+read a version 18 archive; `brew install libpq` gives you a current one at
+`/opt/homebrew/opt/libpq/bin/pg_restore --list backup.dump`.
+
+**Restore one into a scratch database before you trust it** — case M6 in the
+walkthrough kit. An untested backup is not a backup. Do it on the Fly server
+itself so the versions match:
+
+```bash
+fly ssh console --app recipy-db
+# at the machine prompt:
+createdb -h localhost -p 5433 -U repmgr recipy_restore_test
+pg_restore -h localhost -p 5433 -U repmgr -d recipy_restore_test /tmp/backup.dump
+psql -h localhost -p 5433 -U repmgr -d recipy_restore_test -c "select count(*) as recipes from recipes; select count(*) as users from users;"
+dropdb -h localhost -p 5433 -U repmgr recipy_restore_test; rm /tmp/backup.dump; exit
+```
+
+The counts should match production. Then automate the dump (a Fly scheduled
+machine, or a nightly `pg_dump` to object storage) and repeat the restore test
+whenever the Postgres image is upgraded.
 
 ## 9. Custom domain
 
