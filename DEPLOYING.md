@@ -146,6 +146,15 @@ fly secrets set APP_HOST=recipy.app
 That last step matters — `APP_HOST` drives Host authorization and the links
 inside password-reset emails.
 
+**Then move email off the test sender.** Until you have a domain, step 5 uses
+Resend's shared `onboarding@resend.dev`, which only delivers to your own
+address — nobody else can reset a password. Once the domain is yours:
+
+1. In Resend, add the domain and create the SPF + DKIM records it gives you.
+2. Wait for Resend to show the domain as verified.
+3. `fly secrets set MAIL_FROM="Recipy <noreply@recipy.app>"`
+4. Request a password reset for a non-owner account and confirm it arrives.
+
 ## 10. Optional: nutrition lookup
 
 The nutrition panel on a recipe stays hidden until this is set —
