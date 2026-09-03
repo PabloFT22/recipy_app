@@ -376,7 +376,9 @@
       <div class="card-body collapsed" data-recipe-form-target="photoBody" id="card-body-photo">
         <div class="form-group">
           <%= form.label :image, "Upload a photo of your dish" %>
-          <% if recipe.image.attached? %>
+          <%# A failed save leaves a pending, unsaved attachment on the record;
+              building a URL for it raises, so only preview persisted photos. %>
+          <% if recipe.image.attached? && recipe.image.attachment.persisted? %>
             <div class="current-image">
               <%= image_tag recipe.image, class: "current-image-thumb", alt: "Current photo of #{recipe.title}" %>
               <p class="helper-text">Upload a new image to replace this one</p>

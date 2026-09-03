@@ -16,6 +16,10 @@ class Recipe < ApplicationRecord
   has_one :nutrition_info, dependent: :destroy
   has_one_attached :image
 
+  # The form's difficulty select submits "" when nothing is chosen; the
+  # inclusion validation below only tolerates nil, so blank has to become nil.
+  normalizes :difficulty, with: ->(value) { value.presence }
+
   validates :title, presence: true
   validates :servings, numericality: { greater_than: 0, allow_nil: true }
   validates :prep_time, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
