@@ -80,6 +80,10 @@ gem "icalendar"
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
+# Error monitoring. Inert unless SENTRY_DSN is set — see config/initializers/sentry.rb
+gem "sentry-ruby"
+gem "sentry-rails"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri mswin mswin64 mingw x64_mingw ]
