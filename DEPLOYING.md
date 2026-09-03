@@ -59,14 +59,32 @@ account:
 fly storage create --name recipy-uploads
 ```
 
-That sets `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3`
-and `BUCKET_NAME` as secrets. Rails reads `AWS_BUCKET`, so copy it across:
+It prints `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3`,
+`AWS_REGION` and `BUCKET_NAME`. **Read the line above them.** If it says
+"Setting the following secrets on recipy-app", they are set. If it says "Set
+the following secrets on your target app", flyctl has left that to you — it
+does this when the app already has secrets by those names, or when the app was
+not detected. In that case set them yourself, from the printed values:
 
 ```bash
-fly secrets set AWS_BUCKET="$(fly secrets list --app recipy-app | grep BUCKET_NAME | awk '{print $1}')"
-# Simpler: read the bucket name from `fly storage list` and set it literally:
-fly secrets set AWS_BUCKET=recipy-uploads
+fly secrets set AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=... \
+  AWS_ENDPOINT_URL_S3=https://fly.storage.tigris.dev AWS_REGION=auto \
+  BUCKET_NAME=recipy-uploads --app recipy-app
 ```
+
+Rails reads `AWS_BUCKET`, not `BUCKET_NAME`, so copy it across:
+
+```bash
+fly secrets set AWS_BUCKET=recipy-uploads --app recipy-app
+```
+
+Then confirm with `fly secrets list --app recipy-app` — six `AWS`/`BUCKET`
+entries expected. A stale or missing key fails at *upload time* with
+`Aws::S3::Errors::AccessDenied`, not at boot, so do not skip the check.
+
+If you ever destroy and recreate the bucket, `fly secrets unset` the five
+variables first or the new bucket's credentials will not be applied, and
+Tigris holds a destroyed bucket's name for a while — pick a new one.
 
 Cloudflare R2 works identically if you'd rather — set the same four variables.
 
