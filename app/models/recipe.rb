@@ -60,9 +60,12 @@ class Recipe < ApplicationRecord
   end
   scope :by_tag, ->(tag_id) { joins(:tags).where(tags: { id: tag_id }) }
 
-  after_save :enqueue_nutrition_fetch, if: :should_fetch_nutrition?
-
-  attr_writer :ingredients_changed
+  # Nutrition is looked up from the ingredient list, which the controllers write
+  # *after* the recipe row is saved, so a save callback cannot see it. The
+  # controllers call this once the ingredients are in place instead.
+  def refresh_nutrition_later
+    NutritionFetchJob.perform_later(id) if recipe_ingredients.exists?
+  end
 
   def total_time
     return nil unless prep_time && cook_time
@@ -99,16 +102,5 @@ class Recipe < ApplicationRecord
                           .reject(&:blank?)
     end
     steps.map(&:strip).reject(&:blank?)
-  end
-
-  private
-
-  def should_fetch_nutrition?
-    @ingredients_changed || (id_previously_changed? && recipe_ingredients.any?)
-  end
-
-  def enqueue_nutrition_fetch
-    NutritionFetchJob.perform_later(id)
-    @ingredients_changed = false
   end
 end

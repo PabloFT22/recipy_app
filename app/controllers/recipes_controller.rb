@@ -186,6 +186,8 @@ class RecipesController < ApplicationController
         )
       end
 
+      new_recipe.refresh_nutrition_later
+
       redirect_to new_recipe, notice: 'Recipe duplicated successfully.'
     else
       redirect_to @recipe, alert: 'Failed to duplicate recipe.'
@@ -288,6 +290,8 @@ class RecipesController < ApplicationController
         notes: notes
       )
     end
+
+    @recipe.refresh_nutrition_later
   end
 
   def parse_and_add_ingredients(ingredients_text)
@@ -331,6 +335,8 @@ class RecipesController < ApplicationController
         )
       end
     end
+
+    @recipe.refresh_nutrition_later
   end
 
   def attach_image_from_url(image_url)
