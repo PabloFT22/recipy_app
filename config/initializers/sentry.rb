@@ -1,5 +1,7 @@
 # Error monitoring (DEPLOYING.md step 12). Does nothing unless SENTRY_DSN is
 # set, so development and test never report anywhere.
+require "active_support/parameter_filter"
+
 if ENV["SENTRY_DSN"].present?
   Sentry.init do |config|
     config.dsn = ENV["SENTRY_DSN"]
