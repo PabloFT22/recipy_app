@@ -3,9 +3,9 @@
 # `app` must be globally unique across all of Fly — if `fly launch` says the
 # name is taken, change it here and re-run. `primary_region` should be the
 # datacenter nearest you and your users; `fly platform regions` lists them
-# (mad = Madrid, lhr = London, cdg = Paris, iad = Virginia).
+# (cdg = Paris, lhr = London, ams = Amsterdam, iad = Virginia). Madrid (mad) is no longer offered.
 app = "recipy-app"
-primary_region = "mad"
+primary_region = "cdg"
 console_command = "/rails/bin/rails console"
 
 [build]

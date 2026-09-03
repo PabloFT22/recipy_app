@@ -37,7 +37,7 @@ and re-run. The name becomes your `https://<name>.fly.dev` address.
 ## 3. Attach Postgres
 
 ```bash
-fly postgres create --name recipy-db --region mad --initial-cluster-size 1 \
+fly postgres create --name recipy-db --region cdg --initial-cluster-size 1 \
   --vm-size shared-cpu-1x --volume-size 1
 fly postgres attach recipy-db --app recipy-app
 ```
