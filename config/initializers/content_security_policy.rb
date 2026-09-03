@@ -22,11 +22,14 @@ Rails.application.configure do
     # policy.report_uri "https://your-sentry-ingest/csp-report"
   end
 
-  # Sprockets serves plain <style>/<script> tags, but Turbo and Stimulus need
-  # inline styles for transitions, so styles get a nonce rather than
-  # 'unsafe-inline'.
-  config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
-  config.content_security_policy_nonce_directives = %w[style-src]
+  # A fresh random nonce per request. (Deriving it from the session id is
+  # empty on a visitor's first request, which would block everything below.)
+  config.content_security_policy_nonce_generator = ->(_request) { SecureRandom.base64(16) }
+
+  # Importmap needs two inline <script> tags (the map itself and the module
+  # entry point); javascript_importmap_tags stamps them with this nonce. Turbo
+  # reads the same nonce from csp_meta_tag for the inline styles it injects.
+  config.content_security_policy_nonce_directives = %w[script-src style-src]
 
   # Start in report-only for the first deploy so a mistake here cannot take the
   # site down: violations are logged by the browser but nothing is blocked.
