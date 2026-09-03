@@ -17,9 +17,12 @@ brew install flyctl
 fly auth signup     # or: fly auth login
 ```
 
-Fly asks for a card at signup. It is used for spend above the free allowance;
-set a spend limit at <https://fly.io/dashboard> → Billing before you go further
-so you cannot be surprised.
+Fly asks for a card at signup and bills monthly, in US dollars, for what was
+used. There is **no hard spend limit** on pay-as-you-go accounts. The
+protection is the fixed footprint below — one app machine, one small Postgres,
+nothing that autoscales — which bounds the bill at a few dollars a month.
+Optionally buy a small credit under Billing; usage draws that down before the
+card is charged. Check Cost Explorer occasionally.
 
 ## 2. Create the app
 
@@ -224,17 +227,25 @@ Worth knowing before you wonder why emails never arrive:
 ## 12. Error monitoring
 
 You will otherwise find out about 500s from users. [Sentry](https://sentry.io)
-is free at this scale:
-
-```ruby
-# Gemfile
-gem "sentry-ruby"
-gem "sentry-rails"
-```
+is free at this scale. The gems and `config/initializers/sentry.rb` are already
+in the repo and stay inert until a DSN is set. Create a Rails project in
+Sentry with only "Error monitoring" enabled, copy its DSN, then:
 
 ```bash
 fly secrets set SENTRY_DSN=https://...
+fly deploy
 ```
+
+Confirm delivery from the production console:
+
+```bash
+fly ssh console --app recipy-app
+# at the machine prompt:
+/rails/bin/rails runner 'Sentry.capture_message("deploy test"); Sentry.get_current_client.flush'; exit
+```
+
+The initializer keeps `send_default_pii` off and tracing at zero; sentry-rails
+scrubs `filter_parameters` on its own.
 
 ---
 
