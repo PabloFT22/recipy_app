@@ -12,16 +12,22 @@
           <span>Created <%= time_ago_in_words(@grocery_list.created_at) %> ago</span>
         </div>
       </div>
-      <div class="gl-show-actions">
+      <div class="gl-show-actions" data-controller="recipe-share">
         <% if @grocery_list.status == 'active' %>
-          <%= link_to "✅ Mark Complete", complete_grocery_list_path(@grocery_list),
-              data: { turbo_method: :post, turbo_confirm: "Mark this list as complete?" },
-              class: "btn btn-success" %>
-          <%= link_to "📦 Archive", archive_grocery_list_path(@grocery_list),
-              data: { turbo_method: :post, turbo_confirm: "Archive this list?" },
-              class: "btn btn-secondary" %>
+          <%= link_to complete_grocery_list_path(@grocery_list),
+                data: { turbo_method: :post, turbo_confirm: "Mark this list as complete?" },
+                class: "btn btn-success" do %>
+            <%= icon(:check_circle, size: 16) %>Mark Complete
+          <% end %>
+          <%= link_to archive_grocery_list_path(@grocery_list),
+                data: { turbo_method: :post, turbo_confirm: "Archive this list?" },
+                class: "btn btn-secondary" do %>
+            <%= icon(:box, size: 16) %>Archive
+          <% end %>
         <% end %>
-        <button class="btn btn-secondary" onclick="window.print()">🖨️ Print</button>
+        <button class="btn btn-plain" type="button" data-action="click->recipe-share#print">
+          <%= icon(:printer, size: 16) %>Print
+        </button>
       </div>
     </div>
   </div>
@@ -34,27 +40,21 @@
     <div class="gl-categories">
       <% @items_by_category.each do |category, items| %>
         <div class="gl-category" data-grocery-list-target="category">
-          <div class="gl-category-header" data-action="click->grocery-list#toggleCategory">
+          <div class="gl-category-header"
+               data-action="click->grocery-list#toggleCategory keydown->grocery-list#toggleCategoryOnKey"
+               role="button"
+               tabindex="0"
+               aria-expanded="true">
             <div class="gl-category-title">
-              <span class="gl-category-icon">
-                <%= case category
-                    when 'produce' then '🥬'
-                    when 'dairy' then '🧀'
-                    when 'meat' then '🥩'
-                    when 'seafood' then '🐟'
-                    when 'bakery' then '🍞'
-                    when 'pantry' then '🥫'
-                    when 'frozen' then '🧊'
-                    when 'beverages' then '🥤'
-                    when 'condiments' then '🫙'
-                    when 'spices' then '🧂'
-                    else '📦'
-                    end %>
+              <span class="gl-category-icon icon-plate icon-plate--sm icon-plate--neutral">
+                <%= category_icon(category, size: 17) %>
               </span>
               <h3><%= category.capitalize %></h3>
               <span class="gl-category-count"><%= items.size %></span>
             </div>
-            <span class="gl-category-chevron" data-grocery-list-target="chevron">▼</span>
+            <span class="gl-category-chevron" data-grocery-list-target="chevron" aria-hidden="true">
+              <%= icon(:chevron_down, size: 18) %>
+            </span>
           </div>
 
           <div class="gl-category-items" data-grocery-list-target="categoryItems">
@@ -66,13 +66,10 @@
       <% end %>
     </div>
   <% else %>
-    <div class="card text-center mt-3">
-      <div class="empty-state">
-        <span class="empty-icon">🛒</span>
-        <h3>No items on this list</h3>
-        <p>Add items below or generate this list from a meal plan.</p>
-      </div>
-    </div>
+    <%= render "shared/empty_state",
+          icon_name: :cart,
+          title: "No items on this list",
+          text: "Add items below, or generate this list from a meal plan and Recipe will add up the quantities for you." %>
   <% end %>
 
   <!-- Add Item Form -->
@@ -81,7 +78,7 @@
       <div class="form-card">
         <div class="card-header">
           <div class="card-title">
-            <span class="card-icon">➕</span>
+            <span class="icon-plate icon-plate--sm"><%= icon(:plus, size: 17) %></span>
             <h3>Add Item</h3>
           </div>
         </div>
@@ -126,6 +123,8 @@
 
   <!-- Back Link -->
   <div class="back-link mt-3">
-    <%= link_to "← Back to Grocery Lists", grocery_lists_path, class: "link-secondary" %>
+    <%= link_to grocery_lists_path, class: "link-secondary icon-label" do %>
+      <%= icon(:arrow_left, size: 15) %>Back to Grocery Lists
+    <% end %>
   </div>
 </div>

@@ -80,17 +80,14 @@ export default class extends Controller {
   }
 
   toggleCard(event) {
+    // The chevron is inside the header, so clicking it also lands here.
     const card = event.currentTarget.closest('.form-card')
     const body = card.querySelector('.card-body')
     const toggle = card.querySelector('.expand-btn')
+    const expanded = body.classList.toggle('collapsed') === false
 
-    if (body.classList.contains('collapsed')) {
-      body.classList.remove('collapsed')
-      toggle.classList.add('rotated')
-    } else {
-      body.classList.add('collapsed')
-      toggle.classList.remove('rotated')
-    }
+    toggle.classList.toggle('rotated', expanded)
+    toggle.setAttribute('aria-expanded', String(expanded))
   }
 
   updatePreview(event) {
@@ -268,7 +265,7 @@ export default class extends Controller {
              value="${this.escapeAttr(notes)}"
              placeholder="optional"
              class="form-input col-notes">
-      <button type="button" class="btn-remove-row" data-action="click->recipe-form#removeIngredientRow" title="Remove">✕</button>
+      <button type="button" class="btn-remove-row" data-action="click->recipe-form#removeIngredientRow" aria-label="Remove ingredient"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     `
 
     this.ingredientRowsTarget.appendChild(row)
@@ -309,13 +306,13 @@ export default class extends Controller {
     const text = event.target.value
 
     if (!text.trim()) {
-      this.instructionPreviewTarget.style.display = 'none'
+      this.instructionPreviewTarget.hidden = true
       return
     }
 
     const steps = text.split(/\n\n+/).filter(step => step.trim())
     if (steps.length === 0) {
-      this.instructionPreviewTarget.style.display = 'none'
+      this.instructionPreviewTarget.hidden = true
       return
     }
 
@@ -332,7 +329,7 @@ export default class extends Controller {
     html += '</div>'
 
     this.instructionPreviewContentTarget.innerHTML = html
-    this.instructionPreviewTarget.style.display = 'block'
+    this.instructionPreviewTarget.hidden = false
   }
 
   escapeHtml(text) {
@@ -350,8 +347,8 @@ export default class extends Controller {
     const reader = new FileReader()
     reader.onload = (e) => {
       this.imagePreviewTarget.innerHTML = `
-        <img src="${e.target.result}" alt="Recipe preview" style="max-width: 100%; border-radius: 8px;">
-        <p class="text-success" style="margin-top: 10px;">✓ Image selected</p>
+        <img src="${e.target.result}" alt="Preview of the photo you selected" class="file-upload-preview">
+        <p class="text-success file-upload-confirm">Image selected</p>
       `
     }
     reader.readAsDataURL(file)
@@ -391,7 +388,7 @@ export default class extends Controller {
     localStorage.setItem('recipe_draft', JSON.stringify(draft))
     // Only show indicator when manually triggered, not on auto-save
     if (this._manualSave) {
-      this.showSaveIndicator('Draft saved ✓')
+      this.showSaveIndicator('Draft saved')
       this._manualSave = false
     }
   }
@@ -414,7 +411,7 @@ export default class extends Controller {
       banner.className = 'draft-restore-banner'
       banner.innerHTML = `
         <div class="draft-restore-content">
-          <span class="draft-restore-icon">📝</span>
+          <span class="draft-restore-icon"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5Z"/><path d="M14 3v5h5M8 13h8M8 17h5"/></svg></span>
           <div class="draft-restore-text">
             <strong>You have an unsaved draft</strong>
             ${ago ? `<span class="draft-restore-time">Last saved ${ago}</span>` : ''}
@@ -470,7 +467,7 @@ export default class extends Controller {
       const banner = this.element.querySelector('.draft-restore-banner')
       if (banner) banner.remove()
 
-      this.showSaveIndicator('📝 Draft restored')
+      this.showSaveIndicator('Draft restored')
     } catch (e) {
       console.error('Error restoring draft:', e)
     }
@@ -505,7 +502,7 @@ export default class extends Controller {
     this.saveDraft()
     // Fallback: if saveDraft didn't show it (e.g. flag issue), force show
     if (this.hasSaveIndicatorTarget && !this.saveIndicatorTarget.classList.contains('visible')) {
-      this.showSaveIndicator('Draft saved ✓')
+      this.showSaveIndicator('Draft saved')
     }
   }
 

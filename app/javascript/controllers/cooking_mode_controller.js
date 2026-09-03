@@ -53,13 +53,11 @@ export default class extends Controller {
     }
   }
 
+  // Toggle a class rather than writing font sizes inline, so the size stays
+  // defined in the stylesheet alongside the rest of the cooking-mode type.
   toggleLargeText() {
     this.largeText = !this.largeText
-    const fontSize = this.largeText ? '1.75rem' : '1.25rem'
-    this.stepTargets.forEach(step => {
-      const textEl = step.querySelector('[data-cooking-mode-target="stepText"]')
-      if (textEl) textEl.style.fontSize = fontSize
-    })
+    this.element.classList.toggle('large-text', this.largeText)
   }
 
   toggleIngredient(event) {

@@ -1,0 +1,39 @@
+<%#
+  Shared empty state.
+
+  icon_name:       icon key for the visual (default :book)
+  title:           headline (required)
+  text:            supporting copy (optional)
+  action_label /   primary call to action (optional)
+  action_path:
+  action_icon:     icon for the primary action (default :plus)
+  action_data:     data attributes for the primary action (e.g. turbo_method/confirm)
+  secondary_label / secondary_path: optional secondary action
+  compact:         quieter inline variant (default: false)
+%>
+<% compact = local_assigns.fetch(:compact, false) %>
+
+<div class="empty-state <%= 'empty-state--compact' if compact %>">
+  <div class="empty-state-visual">
+    <%= icon(local_assigns.fetch(:icon_name, :book), size: compact ? 26 : 34) %>
+  </div>
+
+  <p class="empty-state-title"><%= title %></p>
+
+  <% if local_assigns[:text].present? %>
+    <p class="empty-state-text"><%= text %></p>
+  <% end %>
+
+  <% if local_assigns[:action_label].present? || local_assigns[:secondary_label].present? %>
+    <div class="empty-state-actions">
+      <% if local_assigns[:action_label].present? %>
+        <%= link_to action_path, class: "btn", data: local_assigns[:action_data] do %>
+          <%= icon(local_assigns.fetch(:action_icon, :plus), size: 16) %><%= action_label %>
+        <% end %>
+      <% end %>
+      <% if local_assigns[:secondary_label].present? %>
+        <%= link_to secondary_label, secondary_path, class: "btn btn-secondary" %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

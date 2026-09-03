@@ -1,13 +1,15 @@
 <div class="flex justify-between items-center mb-4">
   <h1>My Pantry</h1>
   <div class="flex gap-2">
-    <%= link_to "🍽️ Recipe Suggestions", suggest_pantry_items_path, class: "btn btn-secondary" %>
+    <%= link_to suggest_pantry_items_path, class: "btn btn-secondary" do %>
+      <%= icon(:plate, size: 16) %>Recipe Suggestions
+    <% end %>
   </div>
 </div>
 
 <% if @expiring_soon.any? %>
   <div class="alert alert-alert mb-4">
-    <strong>⚠️ Expiring Soon:</strong>
+    <strong class="icon-label"><%= icon(:warning, size: 15) %>Expiring soon:</strong>
     <% @expiring_soon.each do |item| %>
       <span><%= item.ingredient.name %> (<%= item.expiration_date.strftime('%b %d') %>)</span>
     <% end %>
@@ -25,23 +27,23 @@
   <% @items_by_category.each do |category, items| %>
     <div class="card mb-3">
       <h3 class="mb-3"><%= category.capitalize %></h3>
-      <table style="width: 100%; border-collapse: collapse;">
+      <table class="data-table">
         <thead>
-          <tr style="border-bottom: 1px solid #ecf0f1;">
-            <th style="text-align: left; padding: 0.5rem;">Ingredient</th>
-            <th style="text-align: left; padding: 0.5rem;">Quantity</th>
-            <th style="text-align: left; padding: 0.5rem;">Unit</th>
-            <th style="text-align: left; padding: 0.5rem;">Expires</th>
-            <th style="text-align: left; padding: 0.5rem;">Actions</th>
+          <tr>
+            <th>Ingredient</th>
+            <th>Quantity</th>
+            <th>Unit</th>
+            <th>Expires</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <% items.each do |item| %>
-            <tr style="border-bottom: 1px solid #f5f5f5; <%= item.expiring? ? 'background: #fff9e6;' : '' %>">
-              <td style="padding: 0.5rem;"><%= item.ingredient.name %></td>
-              <td style="padding: 0.5rem;"><%= item.quantity %></td>
-              <td style="padding: 0.5rem;"><%= item.unit %></td>
-              <td style="padding: 0.5rem;">
+            <tr class="<%= 'row--warn' if item.expiring? %>">
+              <td><%= item.ingredient.name %></td>
+              <td><%= item.quantity %></td>
+              <td><%= item.unit %></td>
+              <td>
                 <% if item.expiration_date %>
                   <span class="<%= item.expired? ? 'text-danger' : '' %>">
                     <%= item.expiration_date.strftime('%b %d, %Y') %>
@@ -49,7 +51,7 @@
                   </span>
                 <% end %>
               </td>
-              <td style="padding: 0.5rem;">
+              <td>
                 <%= link_to "Remove", pantry_item_path(item),
                     data: { turbo_method: :delete, turbo_confirm: "Remove from pantry?" },
                     class: "btn btn-danger btn-sm" %>

@@ -11,10 +11,15 @@ RSpec.describe Ingredient, type: :model do
     it { is_expected.to validate_presence_of(:name) }
     it { is_expected.to validate_presence_of(:normalized_name) }
 
+    # normalized_name cannot be set directly: before_validation :normalize_name
+    # always derives it from name. Passing it to the factory (as this spec used
+    # to) meant the two records never actually collided, so it passed vacuously.
     it 'requires unique normalized_name' do
-      create(:ingredient, normalized_name: 'garlic')
-      ingredient = build(:ingredient, name: 'Garlic', normalized_name: 'garlic')
+      create(:ingredient, name: 'garlic')
+      ingredient = build(:ingredient, name: 'Garlic')
+
       expect(ingredient).not_to be_valid
+      expect(ingredient.errors[:normalized_name]).to be_present
     end
 
     it 'validates category inclusion' do

@@ -11,7 +11,11 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
-  create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_trgm"
+  enable_extension "plpgsql"
+
+  create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
     t.bigint "record_id", null: false
@@ -21,7 +25,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
   end
 
-  create_table "active_storage_blobs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "active_storage_blobs", force: :cascade do |t|
     t.string "key", null: false
     t.string "filename", null: false
     t.string "content_type"
@@ -33,13 +37,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
-  create_table "active_storage_variant_records", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "active_storage_variant_records", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "follows", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "follows", force: :cascade do |t|
     t.bigint "follower_id", null: false
     t.bigint "following_id", null: false
     t.datetime "created_at", null: false
@@ -48,7 +52,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["following_id"], name: "index_follows_on_following_id"
   end
 
-  create_table "grocery_list_items", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "grocery_list_items", force: :cascade do |t|
     t.bigint "grocery_list_id", null: false
     t.bigint "ingredient_id", null: false
     t.decimal "quantity", precision: 10, scale: 3
@@ -62,7 +66,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["ingredient_id"], name: "index_grocery_list_items_on_ingredient_id"
   end
 
-  create_table "grocery_lists", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "grocery_lists", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "name", null: false
     t.string "status", default: "active"
@@ -72,7 +76,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["user_id"], name: "index_grocery_lists_on_user_id"
   end
 
-  create_table "ingredients", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "ingredients", force: :cascade do |t|
     t.string "name", null: false
     t.string "normalized_name", null: false
     t.string "category"
@@ -82,7 +86,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["normalized_name"], name: "index_ingredients_on_normalized_name", unique: true
   end
 
-  create_table "likes", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "likes", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "recipe_id", null: false
     t.datetime "created_at", null: false
@@ -91,7 +95,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["user_id", "recipe_id"], name: "index_likes_on_user_id_and_recipe_id", unique: true
   end
 
-  create_table "meal_plan_recipes", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "meal_plan_recipes", force: :cascade do |t|
     t.bigint "meal_plan_id", null: false
     t.bigint "recipe_id", null: false
     t.date "scheduled_for"
@@ -104,7 +108,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["recipe_id"], name: "index_meal_plan_recipes_on_recipe_id"
   end
 
-  create_table "meal_plans", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "meal_plans", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "name"
     t.date "start_date"
@@ -115,7 +119,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["user_id"], name: "index_meal_plans_on_user_id"
   end
 
-  create_table "nutrition_infos", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "nutrition_infos", force: :cascade do |t|
     t.bigint "recipe_id", null: false
     t.decimal "calories", precision: 8, scale: 2
     t.decimal "protein_g", precision: 8, scale: 2
@@ -131,7 +135,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["recipe_id"], name: "index_nutrition_infos_on_recipe_id", unique: true
   end
 
-  create_table "pantry_items", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "pantry_items", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "ingredient_id", null: false
     t.datetime "created_at", null: false
@@ -145,7 +149,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["user_id"], name: "index_pantry_items_on_user_id"
   end
 
-  create_table "recipe_collection_memberships", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "recipe_collection_memberships", force: :cascade do |t|
     t.bigint "recipe_id", null: false
     t.bigint "recipe_collection_id", null: false
     t.datetime "created_at", null: false
@@ -154,7 +158,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["recipe_id"], name: "index_recipe_collection_memberships_on_recipe_id"
   end
 
-  create_table "recipe_collections", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "recipe_collections", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "name"
     t.text "description"
@@ -163,7 +167,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["user_id"], name: "index_recipe_collections_on_user_id"
   end
 
-  create_table "recipe_ingredients", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "recipe_ingredients", force: :cascade do |t|
     t.bigint "recipe_id", null: false
     t.bigint "ingredient_id", null: false
     t.decimal "quantity", precision: 10, scale: 3
@@ -175,7 +179,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["recipe_id"], name: "index_recipe_ingredients_on_recipe_id"
   end
 
-  create_table "recipe_tags", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "recipe_tags", force: :cascade do |t|
     t.bigint "recipe_id", null: false
     t.bigint "tag_id", null: false
     t.datetime "created_at", null: false
@@ -185,7 +189,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["tag_id"], name: "index_recipe_tags_on_tag_id"
   end
 
-  create_table "recipes", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "recipes", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "title", null: false
     t.text "description"
@@ -204,27 +208,27 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.string "cuisine_type"
     t.string "dietary_tags"
     t.index ["average_rating"], name: "index_recipes_on_average_rating"
+    t.index ["description"], name: "index_recipes_on_description_trgm", opclass: :gin_trgm_ops, using: :gin
     t.index ["is_public"], name: "index_recipes_on_is_public"
     t.index ["slug"], name: "index_recipes_on_slug", unique: true
-    t.index ["title", "description"], name: "fulltext_recipes_search", type: :fulltext
+    t.index ["title"], name: "index_recipes_on_title_trgm", opclass: :gin_trgm_ops, using: :gin
     t.index ["user_id", "created_at"], name: "index_recipes_on_user_id_and_created_at"
     t.index ["user_id", "difficulty"], name: "index_recipes_on_user_id_and_difficulty"
     t.index ["user_id", "is_public"], name: "index_recipes_on_user_id_and_is_public"
     t.index ["user_id"], name: "index_recipes_on_user_id"
   end
 
-  create_table "reviews", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "reviews", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "recipe_id", null: false
     t.integer "rating", null: false
     t.text "body"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["recipe_id"], name: "fk_rails_a47e2057ed"
     t.index ["user_id", "recipe_id"], name: "index_reviews_on_user_id_and_recipe_id", unique: true
   end
 
-  create_table "tags", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "tags", force: :cascade do |t|
     t.string "name", null: false
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
@@ -233,7 +237,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_000008) do
     t.index ["user_id"], name: "index_tags_on_user_id"
   end
 
-  create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "reset_password_token"

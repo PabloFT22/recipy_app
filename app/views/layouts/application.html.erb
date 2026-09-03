@@ -1,44 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>Recipy - Your Recipe Manager</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#faf9f7">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Recipy">
-    <meta name="theme-color" content="#2c3e50">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap">
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
-
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(function(err) {
-          if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-            console.warn('Service worker registration failed:', err);
-          }
-        });
-      }
-    </script>
   </head>
 
   <body>
-    <%# PWA Install Banner %>
-    <div data-controller="pwa-install" style="display: none;">
-      <div data-pwa-install-target="banner"
-           style="background: #2c3e50; color: white; padding: 1rem; text-align: center; display: none;">
-        <span>Install Recipy for a better experience</span>
-        <button data-action="click->pwa-install#install" style="margin-left: 1rem; padding: 0.25rem 0.75rem; background: white; color: #2c3e50; border: none; border-radius: 4px; cursor: pointer;">Install</button>
-        <button data-action="click->pwa-install#dismiss" style="margin-left: 0.5rem; background: transparent; color: white; border: 1px solid white; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer;">✕</button>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <div data-controller="pwa-install" hidden>
+      <div class="install-banner" data-pwa-install-target="banner" hidden>
+        <span class="install-banner-text">Install Recipy for a better experience</span>
+        <button class="btn btn-sm" data-action="click->pwa-install#install">Install</button>
+        <button class="btn btn-sm btn-ghost"
+                data-action="click->pwa-install#dismiss"
+                aria-label="Dismiss install prompt"><%= icon(:close, size: 14) %></button>
       </div>
     </div>
 
-    <nav class="navbar" data-controller="navbar">
+    <nav class="navbar" data-controller="navbar" aria-label="Main">
       <div class="container">
         <%= link_to "Recipy", root_path, class: "navbar-brand" %>
 
@@ -46,6 +42,7 @@
                 type="button"
                 aria-label="Toggle navigation"
                 aria-expanded="false"
+                aria-controls="navbar-menu"
                 data-navbar-target="hamburger"
                 data-action="click->navbar#toggle">
           <span class="navbar-hamburger-line"></span>
@@ -54,45 +51,59 @@
         </button>
 
         <% if user_signed_in? %>
-          <div class="navbar-menu" data-navbar-target="menu">
-            <%= link_to "Recipes", recipes_path, class: "nav-link", data: { action: "click->navbar#closeFromLink" } %>
-            <%= link_to "Meal Plans", meal_plans_path, class: "nav-link", data: { action: "click->navbar#closeFromLink" } %>
-            <%= link_to "Grocery Lists", grocery_lists_path, class: "nav-link", data: { action: "click->navbar#closeFromLink" } %>
-            <%= link_to "Collections", recipe_collections_path, class: "nav-link", data: { action: "click->navbar#closeFromLink" } %>
-            <%= link_to "Pantry", pantry_path, class: "nav-link", data: { action: "click->navbar#closeFromLink" } %>
-            <%= link_to current_user.display_name, user_path(current_user), class: "nav-link", data: { action: "click->navbar#closeFromLink" } %>
-            <%= link_to "Sign Out", destroy_user_session_path, data: { turbo_method: :delete, action: "click->navbar#closeFromLink" }, class: "nav-link" %>
+          <div class="navbar-menu" id="navbar-menu" data-navbar-target="menu">
+            <%= nav_link_to "Recipes", recipes_path, match: :recipes %>
+            <%= nav_link_to "Meal Plans", meal_plans_path, match: [:meal_plans, :meal_plan_recipes] %>
+            <%= nav_link_to "Grocery Lists", grocery_lists_path, match: [:grocery_lists, :grocery_list_items] %>
+            <%= nav_link_to "Collections", recipe_collections_path, match: :recipe_collections %>
+            <%= nav_link_to "Pantry", pantry_path, match: :pantry %>
+            <%= nav_link_to current_user.display_name, user_path(current_user), match: :users %>
+            <%= link_to "Sign Out", destroy_user_session_path,
+                        class: "nav-link nav-link--quiet",
+                        data: { turbo_method: :delete, action: "click->navbar#closeFromLink" } %>
           </div>
         <% else %>
-          <div class="navbar-menu" data-navbar-target="menu">
-            <%= link_to "Sign In", new_user_session_path, class: "nav-link", data: { action: "click->navbar#closeFromLink" } %>
-            <%= link_to "Sign Up", new_user_registration_path, class: "nav-link", data: { action: "click->navbar#closeFromLink" } %>
+          <div class="navbar-menu" id="navbar-menu" data-navbar-target="menu">
+            <%= nav_link_to "Sign In", new_user_session_path %>
+            <%= link_to "Sign Up", new_user_registration_path,
+                        class: "btn btn-sm",
+                        data: { action: "click->navbar#closeFromLink" } %>
           </div>
         <% end %>
       </div>
     </nav>
 
-    <% if notice %>
-      <div class="alert alert-notice" data-controller="flash" data-flash-delay-value="4000">
-        <span><%= notice %></span>
-        <button class="alert-dismiss" data-action="click->flash#dismiss" aria-label="Dismiss">&times;</button>
-      </div>
-    <% end %>
+    <div class="toast-stack" role="status" aria-live="polite">
+      <% if notice %>
+        <div class="alert alert-notice" data-controller="flash" data-flash-delay-value="4000">
+          <span class="alert-icon"><%= icon(:check_circle, size: 18) %></span>
+          <span class="alert-message"><%= notice %></span>
+          <button class="alert-dismiss" data-action="click->flash#dismiss" aria-label="Dismiss notification">&times;</button>
+        </div>
+      <% end %>
 
-    <% if alert %>
-      <div class="alert alert-alert" data-controller="flash" data-flash-delay-value="5000">
-        <span><%= alert %></span>
-        <button class="alert-dismiss" data-action="click->flash#dismiss" aria-label="Dismiss">&times;</button>
-      </div>
-    <% end %>
+      <% if alert %>
+        <div class="alert alert-alert" data-controller="flash" data-flash-delay-value="6000">
+          <span class="alert-icon"><%= icon(:warning, size: 18) %></span>
+          <span class="alert-message"><%= alert %></span>
+          <button class="alert-dismiss" data-action="click->flash#dismiss" aria-label="Dismiss notification">&times;</button>
+        </div>
+      <% end %>
+    </div>
 
-    <main class="container">
+    <main class="container" id="main-content">
       <%= yield %>
     </main>
 
     <footer>
       <div class="container">
-        <p>&copy; 2026 Recipy. Your personal recipe manager.</p>
+        <p class="footer-inner">
+          <span class="footer-mark">Recipy</span>
+          <span aria-hidden="true">·</span>
+          <span>Your personal recipe manager</span>
+          <span aria-hidden="true">·</span>
+          <span>&copy; <%= Date.current.year %></span>
+        </p>
       </div>
     </footer>
   </body>

@@ -1,0 +1,13 @@
+<% return if resource.errors.empty? %>
+
+<div class="alert-error" role="alert">
+  <h3 class="icon-label">
+    <%= icon(:warning, size: 16) %>
+    <%= pluralize(resource.errors.count, "problem") %> stopped this from going through
+  </h3>
+  <ul>
+    <% resource.errors.full_messages.each do |message| %>
+      <li><%= message %></li>
+    <% end %>
+  </ul>
+</div>

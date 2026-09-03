@@ -7,15 +7,15 @@
   <div class="form-card" data-controller="import-recipe">
     <div class="card-header">
       <div class="card-title">
-        <span class="card-icon">🔗</span>
+        <span class="icon-plate icon-plate--sm"><%= icon(:link, size: 17) %></span>
         <h3>Recipe URL</h3>
       </div>
     </div>
 
     <div class="card-body">
       <% if flash[:alert] %>
-        <div class="alert alert-error mb-4">
-          <p><%= flash[:alert] %></p>
+        <div class="alert-error mb-4" role="alert">
+          <p class="icon-label"><%= icon(:warning, size: 16) %><%= flash[:alert] %></p>
           <p class="mt-2">
             You can also
             <%= link_to "create a recipe manually", new_recipe_path, class: "link-primary" %>.
@@ -45,7 +45,7 @@
 
         <div class="form-actions">
           <%= form.submit "Import Recipe",
-              class: "btn",
+              class: "btn btn-large",
               data: { import_recipe_target: "submitButton" } %>
           <%= link_to "Cancel", recipes_path, class: "btn btn-secondary" %>
         </div>
@@ -61,7 +61,7 @@
   <div class="form-card mt-4">
     <div class="card-header">
       <div class="card-title">
-        <span class="card-icon">💡</span>
+        <span class="icon-plate icon-plate--sm icon-plate--warning"><%= icon(:bulb, size: 17) %></span>
         <h3>Tips</h3>
       </div>
     </div>

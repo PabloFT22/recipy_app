@@ -1,0 +1,38 @@
+<div class="auth-shell">
+  <div class="auth-card">
+    <div class="auth-head">
+      <span class="icon-plate icon-plate--lg"><%= icon(:pot, size: 24) %></span>
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-subtitle">Sign in to get to your recipes.</p>
+    </div>
+
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "auth-form" }) do |f| %>
+      <div class="form-group">
+        <%= f.label :email, class: "form-label" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-input", placeholder: "you@example.com" %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :password, class: "form-label" %>
+        <%= f.password_field :password, autocomplete: "current-password", class: "form-input", placeholder: "Your password" %>
+      </div>
+
+      <% if devise_mapping.rememberable? %>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <%= f.check_box :remember_me %>
+            <span>Keep me signed in</span>
+          </label>
+        </div>
+      <% end %>
+
+      <%= f.submit "Sign in", class: "btn btn-block btn-large" %>
+    <% end %>
+
+    <%= render "devise/shared/links" %>
+  </div>
+
+  <p class="auth-aside">
+    New here? <%= link_to "Create an account", new_registration_path(resource_name) %> — it takes a minute.
+  </p>
+</div>

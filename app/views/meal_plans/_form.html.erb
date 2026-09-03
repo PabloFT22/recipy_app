@@ -1,13 +1,13 @@
 <div class="recipe-form-container" data-controller="meal-plan">
   <div class="recipe-form-header">
-    <h1><%= meal_plan.new_record? ? '📅 Create New Meal Plan' : '✏️ Edit Meal Plan' %></h1>
+    <h1><%= meal_plan.new_record? ? 'Create New Meal Plan' : 'Edit Meal Plan' %></h1>
     <p class="subtitle"><%= meal_plan.new_record? ? 'Plan your meals for the week' : 'Update your meal plan details' %></p>
   </div>
 
   <%= form_with(model: meal_plan, class: "recipe-form") do |form| %>
     <% if meal_plan.errors.any? %>
-      <div class="alert alert-error">
-        <h3><%= pluralize(meal_plan.errors.count, "error") %> prevented this meal plan from being saved:</h3>
+      <div class="alert-error" role="alert">
+        <h3 class="icon-label"><%= icon(:warning, size: 16) %><%= pluralize(meal_plan.errors.count, "error") %> prevented this meal plan from being saved:</h3>
         <ul>
           <% meal_plan.errors.full_messages.each do |message| %>
             <li><%= message %></li>
@@ -19,7 +19,7 @@
     <div class="form-card">
       <div class="card-header">
         <div class="card-title">
-          <span class="card-icon">📋</span>
+          <span class="icon-plate icon-plate--sm"><%= icon(:clipboard, size: 17) %></span>
           <h3>Meal Plan Details</h3>
         </div>
       </div>
@@ -57,12 +57,12 @@
           <% end %>
         </p>
 
-        <div data-meal-plan-target="dateError" class="form-error" style="display:none;"></div>
+        <div data-meal-plan-target="dateError" class="form-error" role="alert" hidden></div>
       </div>
     </div>
 
     <div class="form-actions mt-3">
-      <%= form.submit meal_plan.new_record? ? "Create Meal Plan" : "Update Meal Plan", class: "btn btn-success" %>
+      <%= form.submit meal_plan.new_record? ? "Create Meal Plan" : "Update Meal Plan", class: "btn btn-large" %>
       <%= link_to "Cancel", meal_plans_path, class: "btn btn-secondary" %>
     </div>
   <% end %>

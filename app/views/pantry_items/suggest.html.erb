@@ -18,8 +18,8 @@
         <div class="recipe-card-body">
           <h3 class="recipe-card-title"><%= link_to recipe.title, recipe %></h3>
           <div class="mb-2">
-            <div style="background: #ecf0f1; border-radius: 4px; height: 8px; margin-bottom: 4px;">
-              <div style="background: #27ae60; height: 8px; border-radius: 4px; width: <%= suggestion[:match_percentage] %>%;"></div>
+            <div class="match-bar">
+              <div class="match-bar-fill" style="width: <%= suggestion[:match_percentage] %>%"></div>
             </div>
             <small><%= suggestion[:match_count] %>/<%= suggestion[:total_ingredients] %> ingredients available (<%= suggestion[:match_percentage] %>%)</small>
           </div>

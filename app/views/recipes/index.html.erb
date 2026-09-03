@@ -1,106 +1,123 @@
-<div class="flex justify-between items-center mb-4">
-  <h1>My Recipes</h1>
-  <div class="flex gap-2">
-    <%= link_to "Import Recipe", import_recipes_path, class: "btn btn-secondary" %>
-    <%= link_to "New Recipe", new_recipe_path, class: "btn" %>
-  </div>
-</div>
+<%= render "shared/page_header",
+      title: user_signed_in? ? "My Recipes" : "Public Recipes",
+      eyebrow: "Kitchen",
+      lead: user_signed_in? ? "Everything you've saved, in one place." : "Recipes shared by the Recipy community.",
+      actions: capture {
+        if user_signed_in?
+          concat link_to(import_recipes_path, class: "btn btn-secondary") { safe_join([icon(:link, size: 16), "Import"]) }
+          concat link_to(new_recipe_path, class: "btn") { safe_join([icon(:plus, size: 16), "New Recipe"]) }
+        end
+      } %>
 
-<div class="card mb-4">
-  <%= form_with url: recipes_path, method: :get, local: true do |f| %>
-    <div class="grid grid-2 mb-2">
-      <%= f.text_field :search, value: params[:search], placeholder: "Search recipes...", class: "form-control" %>
-      <%= f.select :difficulty, options_for_select([['All Difficulties', ''], ['Easy', 'easy'], ['Medium', 'medium'], ['Hard', 'hard']], params[:difficulty]), {}, class: "form-control" %>
-      <% if params[:tag].present? %>
-        <%= f.hidden_field :tag, value: params[:tag] %>
-      <% end %>
-    </div>
-    <div class="grid grid-3 mb-2">
-      <%= f.text_field :cuisine_type, value: params[:cuisine_type], placeholder: "Cuisine type...", class: "form-control" %>
-      <%= f.number_field :max_time, value: params[:max_time], placeholder: "Max total time (min)", class: "form-control", min: 1 %>
-      <%= f.select :sort, options_for_select([['Sort by: Newest', 'recent'], ['Sort by: Rating', 'rating']], params[:sort]), {}, class: "form-control" %>
-    </div>
-    <div class="flex gap-2 mb-2" style="flex-wrap: wrap;">
-      <% %w[vegetarian vegan gluten-free dairy-free nut-free].each do |tag| %>
-        <label class="checkbox-label">
-          <input type="checkbox" name="dietary_tag" value="<%= tag %>" <%= params[:dietary_tag] == tag ? 'checked' : '' %>>
-          <%= tag %>
-        </label>
-      <% end %>
-    </div>
-    <div class="flex gap-2">
-      <%= f.submit "Search", class: "btn" %>
-      <%= link_to "Clear", recipes_path, class: "btn btn-secondary" %>
-    </div>
+<%= form_with url: recipes_path, method: :get, local: true, class: "search-bar" do |f| %>
+  <div class="search-field">
+    <span class="search-field-icon"><%= icon(:search, size: 18) %></span>
+    <%= f.search_field :search,
+          value: params[:search],
+          placeholder: "Search recipes by name or ingredient…",
+          class: "search-input",
+          "aria-label": "Search recipes" %>
+  </div>
+
+  <%= f.select :difficulty,
+        options_for_select([['Any difficulty', ''], ['Easy', 'easy'], ['Medium', 'medium'], ['Hard', 'hard']], params[:difficulty]),
+        {},
+        class: "search-select", "aria-label": "Filter by difficulty" %>
+
+  <% if params[:tag].present? %>
+    <%= f.hidden_field :tag, value: params[:tag] %>
   <% end %>
-</div>
+
+  <%= f.submit "Search", class: "btn" %>
+
+  <details class="search-more" <%= "open" if params[:cuisine_type].present? || params[:max_time].present? || params[:dietary_tag].present? || params[:sort].present? %>>
+    <summary class="search-more-toggle">
+      <%= icon(:chevron_down, size: 15) %>More filters
+    </summary>
+
+    <div class="search-more-body">
+      <div class="search-more-row">
+        <%= f.text_field :cuisine_type, value: params[:cuisine_type],
+              placeholder: "Cuisine, e.g. Thai", class: "form-input",
+              "aria-label": "Filter by cuisine" %>
+        <%= f.number_field :max_time, value: params[:max_time], min: 1,
+              placeholder: "Max total minutes", class: "form-input",
+              "aria-label": "Maximum total time in minutes" %>
+        <%= f.select :sort,
+              options_for_select([["Newest first", "recent"], ["Highest rated", "rating"]], params[:sort]),
+              { include_blank: "Sort by…" },
+              class: "form-select", "aria-label": "Sort recipes" %>
+      </div>
+
+      <fieldset class="diet-filters">
+        <legend class="section-eyebrow">Dietary</legend>
+        <% %w[vegetarian vegan gluten-free dairy-free nut-free].each do |diet| %>
+          <label class="diet-chip">
+            <%= radio_button_tag :dietary_tag, diet, params[:dietary_tag] == diet %>
+            <span><%= diet.tr("-", " ") %></span>
+          </label>
+        <% end %>
+        <label class="diet-chip">
+          <%= radio_button_tag :dietary_tag, "", params[:dietary_tag].blank? %>
+          <span>Any</span>
+        </label>
+      </fieldset>
+    </div>
+  </details>
+<% end %>
 
 <% if user_signed_in? && @user_tags.present? %>
-  <div class="tag-filter-bar mb-4">
+  <div class="filter-pills" role="group" aria-label="Filter by tag">
     <%= link_to "All", recipes_path(search: params[:search], difficulty: params[:difficulty]),
-        class: "tag-badge #{params[:tag].blank? ? 'tag-badge-active' : ''}" %>
+          class: "filter-pill #{'filter-pill--active' if params[:tag].blank?}",
+          "aria-current": (params[:tag].blank? ? "true" : nil) %>
     <% @user_tags.each do |tag| %>
-      <%= link_to "#{tag.name} (#{tag.recipe_count})",
-          recipes_path(tag: tag.id, search: params[:search], difficulty: params[:difficulty]),
-          class: "tag-badge #{params[:tag].to_s == tag.id.to_s ? 'tag-badge-active' : ''}" %>
+      <% active = params[:tag].to_s == tag.id.to_s %>
+      <%= link_to recipes_path(tag: tag.id, search: params[:search], difficulty: params[:difficulty]),
+            class: "filter-pill #{'filter-pill--active' if active}",
+            "aria-current": (active ? "true" : nil) do %>
+        <%= tag.name %><span class="filter-pill-count"><%= tag.recipe_count %></span>
+      <% end %>
     <% end %>
   </div>
 <% end %>
 
-<%= turbo_frame_tag "recipes_list" do %>
-  <% if @recipes.any? %>
-    <div class="grid grid-3">
-      <% @recipes.each do |recipe| %>
-        <%= cache recipe do %>
-          <div class="recipe-card">
-            <% if recipe.image.attached? %>
-              <%= image_tag recipe.image.variant(resize_to_limit: [400, 300]), class: "recipe-card-image", loading: "lazy" %>
-            <% else %>
-              <div class="recipe-card-image"></div>
-            <% end %>
-            <div class="recipe-card-body">
-              <h3 class="recipe-card-title"><%= link_to recipe.title, recipe %></h3>
-              <p class="recipe-card-description"><%= truncate(recipe.description, length: 100) %></p>
-              <% if recipe.tags.any? %>
-                <div class="recipe-card-tags mb-2">
-                  <% recipe.tags.each do |tag| %>
-                    <span class="tag-badge tag-badge-small"><%= tag.name %></span>
-                  <% end %>
-                </div>
-              <% end %>
-              <div class="flex gap-2 mb-2">
-                <% if recipe.prep_time %>
-                  <span>⏱️ <%= recipe.prep_time %>min</span>
-                <% end %>
-                <% if recipe.servings %>
-                  <span>🍽️ <%= recipe.servings %></span>
-                <% end %>
-                <% if recipe.difficulty %>
-                  <span>📊 <%= recipe.difficulty.capitalize %></span>
-                <% end %>
-                <% if recipe.reviews_count.to_i > 0 %>
-                  <span>⭐ <%= number_with_precision(recipe.average_rating, precision: 1) %></span>
-                <% end %>
-                <span>❤️ <%= recipe.likes.count %></span>
-              </div>
-              <div class="flex gap-2">
-                <%= link_to "View", recipe, class: "btn" %>
-                <% if user_signed_in? && recipe.user == current_user %>
-                  <%= link_to "Edit", edit_recipe_path(recipe), class: "btn btn-secondary" %>
-                <% end %>
-              </div>
-            </div>
-          </div>
-        <% end %>
-      <% end %>
-    </div>
+<% if @recipes.any? %>
+  <div class="grid grid-3">
+    <% @recipes.each do |recipe| %>
+      <%= render "shared/recipe_card", recipe: recipe %>
+    <% end %>
+  </div>
 
-    <div class="mt-4 text-center">
-      <%= paginate @recipes %>
-    </div>
-  <% else %>
-    <div class="card text-center">
-      <p>No recipes found. <%= link_to "Create your first recipe", new_recipe_path %>!</p>
-    </div>
-  <% end %>
+  <div class="mt-4 text-center pagination-wrap">
+    <%= paginate @recipes %>
+  </div>
+
+<% elsif params.values_at(:search, :difficulty, :tag, :cuisine_type, :dietary_tag, :max_time).any?(&:present?) %>
+  <%= render "shared/empty_state",
+        icon_name: :search,
+        title: "Nothing matched that search",
+        text: "Try a looser search term, or clear the filters to see everything again.",
+        action_label: "Clear filters",
+        action_path: recipes_path,
+        action_icon: :refresh %>
+
+<% elsif user_signed_in? %>
+  <%= render "shared/empty_state",
+        icon_name: :book,
+        title: "Your cookbook is empty",
+        text: "Add your first recipe by hand, or paste a link from any recipe site and let Recipy pull in the ingredients for you.",
+        action_label: "Write a recipe",
+        action_path: new_recipe_path,
+        secondary_label: "Import from a URL",
+        secondary_path: import_recipes_path %>
+
+<% else %>
+  <%= render "shared/empty_state",
+        icon_name: :book,
+        title: "No public recipes yet",
+        text: "Sign up to start building your own cookbook.",
+        action_label: "Create an account",
+        action_path: new_user_registration_path,
+        action_icon: :plus %>
 <% end %>

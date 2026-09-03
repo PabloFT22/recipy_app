@@ -10,7 +10,9 @@ class Ingredient < ApplicationRecord
   before_validation :normalize_name
   
   scope :by_category, ->(category) { where(category: category) }
-  scope :search, ->(query) { where("normalized_name LIKE ?", "%#{query.downcase}%") }
+  scope :search, lambda { |query|
+    where(arel_table[:normalized_name].matches("%#{sanitize_sql_like(query.to_s.downcase.strip)}%"))
+  }
   
   CATEGORIES = %w[
     produce

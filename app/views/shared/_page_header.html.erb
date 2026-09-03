@@ -1,0 +1,23 @@
+<%#
+  Standard page header: eyebrow + title + optional lead, with an actions slot.
+
+  title:    page title (required)
+  eyebrow:  small uppercase label above the title (optional)
+  lead:     supporting sentence under the title (optional)
+  actions:  pre-rendered HTML for the action buttons (optional)
+%>
+<header class="page-head">
+  <div class="page-head-text">
+    <% if local_assigns[:eyebrow].present? %>
+      <p class="section-eyebrow"><%= eyebrow %></p>
+    <% end %>
+    <h1 class="page-title"><%= title %></h1>
+    <% if local_assigns[:lead].present? %>
+      <p class="page-lead"><%= lead %></p>
+    <% end %>
+  </div>
+
+  <% if local_assigns[:actions].present? %>
+    <div class="page-head-actions"><%= actions %></div>
+  <% end %>
+</header>

@@ -27,19 +27,32 @@ class Recipe < ApplicationRecord
   scope :by_difficulty, ->(difficulty) { where(difficulty: difficulty) }
   scope :recent, -> { order(created_at: :desc) }
   scope :by_rating, -> { order(average_rating: :desc) }
-  scope :popular, -> { includes(:meal_plan_recipes).group(:id).order('COUNT(meal_plan_recipes.id) DESC') }
+  # left_joins rather than includes: Postgres will not let an eager-loaded
+  # association's columns sit outside GROUP BY.
+  scope :popular, -> { left_joins(:meal_plan_recipes).group(:id).order(Arel.sql('COUNT(meal_plan_recipes.id) DESC')) }
   scope :by_cuisine, ->(cuisine) { where(cuisine_type: cuisine) }
-  scope :by_dietary_tag, ->(tag) { where("FIND_IN_SET(?, dietary_tags) > 0", tag) }
-  scope :by_max_time, ->(minutes) { where("(COALESCE(prep_time, 0) + COALESCE(cook_time, 0)) <= ?", minutes) }
-  MIN_SEARCH_LENGTH = 3
 
-  scope :full_text_search, ->(query) { where("MATCH(title, description) AGAINST(? IN BOOLEAN MODE)", query) }
+  # dietary_tags is a comma-separated string. MySQL's FIND_IN_SET does not
+  # exist on Postgres, so match the tag between delimiters instead — same
+  # semantics ("vegan" must not match "vegan-ish"), and portable.
+  scope :by_dietary_tag, lambda { |tag|
+    needle = "%,#{sanitize_sql_like(tag.to_s.strip)},%"
+    where(Arel.sql("',' || COALESCE(dietary_tags, '') || ','").matches(needle))
+  }
+
+  scope :by_max_time, ->(minutes) { where("(COALESCE(prep_time, 0) + COALESCE(cook_time, 0)) <= ?", minutes) }
+
+  # Arel#matches is case-insensitive on every adapter Rails supports (it emits
+  # ILIKE on Postgres, LIKE on MySQL). A bare LIKE would be case-SENSITIVE on
+  # Postgres, so searching "chicken" would miss "Chicken Soup".
+  #
+  # This replaces main's MATCH ... AGAINST full-text scope, which is MySQL-only.
+  # The equivalent speed-up on Postgres is the pg_trgm GIN index added in
+  # AddSearchFieldsToRecipes, which makes exactly this ILIKE fast.
   scope :search, ->(query) do
-    if query.length >= MIN_SEARCH_LENGTH
-      full_text_search(query)
-    else
-      where("title LIKE ? OR description LIKE ?", "%#{query}%", "%#{query}%")
-    end
+    term = "%#{sanitize_sql_like(query.to_s.strip)}%"
+    t = arel_table
+    where(t[:title].matches(term).or(t[:description].matches(term)))
   end
   scope :by_tag, ->(tag_id) { joins(:tags).where(tags: { id: tag_id }) }
 

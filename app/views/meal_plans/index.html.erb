@@ -1,8 +1,11 @@
 <div class="mp-container">
-  <div class="flex justify-between items-center mb-4">
-    <h1>My Meal Plans</h1>
-    <%= link_to "➕ Create Meal Plan", new_meal_plan_path, class: "btn btn-success" %>
-  </div>
+  <%= render "shared/page_header",
+        title: "Meal Plans",
+        eyebrow: "Planning",
+        lead: "Map out the week, then turn it into a grocery list in one click.",
+        actions: capture {
+          concat(link_to(new_meal_plan_path, class: "btn") { safe_join([icon(:plus, size: 16), "Create Meal Plan"]) })
+        } %>
 
   <% if @meal_plans.any? %>
     <div class="grid grid-3">
@@ -16,8 +19,10 @@
                    else
                      :past
                    end
+          span_days = (plan.end_date - plan.start_date).to_i + 1
+          scheduled = plan.meal_plan_recipes.group_by(&:scheduled_for)
         %>
-        <div class="mp-card <%= 'mp-card--active' if status == :active %>">
+        <article class="mp-card <%= 'mp-card--active' if status == :active %>">
           <div class="mp-card-header">
             <h3 class="mp-card-title"><%= link_to plan.name, plan %></h3>
             <span class="mp-status-badge mp-status-<%= status %>"><%= status.to_s.capitalize %></span>
@@ -26,38 +31,53 @@
           <div class="mp-card-body">
             <div class="mp-card-meta">
               <span class="mp-card-date">
-                📅 <%= plan.start_date.strftime('%b %d') %> — <%= plan.end_date.strftime('%b %d, %Y') %>
+                <%= icon(:calendar, size: 14) %><%= plan.start_date.strftime('%b %-d') %> — <%= plan.end_date.strftime('%b %-d, %Y') %>
               </span>
               <span class="mp-card-count">
-                🍽️ <%= plan.total_recipes %> <%= 'recipe'.pluralize(plan.total_recipes) %>
+                <%= icon(:plate, size: 14) %><%= plan.total_recipes %> <%= 'recipe'.pluralize(plan.total_recipes) %>
               </span>
             </div>
 
-            <div class="mp-card-days">
-              <%= pluralize((plan.end_date - plan.start_date).to_i + 1, 'day') %>
-            </div>
+            <%# Timeline preview: one column per day, filled where meals exist. %>
+            <ol class="mp-card-strip" aria-label="<%= span_days %> day plan">
+              <% (plan.start_date..plan.end_date).first(10).each do |day| %>
+                <% count = scheduled[day]&.size.to_i %>
+                <li class="mp-strip-day <%= 'mp-strip-day--filled' if count > 0 %> <%= 'mp-strip-day--today' if day == today %>"
+                    title="<%= day.strftime('%A %-d %b') %> — <%= pluralize(count, 'meal') %>">
+                  <span class="mp-strip-letter"><%= day.strftime('%a')[0] %></span>
+                </li>
+              <% end %>
+              <% if span_days > 10 %>
+                <li class="mp-strip-overflow">+<%= span_days - 10 %></li>
+              <% end %>
+            </ol>
+
+            <div class="mp-card-days"><%= pluralize(span_days, 'day') %></div>
           </div>
 
           <div class="mp-card-actions">
-            <%= link_to "View", plan, class: "btn" %>
-            <%= link_to "Edit", edit_meal_plan_path(plan), class: "btn btn-secondary" %>
-            <%= link_to "Delete", plan, data: { turbo_method: :delete, turbo_confirm: "Delete this meal plan?" }, class: "btn btn-danger" %>
+            <%= link_to "View", plan, class: "btn btn-small" %>
+            <%= link_to "Edit", edit_meal_plan_path(plan), class: "btn btn-small btn-secondary" %>
+            <%= link_to meal_plan_path(plan),
+                  data: { turbo_method: :delete, turbo_confirm: "Delete “#{plan.name}”?" },
+                  class: "btn btn-small btn-plain btn-plain--danger",
+                  "aria-label": "Delete #{plan.name}" do %>
+              <%= icon(:trash, size: 15) %>
+            <% end %>
           </div>
-        </div>
+        </article>
       <% end %>
     </div>
 
-    <div class="mt-4 text-center">
+    <div class="mt-4 text-center pagination-wrap">
       <%= paginate @meal_plans %>
     </div>
   <% else %>
-    <div class="card text-center">
-      <div class="empty-state">
-        <span class="empty-icon">📅</span>
-        <h3>No meal plans yet</h3>
-        <p>Start planning your meals for the week!</p>
-        <%= link_to "Create Your First Meal Plan", new_meal_plan_path, class: "btn btn-success mt-2" %>
-      </div>
-    </div>
+    <%= render "shared/empty_state",
+          icon_name: :calendar,
+          title: "No meal plans yet",
+          text: "Pick a date range, drop your recipes onto the days, and Recipy will work out the shopping for you.",
+          action_label: "Create Your First Meal Plan",
+          action_path: new_meal_plan_path %>
   <% end %>
 </div>

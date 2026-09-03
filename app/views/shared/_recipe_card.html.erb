@@ -1,0 +1,73 @@
+<%#
+  Recipe card — the app's most-reused component.
+
+  recipe:      Recipe to render (required)
+  show_tags:   render the recipe's tags in the body (default: true)
+  quick_edit:  show the hover edit shortcut (default: only for the owner)
+%>
+<% show_tags = local_assigns.fetch(:show_tags, true) %>
+<% quick_edit = local_assigns.fetch(:quick_edit, user_signed_in? && recipe.user == current_user) %>
+
+<article class="recipe-card">
+  <div class="recipe-card-media">
+    <% if recipe.image.attached? %>
+      <%= image_tag recipe.image,
+                    class: "recipe-card-image",
+                    loading: "lazy",
+                    alt: "Photo of #{recipe.title}" %>
+    <% else %>
+      <div class="recipe-card-placeholder"><%= icon(:pot, size: 40) %></div>
+    <% end %>
+
+    <div class="recipe-card-scrim"></div>
+
+    <% if recipe.difficulty.present? %>
+      <span class="recipe-card-badge difficulty-<%= recipe.difficulty %>">
+        <%= icon(:chart, size: 13) %><%= recipe.difficulty.capitalize %>
+      </span>
+    <% end %>
+
+    <% if quick_edit %>
+      <div class="recipe-card-quick">
+        <%= link_to edit_recipe_path(recipe), class: "btn", title: "Edit #{recipe.title}" do %>
+          <%= icon(:pencil, size: 16, title: "Edit #{recipe.title}") %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="recipe-card-body">
+    <h3 class="recipe-card-title"><%= link_to recipe.title, recipe %></h3>
+
+    <% if recipe.description.present? %>
+      <p class="recipe-card-description"><%= truncate(recipe.description, length: 110) %></p>
+    <% end %>
+
+    <% if show_tags && recipe.tags.any? %>
+      <div class="recipe-card-tags">
+        <% recipe.tags.first(3).each do |tag| %>
+          <span class="tag-badge tag-badge-small"><%= tag.name %></span>
+        <% end %>
+        <% if recipe.tags.size > 3 %>
+          <span class="tag-badge tag-badge-small tag-badge-more">+<%= recipe.tags.size - 3 %></span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="recipe-card-meta">
+      <% if recipe.prep_time %>
+        <span class="recipe-card-meta-item">
+          <%= icon(:clock, size: 14) %><%= recipe.prep_time %> min
+        </span>
+      <% end %>
+      <% if recipe.servings %>
+        <span class="recipe-card-meta-item">
+          <%= icon(:plate, size: 14) %><%= recipe.servings %> servings
+        </span>
+      <% end %>
+      <% unless recipe.is_public %>
+        <span class="recipe-card-meta-item"><%= icon(:lock, size: 14) %>Private</span>
+      <% end %>
+    </div>
+  </div>
+</article>

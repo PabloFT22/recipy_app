@@ -104,7 +104,7 @@ export default class extends Controller {
       pill.className = "tag-input-pill"
       pill.innerHTML = `
         ${this.escapeHtml(name)}
-        <button type="button" class="tag-remove" data-action="click->tag-input#removeTag" data-tag-name="${this.escapeHtml(name)}">✕</button>
+        <button type="button" class="tag-remove" data-action="click->tag-input#removeTag" data-tag-name="${this.escapeHtml(name)}" aria-label="Remove ${this.escapeHtml(name)}"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
       `
       this.tagListTarget.appendChild(pill)
     })
@@ -126,11 +126,11 @@ export default class extends Controller {
       item.textContent = tag.name
       this.suggestionsTarget.appendChild(item)
     })
-    this.suggestionsTarget.style.display = "block"
+    this.suggestionsTarget.hidden = false
   }
 
   hideSuggestions() {
-    this.suggestionsTarget.style.display = "none"
+    this.suggestionsTarget.hidden = true
     this.suggestionsTarget.innerHTML = ""
   }
 
